@@ -760,9 +760,14 @@ p.lead {
   width: 2px;
   background: linear-gradient(180deg, var(--gold), var(--green), var(--blue));
   transform-origin: top;
+  transform: scaleY(1);
+  opacity: 1;
+  transition: transform 0.95s ease, opacity 0.95s ease;
+}
+
+.js-reveal .timeline::before {
   transform: scaleY(0.12);
   opacity: 0.55;
-  transition: transform 0.95s ease, opacity 0.95s ease;
 }
 
 .timeline.is-visible::before {
@@ -774,6 +779,9 @@ p.lead {
   position: relative;
   margin: 0;
   padding: 0 0 1.25rem 0.7rem;
+}
+
+.js-reveal .timeline-item {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.55s ease, transform 0.55s ease;
@@ -833,7 +841,9 @@ p.lead {
 
 @media (prefers-reduced-motion: reduce) {
   .timeline::before,
-  .timeline-item {
+  .timeline-item,
+  .js-reveal .timeline::before,
+  .js-reveal .timeline-item {
     transition: none;
     transform: none;
     opacity: 1;

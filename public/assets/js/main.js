@@ -1811,6 +1811,10 @@
   /* ---------- Init ---------- */
   function init() {
     document.documentElement.setAttribute("lang", currentLang);
+    // Enables the scroll-reveal animations. Without it, animated content
+    // (e.g. the timeline) stays fully visible instead of hidden, so the
+    // page degrades gracefully if this script fails to load or run.
+    document.documentElement.classList.add("js-reveal");
     renderHeader();
     renderFooter();
     initHomeSedes();
