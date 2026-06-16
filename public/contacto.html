@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contacto | Pura Capoeira</title>
+  <meta name="description" content="Contacta a Pura Capoeira y encuentra una sede cerca de ti en México, Brasil, Angola o Estados Unidos." />
+  <meta property="og:title" content="Contacto | Pura Capoeira" />
+  <meta property="og:description" content="Encuentra una sede de Pura Capoeira cerca de ti." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/images/og-image.jpg" />
+  <meta property="og:url" content="https://example.com/contacto.html" />
+  <script type="speculationrules">
+  { "prefetch": [{ "where": { "selector_matches": "a[data-prefetch]" }, "eagerness": "moderate" }],
+    "prerender": [{ "where": { "selector_matches": "a[data-prerender]" }, "eagerness": "conservative" }] }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/styles.css" />
+</head>
+<body data-testid="page-contacto">
+  <div data-include="header"></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow">Falar conosco</span>
+        <h1 class="display">Contacto</h1>
+        <p>Encuentra la sede de Pura Capoeira más cercana o escríbenos para más información.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container contact-grid">
+        <div>
+          <span class="eyebrow">Por sede</span>
+          <h2 class="display" style="margin:0.75rem 0 2rem;">Contactos<br/>locales</h2>
+          <div id="contact-cards" class="contact-card-list" data-testid="contact-cards">
+            <p class="muted">Cargando contactos...</p>
+          </div>
+        </div>
+
+        <div>
+          <span class="eyebrow">Formulario general</span>
+          <h2 class="display" style="margin:0.75rem 0 2rem;">Escríbenos</h2>
+          <!--
+            TODO: Para conectar un proveedor real (Formspree / Netlify Forms),
+            reemplazar el action del form y eliminar el handler mailto en main.js.
+            Por ahora abre el cliente de correo del usuario.
+          -->
+          <form id="contact-form" class="contact-form" novalidate data-testid="contact-form">
+            <label>
+              Nombre
+              <input type="text" name="nombre" required autocomplete="name" data-testid="contact-input-nombre" />
+            </label>
+            <label>
+              Ciudad
+              <input type="text" name="ciudad" autocomplete="address-level2" data-testid="contact-input-ciudad" />
+            </label>
+            <label>
+              Teléfono o WhatsApp
+              <input type="tel" name="telefono" autocomplete="tel" data-testid="contact-input-telefono" />
+            </label>
+            <label>
+              Mensaje
+              <textarea name="mensaje" required data-testid="contact-input-mensaje"></textarea>
+            </label>
+            <button type="submit" class="btn btn--primary" data-testid="contact-submit-button">Enviar mensaje</button>
+            <p class="muted" style="font-size:0.78rem; margin:0;">Al enviar abriremos tu cliente de correo. También puedes contactarnos directamente por WhatsApp desde la tarjeta de cada sede.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div id="root"></div>
+  <script src="./assets/js/main.js"></script>
+</body>
+</html>

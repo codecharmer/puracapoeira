@@ -1,0 +1,74 @@
+[
+  {
+    "title": "Roda de Capoeira en Cuernavaca",
+    "date": "2026-06-01",
+    "description": "Momentos de jogo, música y energía de nuestra comunidad.",
+    "category": "Rodas",
+    "location": "Cuernavaca",
+    "thumbnail": "https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+  },
+  {
+    "title": "Entrenamiento de adultos",
+    "date": "2026-06-02",
+    "description": "Secuencias de movimiento, defensa, esquiva, ritmo y fluidez.",
+    "category": "Adultos",
+    "location": "Cuernavaca",
+    "thumbnail": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+  },
+  {
+    "title": "Clase de Kids en Tlaltenango",
+    "date": "2026-05-22",
+    "description": "Niños y niñas aprenden coordinación, ritmo y respeto en el espacio de la roda.",
+    "category": "Kids",
+    "location": "Cuernavaca",
+    "thumbnail": "https://images.pexels.com/photos/16552870/pexels-photo-16552870.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+  },
+  {
+    "title": "Toque de berimbau",
+    "date": "2026-05-15",
+    "description": "El berimbau dicta el ritmo del jogo. Sin música no hay roda.",
+    "category": "Música",
+    "location": "General",
+    "thumbnail": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "#"
+  },
+  {
+    "title": "Encuentro internacional de Pura Capoeira",
+    "date": "2026-06-03",
+    "description": "Momentos de intercambio entre sedes, profesores y alumnos.",
+    "category": "Eventos",
+    "location": "General",
+    "thumbnail": "https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "#"
+  },
+  {
+    "title": "Batizado e Troca de Cordas",
+    "date": "2026-04-20",
+    "description": "Ceremonia tradicional donde alumnos reciben su primer apodo y cordel.",
+    "category": "Batizados",
+    "location": "General",
+    "thumbnail": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "#"
+  },
+  {
+    "title": "Treino físico y técnico",
+    "date": "2026-05-08",
+    "description": "Fortalecimiento, condición y secuencias de movimiento.",
+    "category": "Entrenamiento",
+    "location": "Cuernavaca",
+    "thumbnail": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+  },
+  {
+    "title": "Clase abierta",
+    "date": "2026-05-01",
+    "description": "Clase abierta a la comunidad. Bienvenidos visitantes.",
+    "category": "Clases",
+    "location": "Cuernavaca",
+    "thumbnail": "https://images.pexels.com/photos/16552870/pexels-photo-16552870.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+  }
+]

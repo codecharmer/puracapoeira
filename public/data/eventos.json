@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Roda de Pura Capoeira Cuernavaca",
+    "date": "2026-07-01",
+    "time": "18:00",
+    "location": "Cuernavaca",
+    "venue": "San Jerónimo 503, Tlaltenango, Cuernavaca, Morelos",
+    "description": "Roda abierta para alumnos y comunidad de Pura Capoeira. Berimbau, canto y jogo.",
+    "status": "Próximo",
+    "url": "https://wa.me/18056385603"
+  },
+  {
+    "title": "Taller de musicalidad y berimbau",
+    "date": "2026-07-15",
+    "time": "17:00",
+    "location": "Cuernavaca",
+    "venue": "San Jerónimo 503, Tlaltenango, Cuernavaca, Morelos",
+    "description": "Taller intensivo de toques, canto y fundamento musical de la roda.",
+    "status": "Próximo",
+    "url": "https://wa.me/18056385603"
+  },
+  {
+    "title": "Encuentro internacional Pura Capoeira",
+    "date": "2026-09-10",
+    "time": "10:00",
+    "location": "Por confirmar",
+    "venue": "Sede por confirmar",
+    "description": "Encuentro anual de sedes Pura Capoeira. Talleres, roda general, batizado y troca de cordas.",
+    "status": "Próximo",
+    "url": "https://wa.me/18056385603"
+  }
+]

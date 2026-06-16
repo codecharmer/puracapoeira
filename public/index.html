@@ -1,12 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>puracapoeira</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#FDFBF7" />
+  <title>Pura Capoeira | Escuela internacional de capoeira</title>
+  <meta name="description" content="Pura Capoeira es una escuela y comunidad de capoeira con sedes en México, Brasil, Angola y Estados Unidos. Clases, rodas, música, cultura afrobrasileña y eventos." />
+  <meta name="keywords" content="Pura Capoeira, capoeira México, capoeira Cuernavaca, escuela de capoeira, roda, berimbau, cultura afrobrasileña, batizado, capoeira para niños, capoeira para adultos" />
+
+  <!-- Open Graph -->
+  <!-- TODO: Reemplazar og:url y og:image cuando el dominio final esté disponible -->
+  <meta property="og:title" content="Pura Capoeira" />
+  <meta property="og:description" content="Escuela y comunidad internacional de capoeira. México, Brasil, Angola y Estados Unidos." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/images/og-image.jpg" />
+  <meta property="og:url" content="https://example.com/" />
+
+  <!-- Speculative Loading API -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "where": { "selector_matches": "a[data-prefetch]" }, "eagerness": "moderate" }
+    ],
+    "prerender": [
+      { "where": { "selector_matches": "a[data-prerender]" }, "eagerness": "conservative" }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/styles.css" />
 </head>
-<body>
-  <h1>puracapoeira</h1>
-  <p>Deployed from GitHub Actions to VPS.</p>
+<body data-testid="page-home">
+  <div data-include="header"></div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" data-testid="home-hero">
+      <div class="hero__img">
+        <img src="https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1200&w=1900" alt="Roda de capoeira" />
+      </div>
+      <div class="container hero__content">
+        <div class="hero__meta">
+          <span class="eyebrow">Escola internacional · est. comunidade</span>
+          <span class="dot" aria-hidden="true"></span>
+          <span class="eyebrow eyebrow--muted">México · Brasil · Angola · USA</span>
+        </div>
+        <div class="hero__title">
+          <img src="./assets/images/logo-capoeira.png" alt="Logo Pura Capoeira" class="hero__title-logo" />
+          <h1 class="display">Pura<br/>Capoeira</h1>
+        </div>
+        <p class="sub">Capoeira, cultura, música e movimento conectando comunidades.</p>
+        <p class="lead">Pura Capoeira es una escuela y comunidad dedicada a preservar, enseñar y compartir la capoeira como arte, lucha, música, cultura afrobrasileña, disciplina y desarrollo personal.</p>
+        <div class="hero__buttons">
+          <a class="btn btn--primary" href="./sedes.html" data-prerender data-testid="hero-cta-sedes">Encuentra una sede</a>
+          <a class="btn btn--ghost" href="./grupo.html" data-prefetch data-testid="hero-cta-grupo">Conoce el grupo</a>
+          <a class="btn btn--outline" href="./galeria.html" data-prerender data-testid="hero-cta-galeria">Ver galería</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRO -->
+    <section class="section" data-testid="home-intro">
+      <div class="container">
+        <div class="editorial">
+          <div>
+            <span class="eyebrow">¿Qué es Pura Capoeira?</span>
+            <h2 class="display" style="margin-top:1rem;">Una<br/>comunidad,<br/><em style="color:var(--green-deep);">muchas raíces.</em></h2>
+          </div>
+          <div>
+            <p class="lead">Pura Capoeira es una comunidad de capoeiristas conectados por la práctica, la música, la roda, la cultura afrobrasileña y el respeto por la historia de la capoeira.</p>
+            <p class="muted">Cada sede tiene su propio contexto local, pero comparte una misma base: entrenar con disciplina, jugar con inteligencia, cantar con fundamento y fortalecer la comunidad.</p>
+            <p class="muted">Capoeira es lucha, arte, música, historia, estrategia y desarrollo personal. No es fitness, no es baile, no es solo deporte. Es cultura viva.</p>
+            <div class="btn-row" style="margin-top:1.5rem;">
+              <a class="btn btn--outline" href="./grupo.html" data-prefetch data-testid="intro-cta-grupo">Ler la filosofía completa</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEDES DESTACADAS -->
+    <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);" data-testid="home-sedes-section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Núcleos activos</span>
+            <h2 class="display">Sedes Pura<br/>Capoeira</h2>
+          </div>
+          <p>Profesores, núcleos y comunidad en seis ciudades alrededor del mundo. Encuentra la sede más cercana a ti.</p>
+        </div>
+        <div id="home-sedes" class="sede-grid" data-testid="home-sedes-grid">
+          <p class="muted">Cargando sedes...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BAND -->
+    <section class="cta-band" data-testid="home-cta-band">
+      <div class="container">
+        <div>
+          <h2 class="display">¿Listo<br/>para entrar en la roda?</h2>
+          <p>Clases para adultos, kids, adolescentes y jóvenes. Música, jogo y cultura.</p>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="./contacto.html" data-prefetch data-testid="cta-band-contacto">Contáctanos</a>
+          <a class="btn btn--ghost" href="./sedes.html" data-prerender data-testid="cta-band-sedes">Ver sedes</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div id="root"></div>
+  <script src="./assets/js/main.js"></script>
 </body>
 </html>

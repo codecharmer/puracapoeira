@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pura Capoeira Toluca | Pura Capoeira</title>
+  <meta name="description" content="Pura Capoeira Toluca. Información local por confirmar." />
+  <meta property="og:title" content="Pura Capoeira Toluca | Pura Capoeira" />
+  <meta property="og:description" content="Pura Capoeira Toluca. Información local por confirmar." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/images/og-image.jpg" />
+  <meta property="og:url" content="https://example.com/sedes/toluca.html" />
+  <script type="speculationrules">
+  { "prefetch": [{ "where": { "selector_matches": "a[data-prefetch]" }, "eagerness": "moderate" }],
+    "prerender": [{ "where": { "selector_matches": "a[data-prerender]" }, "eagerness": "conservative" }] }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body data-testid="page-sede-toluca">
+  <div data-include="header"></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow">Sede · Toluca · México</span>
+        <h1 id="sede-title" class="display">Pura Capoeira Toluca</h1>
+        <p id="sede-sub" class="muted">Cargando información...</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div id="sede-detail" class="sede-detail" data-slug="toluca" data-testid="sede-detail-toluca">
+          <div id="sede-image" class="sede-detail__img"></div>
+          <div id="sede-content" class="sede-detail__content"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div id="root"></div>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

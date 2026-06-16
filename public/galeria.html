@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Galería | Pura Capoeira</title>
+  <meta name="description" content="Videos y fotos de clases, rodas, batizados, entrenamientos y eventos de Pura Capoeira." />
+  <meta property="og:title" content="Galería | Pura Capoeira" />
+  <meta property="og:description" content="Galería de Pura Capoeira: clases, rodas, eventos y batizados." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/images/og-image.jpg" />
+  <meta property="og:url" content="https://example.com/galeria.html" />
+  <script type="speculationrules">
+  { "prefetch": [{ "where": { "selector_matches": "a[data-prefetch]" }, "eagerness": "moderate" }],
+    "prerender": [{ "where": { "selector_matches": "a[data-prerender]" }, "eagerness": "conservative" }] }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/styles.css" />
+</head>
+<body data-testid="page-galeria">
+  <div data-include="header"></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow">Imagens · Vídeos · Memoria viva</span>
+        <h1 class="display">Galería</h1>
+        <p>Videos y momentos de clases, rodas, entrenamientos, eventos, batizados y encuentros del grupo.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="filter-group">
+          <span class="filter-group__label">Categoría</span>
+          <div id="filter-cats" class="filters" role="tablist" data-testid="filter-cats"></div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-group__label">Sede</span>
+          <div id="filter-locs" class="filters" role="tablist" data-testid="filter-locs"></div>
+        </div>
+
+        <div id="gallery-grid" class="gallery-grid" data-testid="gallery-grid">
+          <p class="muted">Cargando galería...</p>
+        </div>
+
+        <p class="muted" style="margin-top:2.5rem; font-size:0.85rem;">
+          ¿Quieres ver más? Visita el álbum público de Cuernavaca:
+          <a href="https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" target="_blank" rel="noopener noreferrer" style="color:var(--blue);" data-testid="icloud-link">Álbum iCloud Pura Capoeira Cuernavaca →</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div id="root"></div>
+  <script src="./assets/js/main.js"></script>
+</body>
+</html>

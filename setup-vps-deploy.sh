@@ -7,6 +7,7 @@ SSH_USER="root"
 BRANCH="master"
 SITE_NAME=""
 DEPLOY_PATH=""
+DEFAULT_DEPLOY_FOLDER="puracapoeirasite"
 OWNER=""
 GROUP=""
 YES="0"
@@ -16,10 +17,10 @@ usage() {
 Usage:
   ./setup-vps-static-deploy.sh \\
     --site-name SITE_NAME \\
-    --deploy-path /home/CPANEL_USER/public_html \\
     --owner CPANEL_USER
 
 Optional:
+  --deploy-path PATH        Default: /home/OWNER/public_html/puracapoeirasite
   --host HOST              Default: 72.167.225.151
   --port PORT              Default: 22
   --ssh-user USER          Default: root
@@ -29,8 +30,7 @@ Optional:
 
 Example:
   ./setup-vps-static-deploy.sh \\
-    --site-name my-other-site \\
-    --deploy-path /home/exampleuser/public_html \\
+    --site-name puracapoeirasite \
     --owner exampleuser
 USAGE
 }
@@ -85,10 +85,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$SITE_NAME" || -z "$DEPLOY_PATH" || -z "$OWNER" ]]; then
-  echo "Error: --site-name, --deploy-path, and --owner are required."
+if [[ -z "$SITE_NAME" || -z "$OWNER" ]]; then
+  echo "Error: --site-name and --owner are required."
   usage
   exit 1
+fi
+
+if [[ -z "$DEPLOY_PATH" ]]; then
+  DEPLOY_PATH="/home/$OWNER/public_html/$DEFAULT_DEPLOY_FOLDER"
 fi
 
 if [[ -z "$GROUP" ]]; then
