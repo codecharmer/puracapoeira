@@ -918,27 +918,44 @@
       return;
     }
 
-    const observer = new IntersectionObserver((entries, obs) => {
+    const reveal = el => el.classList.add("is-visible");
+
+    // A very tall block (e.g. a long timeline) can never reach a high
+    // intersection ratio, so those reveal as soon as their leading edge
+    // enters the viewport. Normal blocks keep the original threshold.
+    const normalBlocks = [];
+    const edgeTargets = [];
+    blocks.forEach(el => {
+      (el.classList.contains("timeline") ? edgeTargets : normalBlocks).push(el);
+    });
+    items.forEach(el => edgeTargets.push(el));
+
+    const normalObserver = new IntersectionObserver((entries, obs) => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
-        const target = entry.target;
-        target.classList.add("is-visible");
-
-        if (target.classList.contains("timeline")) {
-          const delayStep = Number(target.getAttribute("data-reveal-delay")) || 80;
-          $$(".timeline-item", target).forEach((item, index) => {
-            window.setTimeout(() => item.classList.add("is-visible"), index * delayStep);
-          });
-        }
-
-        obs.unobserve(target);
+        reveal(entry.target);
+        obs.unobserve(entry.target);
       });
     }, {
       threshold: 0.22,
       rootMargin: "0px 0px -8% 0px"
     });
+    normalBlocks.forEach(el => normalObserver.observe(el));
 
-    blocks.forEach(el => observer.observe(el));
+    // Reveal the timeline container (so its connecting line draws) and
+    // each timeline item independently, so the animation works for any
+    // number of entries regardless of the container's height.
+    const edgeObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        reveal(entry.target);
+        obs.unobserve(entry.target);
+      });
+    }, {
+      threshold: 0,
+      rootMargin: "0px 0px -10% 0px"
+    });
+    edgeTargets.forEach(el => edgeObserver.observe(el));
   }
 
   const ORIGINAL_HTML_ATTR = "data-pc-original-html";
