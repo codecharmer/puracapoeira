@@ -23,7 +23,7 @@
     "lat": 18.9350,
     "lng": -99.2370,
     "page": "/sedes/cuernavaca.html",
-    "image": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-cuernavaca.jpg",
     "blurb": "Núcleo principal de Pura Capoeira en México. Entrenamiento, roda, música y comunidad en el corazón de Morelos."
   },
   {
@@ -44,7 +44,7 @@
     "lat": 19.2826,
     "lng": -99.6557,
     "page": "/sedes/toluca.html",
-    "image": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-toluca.jpg",
     "blurb": "Núcleo en formación. Próximamente anunciaremos horarios y responsable local."
   },
   {
@@ -65,7 +65,7 @@
     "lat": 21.0190,
     "lng": -101.2574,
     "page": "/sedes/guanajuato.html",
-    "image": "https://images.pexels.com/photos/16552870/pexels-photo-16552870.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-guanajuato.jpg",
     "blurb": "Sede en expansión. Información local por confirmar."
   },
   {
@@ -86,7 +86,7 @@
     "lat": -3.7363,
     "lng": -38.6534,
     "page": "/sedes/ceara.html",
-    "image": "https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-ceara.jpg",
     "blurb": "Raíz brasileña de Pura Capoeira. Sede en el nordeste, tierra de capoeira, samba y axé."
   },
   {
@@ -107,7 +107,7 @@
     "lat": -8.8368,
     "lng": 13.2343,
     "page": "/sedes/angola.html",
-    "image": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-angola.jpg",
     "blurb": "Núcleo en África, conectando la capoeira con sus raíces ancestrales en el continente."
   },
   {
@@ -128,7 +128,7 @@
     "lat": 30.2672,
     "lng": -97.7431,
     "page": "/sedes/austin.html",
-    "image": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "image": "./assets/images/sede-austin.jpg",
     "blurb": "Sede en Texas. Comunidad creciente de Pura Capoeira en Estados Unidos."
   }
 ]

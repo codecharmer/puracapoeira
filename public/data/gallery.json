@@ -5,7 +5,7 @@
     "description": "Momentos de jogo, música y energía de nuestra comunidad.",
     "category": "Rodas",
     "location": "Cuernavaca",
-    "thumbnail": "https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-roda.jpg",
     "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
   },
   {
@@ -14,7 +14,7 @@
     "description": "Secuencias de movimiento, defensa, esquiva, ritmo y fluidez.",
     "category": "Adultos",
     "location": "Cuernavaca",
-    "thumbnail": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-adultos.jpg",
     "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
   },
   {
@@ -23,7 +23,7 @@
     "description": "Niños y niñas aprenden coordinación, ritmo y respeto en el espacio de la roda.",
     "category": "Kids",
     "location": "Cuernavaca",
-    "thumbnail": "https://images.pexels.com/photos/16552870/pexels-photo-16552870.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-kids.jpg",
     "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
   },
   {
@@ -32,7 +32,7 @@
     "description": "El berimbau dicta el ritmo del jogo. Sin música no hay roda.",
     "category": "Música",
     "location": "General",
-    "thumbnail": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-berimbau.jpg",
     "url": "#"
   },
   {
@@ -41,7 +41,7 @@
     "description": "Momentos de intercambio entre sedes, profesores y alumnos.",
     "category": "Eventos",
     "location": "General",
-    "thumbnail": "https://images.pexels.com/photos/32418072/pexels-photo-32418072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-encuentro.jpg",
     "url": "#"
   },
   {
@@ -50,7 +50,7 @@
     "description": "Ceremonia tradicional donde alumnos reciben su primer apodo y cordel.",
     "category": "Batizados",
     "location": "General",
-    "thumbnail": "https://images.pexels.com/photos/26864611/pexels-photo-26864611.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-batizado.jpg",
     "url": "#"
   },
   {
@@ -59,7 +59,7 @@
     "description": "Fortalecimiento, condición y secuencias de movimiento.",
     "category": "Entrenamiento",
     "location": "Cuernavaca",
-    "thumbnail": "https://images.pexels.com/photos/8038507/pexels-photo-8038507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-entrenamiento.jpg",
     "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
   },
   {
@@ -68,7 +68,7 @@
     "description": "Clase abierta a la comunidad. Bienvenidos visitantes.",
     "category": "Clases",
     "location": "Cuernavaca",
-    "thumbnail": "https://images.pexels.com/photos/16552870/pexels-photo-16552870.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "thumbnail": "./assets/images/galeria-clase.jpg",
     "url": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
   }
 ]
