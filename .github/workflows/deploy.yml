@@ -9,7 +9,10 @@ on:
 
 concurrency:
   group: production-deploy
-  cancel-in-progress: true
+  # Never cancel an in-flight deploy: rsync uploads files one by one, so a
+  # cancelled run leaves the server in a partial state (e.g. new assets but
+  # stale HTML). Queue overlapping runs instead so each deploy completes.
+  cancel-in-progress: false
 
 jobs:
   deploy:
