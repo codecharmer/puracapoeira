@@ -907,6 +907,40 @@
     });
   }
 
+  function initScrollReveal() {
+    const blocks = $$(".reveal-on-scroll");
+    const items = $$(".timeline-item");
+    if (!blocks.length && !items.length) return;
+
+    if (!("IntersectionObserver" in window)) {
+      blocks.forEach(el => el.classList.add("is-visible"));
+      items.forEach(el => el.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const target = entry.target;
+        target.classList.add("is-visible");
+
+        if (target.classList.contains("timeline")) {
+          const delayStep = Number(target.getAttribute("data-reveal-delay")) || 80;
+          $$(".timeline-item", target).forEach((item, index) => {
+            window.setTimeout(() => item.classList.add("is-visible"), index * delayStep);
+          });
+        }
+
+        obs.unobserve(target);
+      });
+    }, {
+      threshold: 0.22,
+      rootMargin: "0px 0px -8% 0px"
+    });
+
+    blocks.forEach(el => observer.observe(el));
+  }
+
   const ORIGINAL_HTML_ATTR = "data-pc-original-html";
   const ORIGINAL_TEXT_ATTR = "data-pc-original-text";
   const ORIGINAL_FIRST_TEXT_ATTR = "data-pc-original-first-text";
@@ -1206,6 +1240,16 @@
           ".page-hero .eyebrow": "Sede · Austin · Texas · USA",
           "#sede-sub": "Carregando informacoes..."
         }
+      },
+      "profesor-mestre-madona.html": {
+        en: {
+          ".info-block:nth-of-type(1)": { html: "<h3>Biography</h3><p>Mestre Madona, Mardonio Sales Linhares, is from <strong>Fortaleza, Ceará, Brazil</strong>. His path in capoeira was built through training, teaching, movement, music, cultural transmission, and respect for the fundamentos of the art. His formation was shaped by the mestres who marked his development, including Mestre Soldado, Mestre Burguês, and Mestre Squisito. Through these references, he developed a capoeira practice rooted in tradition, discipline, musicality, the roda, Afro-Brazilian culture, and the responsibility of passing knowledge to new generations.</p><p>In 2005, Mestre Madona began one of the most important chapters of his life when he took capoeira to Mexico. What started as a new path outside Brazil became a twenty-year trajectory of teaching, organization, cultural resistance, and community building. His work began in León, Guanajuato, where he taught in universities, academies, and local spaces, helping introduce and strengthen capoeira in a Mexican context.</p><p>During his first years in Mexico, he taught at institutions such as Universidad Iberoamericana de León, Instituto Tecnológico de Monterrey Campus León, Escuela de Diseño de la Universidad de Guanajuato, and local academies. In that same period, he launched the first capoeira magazine in Mexico between 2007 and 2008, a project carried out with the support of a dedicated team of students. This magazine became an important cultural and professional achievement, helping document and promote capoeira in the country.</p><p>From 2008 to 2019, Mestre Madona established himself in Toluca, Estado de México, where his work entered a period of expansion and consolidation. He continued teaching in institutions such as Tec Milenio, Tec de Monterrey, and the Universidad Autónoma del Estado de México. During this stage, he opened his own academy, founded his own group, formed numerous Mexican capoeiristas, and coordinated work in different cities across the country.</p><p>In 2010, he received his Mestre formatura in Rio de Janeiro, Brazil, during the major event of Grupo Muzenza, led by Mestre Burguês. This moment confirmed his place within the capoeira lineage that had shaped his development and strengthened his role as a teacher and cultural representative beyond Brazil.</p><p>In 2014, he founded <strong>Centro Esportivo Cultural Pura Capoeira</strong>, marking the beginning of an independent phase of leadership, consolidation, and identity. Through Pura Capoeira, Mestre Madona built a school focused on complete capoeira formation: movement, music, instruments, singing, history, discipline, respect, community, and Afro-Brazilian cultural resistance. Today, his work continues through students, professors, instructors, contramestres, and group leaders who carry forward the training and values developed through his teaching.</p>" },
+          ".info-block:nth-of-type(2)": { html: "<h3>Trajectory</h3><p>Mestre Madona's trajectory in Mexico began in 2005, when he left Brazil to bring capoeira and its philosophy of life into a new cultural territory. In 2006, the first major events began to take shape, including the 1st Copa Mexicana de Capoeira with the presence of Mestre Burguês and the first capoeira circuit in León, Mexico City, and Nezahualcóyotl.</p><p>In 2007, he helped develop the 1st Encuentro Intercultural de Capoeira, with Brazilian professors, a professor from France, and the presence of Mestre Burguês. Between 2007 and 2008, he launched the first capoeira magazine in Mexico, a pioneering editorial project created with the support of his students. In 2008, the expansion continued with the 2nd Capoeira Circuit in León, Mexico City, and Guadalajara, in collaboration with other professors.</p><p>In 2009, the 2nd Copa Mexicana de Capoeira was held with local professors and Mestre Aranha. This period also marked the beginning of an important friendship and parceria with Contramestre Cipó. In 2010, Mestre Madona received his Mestre formatura in Rio de Janeiro during Grupo Muzenza's major event under the leadership of Mestre Burguês. That same year, the second intercultural encounter took place in Toluca.</p><p>In 2011, the 3rd Copa Mexicana de Capoeira was held in Toluca with the presence of Mestre Nelson from Grupo Muzenza. That year, Mestre Madona also traveled through Europe giving courses through Grupo Muzenza and Mestre Burguês, strengthening his international profile. His international work expanded through courses, workshops, and event participation in Portugal, Spain, France, Israel, England, Panama, Colombia, and the United States, in addition to travel throughout Mexico from north to south.</p><p>In 2012, an event in Toluca featured Mestre Girafa from Alagoas, Brazil, whose personal path reinforced values of inclusion, respect, and diversity within the group. In 2013, an internal event in Toluca, organized under Grupo Muzenza standards, gathered students and professors from the region and celebrated the growth of the team under Mestre Madona's coordination.</p><p>In 2014, he founded Centro Esportivo Cultural Pura Capoeira, beginning his independent phase and consolidating his own direction. The foundation of the group included the participation of respected mestres from Brazil and helped define a new institutional identity for his work. In 2015, the Encuentro de Camaradas marked an important stage of friendship and alliances after the group's foundation. That year, Mestre Madona also participated in international events in the United States by invitation of Mestre Chuvisco and had the honor of spending time with Mestre João Grande.</p><p>In 2016, the 5th Copa Mexicana de Capoeira brought together Mestre Ganso, Mestre Pelourinho, Contramestre Cipó, and close friends of the group. In 2017, the group began a fusion with Mestre Auricélio from Brazil and adopted the name <strong>Pura Capoeira em Movimento</strong>, a name that lasted seven years before the group returned to its original name in 2024. In 2018, the Copa Mexicana de Capoeira had already become a traditional event held every two years, with the presence of Mestre Auricélio from Brazil and Mestre Demétrius from the United States.</p><p>In 2019, Mestre Madona moved to the United States, leaving a team in Mexico responsible for coordinating the work while he continued supervising and forming local professors. That same year, the team organized \"Capoeira não pode parar\" in Toluca, with Professora Ligis at the front, marking the first major event after his departure and emphasizing the value of Mexican talent within the group.</p><p>In 2020, during the COVID-19 pandemic, the group sustained its work through virtual training. Despite uncertainty and distance, Pura Capoeira México remained active through creative online classes, with Professora Ligis and Professora Lua standing out in the virtual movement of the group. In 2021, the academy in Toluca had closed, but the group continued training remotely and was able to connect members from different states and countries.</p><p>In 2022, Mestre Madona participated in the first post-pandemic in-person event in Mexico, held in Guanajuato with the presence of Mestre Touro and organized by Professors Pepe Mortales and Rochedo. In 2023, the group marked an important moment with the formaturas of Professora Ligis and Professor Conde as contramestres, showing the continuity of the work and the strength of the team in Toluca.</p><p>By 2024, Cuernavaca, Morelos, had become a stable center for annual encounters under the organization of Professor Malandro, with Mestre Madona participating as supervisor and invited mestre. In 2025, the work projects new books, formaturas, classes, and intense rodas, with Professor Malandro leading local organization and Mestre Madona continuing as supervisor and reference for the group.</p><p>Mestre Madona's trajectory is not simply a record of events. It is the construction of a capoeira network between Brazil, Mexico, the United States, and the wider world. His work has formed capoeiristas, opened spaces for rodas and encounters, created editorial and cultural projects, survived geographic distance and the pandemic, and continued through the students and teachers who carry Pura Capoeira forward.</p>" }
+        },
+        pt: {
+          ".info-block:nth-of-type(1)": { html: "<h3>Biografia</h3><p>Mestre Madona, Mardonio Sales Linhares, é natural de <strong>Fortaleza, Ceará, Brasil</strong>. Sua caminhada na capoeira foi construída por meio do treino, do ensino, do movimento, da música, da transmissão cultural e do respeito aos fundamentos da arte. Sua formação foi marcada por mestres que influenciaram diretamente seu desenvolvimento, entre eles Mestre Soldado, Mestre Burguês e Mestre Squisito. A partir dessas referências, consolidou uma prática de capoeira ligada à tradição, à disciplina, à musicalidade, à roda, à cultura afro-brasileira e à responsabilidade de transmitir conhecimento às novas gerações.</p><p>Em 2005, Mestre Madona iniciou uma das etapas mais importantes de sua vida ao levar a capoeira para o México. O que começou como um novo caminho fora do Brasil tornou-se uma trajetória de vinte anos dedicada ao ensino, à organização, à resistência cultural e à construção de comunidade. Seu trabalho começou em León, Guanajuato, onde ministrou aulas em universidades, academias e espaços locais, contribuindo para introduzir e fortalecer a capoeira no contexto mexicano.</p><p>Durante seus primeiros anos no México, ministrou aulas em instituições como a Universidad Iberoamericana de León, o Instituto Tecnológico de Monterrey Campus León, a Escuela de Diseño de la Universidad de Guanajuato e academias locais. Nesse mesmo período, lançou a primeira revista de capoeira no México, entre 2007 e 2008, um projeto realizado com o apoio de uma equipe comprometida de alunos. Essa revista representou uma conquista cultural e profissional importante, ao documentar e promover a capoeira no país.</p><p>De 2008 a 2019, Mestre Madona se estabeleceu em Toluca, Estado do México, onde seu trabalho entrou em uma fase de expansão e consolidação. Continuou ministrando aulas em instituições como Tec Milenio, Tec de Monterrey e Universidad Autónoma del Estado de México. Durante essa etapa, abriu sua própria academia, fundou seu próprio grupo, formou numerosos capoeiristas mexicanos e coordenou trabalhos em diferentes cidades do país.</p><p>Em 2010, recebeu sua formatura de Mestre no Rio de Janeiro, Brasil, durante o evento maior do Grupo Muzenza, liderado por Mestre Burguês. Esse momento confirmou seu lugar dentro da linhagem de capoeira que havia marcado seu desenvolvimento e fortaleceu seu papel como professor e representante cultural além das fronteiras do Brasil.</p><p>Em 2014, fundou o <strong>Centro Esportivo Cultural Pura Capoeira</strong>, marcando o início de uma fase independente de liderança, consolidação e identidade própria. Por meio da Pura Capoeira, Mestre Madona construiu uma escola voltada à formação integral do capoeirista: movimento, música, instrumentos, canto, história, disciplina, respeito, comunidade e resistência cultural afro-brasileira. Hoje, seu trabalho continua por meio de alunos, professores, instrutores, contramestres e lideranças que sustentam a formação e os valores desenvolvidos por seu ensino.</p>" },
+          ".info-block:nth-of-type(2)": { html: "<h3>Trajetória</h3><p>A trajetória de Mestre Madona no México começou em 2005, quando saiu do Brasil para levar a capoeira e sua filosofia de vida a um novo território cultural. Em 2006, os primeiros grandes eventos começaram a tomar forma, incluindo a 1ª Copa Mexicana de Capoeira com a presença de Mestre Burguês e o primeiro circuito de capoeira em León, Cidade do México e Nezahualcóyotl.</p><p>Em 2007, participou do desenvolvimento do 1º Encontro Intercultural de Capoeira, com professores brasileiros, um professor da França e a presença de Mestre Burguês. Entre 2007 e 2008, lançou a primeira revista de capoeira no México, um projeto editorial pioneiro criado com o apoio de seus alunos. Em 2008, a expansão continuou com o 2º Circuito de Capoeira em León, Cidade do México e Guadalajara, em colaboração com outros professores.</p><p>Em 2009, foi realizada a 2ª Copa Mexicana de Capoeira com professores locais e Mestre Aranha. Esse período também marcou o início de uma amizade e parceria importante com Contramestre Cipó. Em 2010, Mestre Madona recebeu sua formatura de Mestre no Rio de Janeiro durante o evento maior do Grupo Muzenza, sob a liderança de Mestre Burguês. Nesse mesmo ano, aconteceu o segundo encontro intercultural em Toluca.</p><p>Em 2011, foi realizada a 3ª Copa Mexicana de Capoeira em Toluca, com a presença de Mestre Nelson do Grupo Muzenza. No mesmo ano, Mestre Madona realizou uma viagem pela Europa ministrando cursos por meio do Grupo Muzenza e de Mestre Burguês, fortalecendo seu perfil internacional. Seu trabalho internacional se ampliou por meio de cursos, oficinas e participação em eventos em Portugal, Espanha, França, Israel, Inglaterra, Panamá, Colômbia e Estados Unidos, além de percorrer o México de norte a sul.</p><p>Em 2012, um evento em Toluca contou com a presença de Mestre Girafa, de Alagoas, Brasil, cuja trajetória pessoal reforçou valores de inclusão, respeito e diversidade dentro do grupo. Em 2013, foi realizado um evento interno em Toluca, organizado segundo as normas do Grupo Muzenza, reunindo alunos e professores da região e celebrando o crescimento da equipe sob a coordenação de Mestre Madona.</p><p>Em 2014, fundou o Centro Esportivo Cultural Pura Capoeira, iniciando sua fase independente e consolidando uma direção própria. A fundação do grupo contou com a participação de mestres reconhecidos do Brasil e ajudou a definir uma nova identidade institucional para seu trabalho. Em 2015, o Encontro de Camaradas marcou uma etapa importante de amizades e alianças depois da fundação do grupo. Nesse mesmo ano, Mestre Madona participou de eventos internacionais nos Estados Unidos a convite de Mestre Chuvisco e teve a honra de conviver com Mestre João Grande.</p><p>Em 2016, a 5ª Copa Mexicana de Capoeira reuniu Mestre Ganso, Mestre Pelourinho, Contramestre Cipó e amigos próximos do grupo. Em 2017, o grupo iniciou uma fusão com Mestre Auricélio, do Brasil, e adotou o nome <strong>Pura Capoeira em Movimento</strong>, nome que permaneceu por sete anos antes do retorno ao nome original em 2024. Em 2018, a Copa Mexicana de Capoeira já estava consolidada como um evento tradicional realizado a cada dois anos, contando com a presença de Mestre Auricélio do Brasil e Mestre Demétrius dos Estados Unidos.</p><p>Em 2019, Mestre Madona mudou-se para os Estados Unidos, deixando uma equipe no México responsável por coordenar o trabalho enquanto ele continuava supervisionando e formando professores locais. Nesse mesmo ano, a equipe organizou \"Capoeira não pode parar\" em Toluca, com Professora Ligis à frente, marcando o primeiro grande evento após sua partida e destacando o valor do talento mexicano dentro do grupo.</p><p>Em 2020, durante a pandemia de COVID-19, o grupo sustentou seu trabalho por meio de treinos virtuais. Apesar da incerteza e da distância, Pura Capoeira México permaneceu ativa por meio de aulas online criativas, com Professora Ligis e Professora Lua se destacando no movimento virtual do grupo. Em 2021, a academia de Toluca já havia fechado suas portas, mas o grupo continuou treinando de forma remota e conseguiu conectar integrantes de diferentes estados e países.</p><p>Em 2022, Mestre Madona participou do primeiro evento presencial no México após a pandemia, realizado em Guanajuato com a presença de Mestre Touro e sob a organização dos Professores Pepe Mortales e Rochedo. Em 2023, o grupo viveu um momento importante com as formaturas de Professora Ligis e Professor Conde como contramestres, mostrando a continuidade do trabalho e a força da equipe em Toluca.</p><p>Em 2024, Cuernavaca, Morelos, consolidou-se como um polo estável para os encontros anuais sob a organização do Professor Malandro, com Mestre Madona participando como supervisor e convidado. Em 2025, o trabalho projeta novos livros, formaturas, aulas e rodas intensas, com Professor Malandro à frente da organização local e Mestre Madona continuando como supervisor e referência do grupo.</p><p>A trajetória de Mestre Madona não é apenas uma sequência de eventos. É a construção de uma rede de capoeira entre Brasil, México, Estados Unidos e o mundo. Seu trabalho formou capoeiristas, abriu espaços para rodas e encontros, criou projetos editoriais e culturais, resistiu à distância geográfica e à pandemia, e continua por meio dos alunos e professores que mantêm vivo o caminho da Pura Capoeira.</p>" }
+        }
       }
     };
 
@@ -1390,25 +1434,77 @@
       },
       "profesor-mestre-madona.html": {
         en: {
-          ".page-hero .eyebrow": "Founding Mestre · Austin, TX",
-          ".page-hero p": "Founder of Pura Capoeira Austin, TX. A leader and reference in building community through capoeira.",
-          ".info-block:nth-of-type(1) h3": "Biography",
-          ".info-block:nth-of-type(1) p:nth-of-type(1)": "Mestre Madona is the founder of Pura Capoeira Austin, TX and has dedicated his path to developing students through discipline, respect, and cultural identity.",
-          ".info-block:nth-of-type(1) p:nth-of-type(2)": "His work connects capoeira tradition with a proposal for personal and community growth.",
-          ".info-block:nth-of-type(2) h3": "Trajectory",
-          ".info-block:nth-of-type(2) p:nth-of-type(1)": "His trajectory is marked by training generations of capoeiristas, promoting open rodas, and consolidating training spaces.",
-          ".info-block:nth-of-type(2) p:nth-of-type(2)": "From Austin, he promotes consistent practice, musicality, and international exchange within the Pura Capoeira community.",
+          ".page-hero .eyebrow": "Founding Mestre of Pura Capoeira",
+          ".page-hero p": "Founder of Pura Capoeira. A leader and reference in building community through capoeira.",
+          ".prof-profile__caption p": "Founder of Pura Capoeira",
+          "#madona-timeline-title": "Timeline",
+          ".timeline-item:nth-of-type(1) h4": "Beginning of the Mexican Stage",
+          ".timeline-item:nth-of-type(1) p": "Mestre Madona begins his mission to bring capoeira to Mexico and spread its life philosophy in a new territory.",
+          ".timeline-item:nth-of-type(2) h4": "1st Mexican Cup and First Circuit",
+          ".timeline-item:nth-of-type(2) p": "The 1st Mexican Capoeira Cup takes place with the presence of Mestre Burguês, along with the first circuit in León, Mexico City, and Nezahualcóyotl.",
+          ".timeline-item:nth-of-type(3) h4": "1st Intercultural Encounter",
+          ".timeline-item:nth-of-type(3) p": "The 1st Intercultural Capoeira Encounter takes place with Brazilian professors, a French professor, and the presence of Mestre Burguês.",
+          ".timeline-item:nth-of-type(4) h4": "First Capoeira Magazine in Mexico",
+          ".timeline-item:nth-of-type(4) p": "He drives the launch of the first capoeira magazine in Mexico with student support, marking a stage of cultural dissemination, collective organization, and professional achievement.",
+          ".timeline-item:nth-of-type(5) h4": "2nd Capoeira Circuit",
+          ".timeline-item:nth-of-type(5) p": "Expansion continues with the 2nd Capoeira Circuit in León, Mexico City, and Guadalajara, in collaboration with other professors.",
+          ".timeline-item:nth-of-type(6) h4": "2nd Mexican Cup and Key Alliance",
+          ".timeline-item:nth-of-type(6) p": "The 2nd Mexican Capoeira Cup is celebrated with local professors and Mestre Aranha; during this period a friendship and parceria with Contramestre Cipó is born.",
+          ".timeline-item:nth-of-type(7) h4": "Formatura as Mestre",
+          ".timeline-item:nth-of-type(7) p": "He receives his formatura as Mestre in Rio de Janeiro during the grand event of Grupo Muzenza led by Mestre Burguês; that same year the 2nd Intercultural Encounter is held in Toluca.",
+          ".timeline-item:nth-of-type(8) h4": "3rd Cup and European Tour",
+          ".timeline-item:nth-of-type(8) p": "The 3rd Mexican Cup is held in Toluca with the presence of Mestre Nelson; that same year Mestre Madona goes on a European tour teaching courses with Grupo Muzenza as reference.",
+          ".timeline-item:nth-of-type(9) h4": "Team Consolidation in Toluca",
+          ".timeline-item:nth-of-type(9) p": "He organizes an event with Mestre Girafa (2012) and later an internal event under the norms of Grupo Muzenza (2013), celebrating the growth and consolidation of the team.",
+          ".timeline-item:nth-of-type(10) h4": "Founding of Pura Capoeira",
+          ".timeline-item:nth-of-type(10) p": "He founds Centro Esportivo Cultural Pura Capoeira and begins an independent stage of consolidation, own direction, and defined institutional identity.",
+          ".timeline-item:nth-of-type(11) h4": "International Expansion and 5th Cup",
+          ".timeline-item:nth-of-type(11) p": "He participates in events in the United States by invitation of Mestre Chuvisco and spends time with Mestre João Grande (2015); in 2016 the 5th Mexican Cup is celebrated with Mestre Ganso, Mestre Pelourinho, and Contramestre Cipó.",
+          ".timeline-item:nth-of-type(12) h4": "Fusion and em Movimento Stage",
+          ".timeline-item:nth-of-type(12) p": "The group begins a fusion with Mestre Auricélio and adopts the name Pura Capoeira em Movimento; the Mexican Cup is consolidated as a traditional event every two years.",
+          ".timeline-item:nth-of-type(13) h4": "Move to the United States",
+          ".timeline-item:nth-of-type(13) p": "Mestre Madona moves to the United States and leaves a responsible team to coordinate the work in Mexico; in Toluca the Capoeira não pode parar event is held with Professora Ligis at the helm.",
+          ".timeline-item:nth-of-type(14) h4": "Pandemic and In-Person Reactivation",
+          ".timeline-item:nth-of-type(14) p": "The group sustains virtual training and events during the pandemic; in 2022 the first major in-person event returns to Mexico, held in Guanajuato with the presence of Mestre Touro.",
+          ".timeline-item:nth-of-type(15) h4": "New Formaturas and Projection",
+          ".timeline-item:nth-of-type(15) p": "New formaturas to contramestres are highlighted, the consolidation of Cuernavaca as an annual hub, and a 2025 projection with new book launches, formatura, classes, and intense rodas.",
           ...profileSocial.en
         },
         pt: {
-          ".page-hero .eyebrow": "Mestre Fundador · Austin, TX",
-          ".page-hero p": "Fundador da Pura Capoeira Austin, TX. Lider e referencia na construcao de comunidade por meio da capoeira.",
-          ".info-block:nth-of-type(1) h3": "Biografia",
-          ".info-block:nth-of-type(1) p:nth-of-type(1)": "Mestre Madona e fundador da Pura Capoeira Austin, TX e dedicou seu caminho a formar alunos com base em disciplina, respeito e identidade cultural.",
-          ".info-block:nth-of-type(1) p:nth-of-type(2)": "Seu trabalho conecta a tradicao da capoeira com uma proposta de crescimento pessoal e comunitario.",
-          ".info-block:nth-of-type(2) h3": "Trajetoria",
-          ".info-block:nth-of-type(2) p:nth-of-type(1)": "Sua trajetoria e marcada pela formacao de geracoes de capoeiristas, pelo incentivo a rodas abertas e pela consolidacao de espacos de treino.",
-          ".info-block:nth-of-type(2) p:nth-of-type(2)": "De Austin, promove pratica constante, musicalidade e intercambio internacional dentro da comunidade Pura Capoeira.",
+          ".page-hero .eyebrow": "Mestre Fundador da Pura Capoeira",
+          ".page-hero p": "Fundador da Pura Capoeira. Líder e referência na construção de comunidade por meio da capoeira.",
+          ".prof-profile__caption p": "Fundador da Pura Capoeira",
+          "#madona-timeline-title": "Linha do tempo",
+          ".timeline-item:nth-of-type(1) h4": "Início da etapa mexicana",
+          ".timeline-item:nth-of-type(1) p": "Mestre Madona inicia a missão de levar a capoeira ao México e difundir sua filosofia de vida em um novo território.",
+          ".timeline-item:nth-of-type(2) h4": "1ª Copa Mexicana e primeiro circuito",
+          ".timeline-item:nth-of-type(2) p": "Realiza-se a 1ª Copa Mexicana de Capoeira com a presença de Mestre Burguês, junto com o primeiro circuito em León, Cidade do México e Nezahualcóyotl.",
+          ".timeline-item:nth-of-type(3) h4": "1º Encontro Intercultural",
+          ".timeline-item:nth-of-type(3) p": "Realiza-se o 1º Encontro Intercultural de Capoeira com professores brasileiros, um professor da França e a presença de Mestre Burguês.",
+          ".timeline-item:nth-of-type(4) h4": "Primeira revista de capoeira no México",
+          ".timeline-item:nth-of-type(4) p": "Impulsiona o lançamento da primeira revista de capoeira no México com apoio de alunos, marcando uma etapa de difusão cultural, organização coletiva e realização profissional.",
+          ".timeline-item:nth-of-type(5) h4": "2º Circuito de Capoeira",
+          ".timeline-item:nth-of-type(5) p": "Continua a expansão com o 2º Circuito de Capoeira em León, Cidade do México e Guadalajara, em colaboração com outros professores.",
+          ".timeline-item:nth-of-type(6) h4": "2ª Copa Mexicana e aliança chave",
+          ".timeline-item:nth-of-type(6) p": "Celebra-se a 2ª Copa Mexicana de Capoeira com professores locais e Mestre Aranha; nesse período nasce a amizade e parceria com Contramestre Cipó.",
+          ".timeline-item:nth-of-type(7) h4": "Formatura como Mestre",
+          ".timeline-item:nth-of-type(7) p": "Recebe sua formatura de Mestre no Rio de Janeiro durante o evento maior do Grupo Muzenza liderado por Mestre Burguês; nesse mesmo ano realiza-se o 2º Encontro Intercultural em Toluca.",
+          ".timeline-item:nth-of-type(8) h4": "3ª Copa e turnê pela Europa",
+          ".timeline-item:nth-of-type(8) p": "Realiza-se a 3ª Copa Mexicana em Toluca com a presença de Mestre Nelson; nesse mesmo ano Mestre Madona faz uma turnê pela Europa ministrando cursos com referência do Grupo Muzenza.",
+          ".timeline-item:nth-of-type(9) h4": "Consolidação da equipe em Toluca",
+          ".timeline-item:nth-of-type(9) p": "Organiza um evento com Mestre Girafa (2012) e depois um evento interno segundo as normas do Grupo Muzenza (2013), celebrando o crescimento e a consolidação da equipe.",
+          ".timeline-item:nth-of-type(10) h4": "Fundação da Pura Capoeira",
+          ".timeline-item:nth-of-type(10) p": "Funda o Centro Esportivo Cultural Pura Capoeira e inicia uma etapa independente de consolidação, direção própria e identidade institucional definida.",
+          ".timeline-item:nth-of-type(11) h4": "Expansão internacional e 5ª Copa",
+          ".timeline-item:nth-of-type(11) p": "Participa de eventos nos Estados Unidos a convite de Mestre Chuvisco e convive com Mestre João Grande (2015); em 2016 celebra-se a 5ª Copa Mexicana com Mestre Ganso, Mestre Pelourinho e Contramestre Cipó.",
+          ".timeline-item:nth-of-type(12) h4": "Fusão e etapa em Movimento",
+          ".timeline-item:nth-of-type(12) p": "O grupo inicia uma fusão com Mestre Auricélio e adota o nome Pura Capoeira em Movimento; a Copa Mexicana se consolida como evento tradicional a cada dois anos.",
+          ".timeline-item:nth-of-type(13) h4": "Mudança para os Estados Unidos",
+          ".timeline-item:nth-of-type(13) p": "Mestre Madona muda-se para os Estados Unidos e deixa uma equipe responsável por coordenar o trabalho no México; em Toluca realiza-se o evento Capoeira não pode parar com Professora Ligis à frente.",
+          ".timeline-item:nth-of-type(14) h4": "Pandemia e reativação presencial",
+          ".timeline-item:nth-of-type(14) p": "O grupo sustenta treinos e eventos virtuais durante a pandemia; em 2022 retorna o primeiro grande evento presencial no México, realizado em Guanajuato com a presença de Mestre Touro.",
+          ".timeline-item:nth-of-type(15) h4": "Novas formaturas e projeção",
+          ".timeline-item:nth-of-type(15) p": "Destacam-se formaturas a contramestres, a consolidação de Cuernavaca como polo anual e uma projeção 2025 com novos lançamentos de livros, formatura, aulas e rodas intensas.",
           ...profileSocial.pt
         }
       },
@@ -1709,6 +1805,7 @@
     initContactForm();
     initSedeDetail();
     translateStaticPage();
+    initScrollReveal();
   }
 
   if (document.readyState === "loading") {
