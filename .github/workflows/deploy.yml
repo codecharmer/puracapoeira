@@ -18,6 +18,9 @@ jobs:
   deploy:
     name: Deploy static HTML
     runs-on: ubuntu-latest
+    # Fail fast if a step hangs (e.g. a stalled rsync over a dead SSH
+    # connection) so a stuck run can't block queued deploys for hours.
+    timeout-minutes: 10
 
     permissions:
       contents: read
@@ -46,10 +49,10 @@ jobs:
 
       - name: Deploy public folder
         run: |
-          rsync -az --delete \
+          rsync -az --delete --partial --timeout=60 \
             --exclude='.well-known/' \
             --exclude='.htaccess' \
-            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -p ${{ secrets.SSH_PORT }}" \
             public/ \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/"
 
