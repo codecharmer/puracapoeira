@@ -176,9 +176,27 @@ p.lead {
   margin-left: 1rem;
 }
 
+.lang-switch--mobile {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-left: 0;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.lang-switch--mobile .lang-btn {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.72rem;
+  min-width: 52px;
+}
+
 @media (min-width: 900px) {
   .lang-switch {
     display: inline-flex;
+  }
+  .lang-switch--mobile {
+    display: none;
   }
 }
 
@@ -393,13 +411,39 @@ p.lead {
     width: 52px;
     height: 52px;
   }
+  .hero {
+    min-height: auto;
+  }
+  .hero__content {
+    padding: 4.5rem 0 4rem;
+  }
+  .hero__meta {
+    gap: 0.5rem 1rem;
+    margin-bottom: 1.1rem;
+  }
   .hero__title {
     gap: 0.7rem;
     margin-bottom: 1rem;
   }
   .hero__title-logo {
-    height: 5.6rem;
+    height: 4.6rem;
     width: auto;
+  }
+  .hero .sub {
+    font-size: 1.15rem;
+    margin-bottom: 1.1rem;
+  }
+  .hero p.lead {
+    font-size: 0.98rem;
+    margin-bottom: 1.75rem;
+  }
+  .hero__buttons {
+    gap: 0.6rem;
+  }
+  .hero__buttons .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
   }
 }
 

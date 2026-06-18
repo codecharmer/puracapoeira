@@ -465,6 +465,7 @@
         </div>
         <nav id="mobile-nav" class="mobile-nav" aria-label="${mobileNavAria}" data-testid="mobile-nav">
           ${linksMobile}
+          <div class="lang-switch lang-switch--mobile" aria-label="${langAria}" role="group">${langButtons}</div>
         </nav>
       </header>
     `;
