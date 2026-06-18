@@ -362,7 +362,8 @@ p.lead {
 .hero__content {
   position: relative;
   z-index: 1;
-  padding: 7rem 0 6rem;
+  padding-top: 7rem;
+  padding-bottom: 6rem;
 }
 .hero__meta {
   display: flex;
@@ -415,7 +416,8 @@ p.lead {
     min-height: auto;
   }
   .hero__content {
-    padding: 4.5rem 0 4rem;
+    padding-top: 4.5rem;
+    padding-bottom: 4rem;
   }
   .hero__meta {
     gap: 0.5rem 1rem;
