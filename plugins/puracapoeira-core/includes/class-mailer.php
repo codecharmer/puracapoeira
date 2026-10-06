@@ -26,6 +26,18 @@ final class Mailer {
 	}
 
 	/**
+	 * Recipients of event registration notices: `event_to_emails` when set, else the contact recipients.
+	 *
+	 * @return string[]
+	 */
+	public static function event_recipients(): array {
+		$raw  = (string) Settings::get( 'event_to_emails', '' );
+		$list = array_values( array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', $raw ) ) ), 'is_email' ) );
+
+		return $list ? $list : self::recipients();
+	}
+
+	/**
 	 * Send a validated contact message (see Contact_Message::from_array()) to the recipients.
 	 *
 	 * @param array<string, string> $data nombre, ciudad, telefono, email, mensaje.
@@ -63,7 +75,7 @@ final class Mailer {
 			return false;
 		}
 
-		$recipients = self::recipients();
+		$recipients = self::event_recipients();
 		if ( ! $recipients ) {
 			self::$last_error = 'No hay destinatarios configurados.';
 			return false;

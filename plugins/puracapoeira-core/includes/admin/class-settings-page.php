@@ -56,6 +56,7 @@ final class Settings_Page {
 					'contact_to_emails'  => array( 'text', __( 'Destinatarios', 'pura' ), __( 'Correos separados por comas. Reciben los mensajes del formulario.', 'pura' ) ),
 					'contact_from_email' => array( 'email', __( 'Remitente', 'pura' ), __( 'Déjalo vacío para usar el remitente configurado en FluentSMTP.', 'pura' ) ),
 					'contact_from_name'  => array( 'text', __( 'Nombre del remitente', 'pura' ) ),
+					'event_to_emails'    => array( 'text', __( 'Destinatarios de registros a eventos', 'pura' ), __( 'Correos separados por comas. Vacío: los mismos destinatarios del formulario de contacto.', 'pura' ) ),
 					'cc_registrant'      => array( 'checkbox', __( 'Copia a quien se registra a un evento', 'pura' ), __( 'Los registros a eventos se notifican a los destinatarios; con esto la persona registrada recibe una copia.', 'pura' ) ),
 					'_test_mail'         => array( 'test_mail', __( 'Correo de prueba', 'pura' ) ),
 				),
@@ -187,7 +188,7 @@ final class Settings_Page {
 				$out[ $key ] = max( 0, (int) $raw );
 			} elseif ( str_ends_with( $key, '_url' ) ) {
 				$out[ $key ] = esc_url_raw( (string) $raw );
-			} elseif ( 'contact_to_emails' === $key ) {
+			} elseif ( in_array( $key, array( 'contact_to_emails', 'event_to_emails' ), true ) ) {
 				$emails      = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', (string) $raw ) ) ) );
 				$out[ $key ] = implode( ', ', array_filter( $emails, 'is_email' ) );
 			} elseif ( 'contact_from_email' === $key ) {

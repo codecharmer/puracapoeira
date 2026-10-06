@@ -29,6 +29,7 @@ final class Settings {
 			'contact_from_email' => '',
 			'contact_from_name'  => 'Pura Capoeira',
 			'cc_registrant'      => true,
+			'event_to_emails'    => '',
 
 			// Redes y contacto.
 			'whatsapp_number'    => '18056385603',
