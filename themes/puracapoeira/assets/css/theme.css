@@ -1599,10 +1599,12 @@ p.eyebrow--muted { color: var(--muted); }
 .site-header .brand {
   display: inline-flex;
   align-items: center;
+  flex: 0 1 auto;
+  min-width: 140px; /* the static logo shrinks under nav pressure but never collapses */
   margin: 0;
   line-height: 0;
 }
-.site-header .brand .custom-logo-link { display: inline-flex; align-items: center; }
+.site-header .brand .custom-logo-link { display: inline-flex; align-items: center; width: 100%; }
 .site-header .brand .custom-logo {
   width: 282px;
   height: 173px;
@@ -1758,8 +1760,11 @@ html:lang(pt) .lang-btn[data-lang="pt"] {
   font-size: 0.72rem;
   min-width: 52px;
 }
-/* Close button ↔ the expanded .menu-toggle */
-.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container-close {
+/* Close button ↔ the expanded .menu-toggle (only while the overlay is open) */
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container:not(.is-menu-open) .wp-block-navigation__responsive-container-close {
+  display: none;
+}
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-close {
   top: 0;
   right: 0;
   width: 44px;

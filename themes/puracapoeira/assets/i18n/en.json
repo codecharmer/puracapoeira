@@ -250,7 +250,7 @@
 			"intro-p1": "Each location has its own local context, but shares one foundation: train with discipline, play with intelligence, sing with fundamentals, and strengthen community.",
 			"intro-p2": "Capoeira is fight, art, music, history, strategy, and personal development. It is not fitness, not dance, not just sport. It is living culture.",
 			"intro-title": {
-				"html": "One<br>community,<br><mark style=\"color:var(--green-deep)\" class=\"has-inline-color\">many roots.</mark>"
+				"html": "One<br>community,<br><mark style=\"color:var(--green-deep)\" class=\"has-inline-color\"><em>many roots.</em></mark>"
 			},
 			"sedes-eyebrow": "Active hubs",
 			"sedes-lead": "Professors, hubs, and community in six cities around the world. Find the location closest to you.",

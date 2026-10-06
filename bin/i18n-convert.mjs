@@ -475,7 +475,7 @@ function normalizeHtml( html ) {
 		.replace( /<br\s*\/>/g, '<br>' )
 		.replace(
 			/<em style="color:var\(--green-deep\);">([\s\S]*?)<\/em>/g,
-			'<mark style="color:var(--green-deep)" class="has-inline-color">$1</mark>'
+			'<mark style="color:var(--green-deep)" class="has-inline-color"><em>$1</em></mark>'
 		);
 }
 

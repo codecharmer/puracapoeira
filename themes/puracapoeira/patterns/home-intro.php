@@ -23,7 +23,7 @@
 				<!-- /wp:paragraph -->
 
 				<!-- wp:heading {"level":2,"className":"display i18n-intro-title","style":{"spacing":{"margin":{"top":"1rem"}}}} -->
-				<h2 class="wp-block-heading display i18n-intro-title" style="margin-top:1rem">Una<br>comunidad,<br><mark style="color:var(--green-deep)" class="has-inline-color">muchas raíces.</mark></h2>
+				<h2 class="wp-block-heading display i18n-intro-title" style="margin-top:1rem">Una<br>comunidad,<br><mark style="color:var(--green-deep)" class="has-inline-color"><em>muchas raíces.</em></mark></h2>
 				<!-- /wp:heading -->
 			</div>
 			<!-- /wp:group -->
