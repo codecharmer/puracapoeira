@@ -25,7 +25,7 @@
 		<!-- /wp:heading -->
 
 		<!-- wp:paragraph -->
-		<p>Vamos jogar capoeira. Tres días de rodas, entrenamientos y música por las calles y ladeiras de Guanajuato, con Pura Capoeira y el Centro Esportivo Cultural Mestre Madona.</p>
+		<p>Vamos jogar capoeira. Tres días de rodas, entrenamientos y música por las calles y ladeiras de Guanajuato, con el Centro Esportivo Cultural Pura Capoeira.</p>
 		<!-- /wp:paragraph -->
 	</div>
 	<!-- /wp:group -->
