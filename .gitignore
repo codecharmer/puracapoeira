@@ -38,3 +38,6 @@ _photo-index.jpg
 public/assets/images/IMG_*
 public/assets/images/PHOTO-*
 public/assets/images/capoeira_2_*
+
+# The theme vendors Leaflet (not a Composer vendor dir).
+!themes/puracapoeira/assets/vendor/
