@@ -56,6 +56,7 @@ final class Settings_Page {
 					'contact_to_emails'  => array( 'text', __( 'Destinatarios', 'pura' ), __( 'Correos separados por comas. Reciben los mensajes del formulario.', 'pura' ) ),
 					'contact_from_email' => array( 'email', __( 'Remitente', 'pura' ), __( 'Déjalo vacío para usar el remitente configurado en FluentSMTP.', 'pura' ) ),
 					'contact_from_name'  => array( 'text', __( 'Nombre del remitente', 'pura' ) ),
+					'cc_registrant'      => array( 'checkbox', __( 'Copia a quien se registra a un evento', 'pura' ), __( 'Los registros a eventos se notifican a los destinatarios; con esto la persona registrada recibe una copia.', 'pura' ) ),
 					'_test_mail'         => array( 'test_mail', __( 'Correo de prueba', 'pura' ) ),
 				),
 			),
@@ -133,6 +134,10 @@ final class Settings_Page {
 				echo '</div>';
 				break;
 
+			case 'checkbox':
+				echo '<label><input type="checkbox" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" value="1" ' . checked( (bool) Settings::get( $key, false ), true, false ) . disabled( $locked, true, false ) . ' /> ' . esc_html__( 'Activado', 'pura' ) . '</label>';
+				break;
+
 			case 'textarea':
 				echo '<textarea id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" rows="3" class="large-text"' . disabled( $locked, true, false ) . '>' . esc_textarea( (string) Settings::get( $key, '' ) ) . '</textarea>';
 				break;
@@ -164,6 +169,11 @@ final class Settings_Page {
 		$out      = array();
 
 		foreach ( $defaults as $key => $default ) {
+			// An unchecked checkbox is not submitted at all.
+			if ( is_bool( $default ) ) {
+				$out[ $key ] = 'constant' === Settings::source( $key ) ? $current[ $key ] : ! empty( $input[ $key ] );
+				continue;
+			}
 			// Locked (constant) fields are disabled in the form and never submitted: keep the stored value.
 			if ( ! array_key_exists( $key, $input ) ) {
 				$out[ $key ] = $current[ $key ];

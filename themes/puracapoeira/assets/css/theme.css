@@ -1965,3 +1965,112 @@ mark.has-inline-color { background: transparent; }
 }
 .leaflet-popup-content { font-family: var(--font-body); font-size: 0.9rem; line-height: 1.5; }
 .leaflet-popup-content a { color: var(--blue); font-weight: 600; }
+
+/* ================================================================
+   EVENT REGISTRATION (ported from the Cuernavaca theme, light palette)
+   ================================================================ */
+.inscription-layout { max-width: 880px; margin: 0 auto; }
+.inscription-form { display: flex; flex-direction: column; gap: 2rem; }
+.inscription-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  margin: 0;
+  background: var(--surface);
+}
+.inscription-block legend {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1.05rem;
+  padding: 0 0.5rem;
+  color: var(--blue);
+}
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field[hidden] { display: none; }
+.field--full { grid-column: 1 / -1; }
+.field span,
+.field-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+}
+.field-label { margin: 0 0 0.75rem; }
+.field input,
+.field select,
+.field textarea {
+  padding: 0.85rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body, inherit);
+  font-size: 1rem;
+}
+.field textarea { resize: vertical; min-height: 6rem; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.12); }
+.promo-note,
+.store-footnote { margin: 1rem 0 0; font-size: 0.85rem; color: var(--muted); }
+.day-options { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.day-option { position: relative; cursor: pointer; }
+.day-option input {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer;
+}
+.day-option span {
+  display: inline-flex;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+}
+.day-option:hover span { border-color: var(--muted); color: var(--text); }
+.day-option input:checked + span { border-color: var(--gold); background: var(--gold); color: var(--text); }
+.day-option input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+.event-form__extras { margin-top: 1.5rem; }
+.event-form__parent[hidden] { display: none; }
+.event-form__parent .field-label { margin-bottom: 0; color: var(--blue); }
+.event-intro { align-items: start; }
+figure.wp-block-image.event-poster { margin: 0; }
+.event-poster img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.event-facts { display: flex; flex-direction: column; gap: 1.5rem; }
+.event-fact { border-left: 3px solid var(--gold); padding-left: 1.25rem; }
+.event-fact__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--blue);
+}
+.event-fact__value { margin: 0; font-weight: 600; }
+.inscription-result {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.98rem;
+}
+.inscription-result.is-success { border-color: var(--green); background: rgba(0, 158, 96, 0.12); color: var(--text); }
+.inscription-result.is-error { border-color: var(--red); background: rgba(224, 70, 60, 0.12); color: var(--text); }
+.inscription-submit { align-self: flex-start; }
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .inscription-submit { align-self: stretch; justify-content: center; }
+}

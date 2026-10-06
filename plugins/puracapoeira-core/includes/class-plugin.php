@@ -37,6 +37,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();
 			( new Admin\Settings_Page() )->register();
+			( new Admin\Csv_Export() )->register();
 		}
 
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
@@ -54,12 +55,14 @@ final class Plugin {
 		( new Data\Profesor_Post_Type() )->register();
 		( new Data\Evento_Post_Type() )->register();
 		( new Data\Galeria_Post_Type() )->register();
+		( new Data\Event_Registration_Post_Type() )->register();
 		( new Data\Block_Bindings() )->register();
 		( new Data\I18n_Meta() )->register();
 	}
 
 	public function register_rest_routes(): void {
 		( new Rest\Contact_Controller() )->register_routes();
+		( new Rest\Events_Controller() )->register_routes();
 
 		add_filter( 'rest_request_after_callbacks', array( Rest\Base_Controller::class, 'shape_wp_error' ), 10, 3 );
 	}

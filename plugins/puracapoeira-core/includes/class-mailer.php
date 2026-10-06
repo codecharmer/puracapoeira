@@ -55,6 +55,86 @@ final class Mailer {
 	}
 
 	/**
+	 * Notify the recipients about an event registration, with a copy to the person who registered.
+	 */
+	public static function notify_event_registration( int $post_id ): bool {
+		$data = Data\Event_Registration_Repository::to_array( $post_id );
+		if ( ! $data ) {
+			return false;
+		}
+
+		$recipients = self::recipients();
+		if ( ! $recipients ) {
+			self::$last_error = 'No hay destinatarios configurados.';
+			return false;
+		}
+
+		$event   = '' !== $data['event_name'] ? $data['event_name'] : $data['event'];
+		$name    = '' !== $data['name'] ? $data['name'] : $data['email'];
+		$subject = sprintf( 'Registro al evento %s — %s', $event, $name );
+		$body    = self::build_event_body( $data, home_url( '/' ), wp_date( 'Y-m-d H:i:s' ) );
+		$headers = self::headers();
+
+		$email = sanitize_email( (string) $data['email'] );
+		if ( is_email( $email ) ) {
+			$headers[] = 'Reply-To: ' . str_replace( array( "\r", "\n" ), '', (string) $name ) . ' <' . $email . '>';
+			if ( Settings::get( 'cc_registrant', true ) && ! in_array( strtolower( $email ), array_map( 'strtolower', $recipients ), true ) ) {
+				$headers[] = 'Cc: ' . $email;
+			}
+		}
+
+		return self::send( $recipients, $subject, $body, $headers );
+	}
+
+	/**
+	 * Plain-text body of the event registration mail. Pure: no WordPress calls.
+	 *
+	 * @param array<string, mixed> $data     Registration (see Event_Registration_Repository::to_array()).
+	 * @param string               $site_url Site URL for the first line.
+	 * @param string               $when     Fallback timestamp.
+	 */
+	public static function build_event_body( array $data, string $site_url, string $when ): string {
+		$event = '' !== (string) ( $data['event_name'] ?? '' ) ? (string) $data['event_name'] : (string) ( $data['event'] ?? '' );
+		$lines = array( 'Nuevo registro al evento ' . $event . ' recibido en ' . $site_url, '' );
+
+		$rows = array(
+			'Evento'                 => $event,
+			'Nombre'                 => (string) ( $data['name'] ?? '' ),
+			'Correo'                 => (string) ( $data['email'] ?? '' ),
+			'Teléfono / WhatsApp'    => (string) ( $data['phone'] ?? '' ),
+			'Fecha de nacimiento'    => (string) ( $data['dob'] ?? '' ),
+			'Padre/madre/tutor'      => (string) ( $data['parent_name'] ?? '' ),
+			'Teléfono del tutor'     => (string) ( $data['parent_phone'] ?? '' ),
+			'Ciudad'                 => (string) ( $data['city'] ?? '' ),
+			'Grupo / academia'       => (string) ( $data['academy'] ?? '' ),
+			'Mestre / Professor'     => (string) ( $data['teacher'] ?? '' ),
+			'Graduación'             => (string) ( $data['graduation'] ?? '' ),
+			'Empezó capoeira en'     => (string) ( $data['started_year'] ?? '' ),
+			'Años de entrenamiento'  => (string) ( $data['years_training'] ?? '' ),
+			'Días'                   => (string) ( $data['days'] ?? '' ),
+			'Talla de playera'       => (string) ( $data['shirt_size'] ?? '' ),
+			'Contacto de emergencia' => (string) ( $data['emergency_name'] ?? '' ),
+			'Teléfono de emergencia' => (string) ( $data['emergency_phone'] ?? '' ),
+			'Comentarios'            => (string) ( $data['notes'] ?? '' ),
+			'Fecha de registro'      => (string) ( $data['created_at'] ?? $when ),
+		);
+
+		foreach ( $rows as $label => $value ) {
+			if ( '' === trim( $value ) ) {
+				continue;
+			}
+			$lines[] = $label . ': ' . $value;
+		}
+
+		if ( ! empty( $data['admin_url'] ) ) {
+			$lines[] = '';
+			$lines[] = 'Ver en el panel: ' . $data['admin_url'];
+		}
+
+		return implode( "\n", $lines ) . "\n";
+	}
+
+	/**
 	 * Plain-text body. Pure: no WordPress calls, so it is unit-tested.
 	 *
 	 * @param array<string, string> $data     Contact fields.

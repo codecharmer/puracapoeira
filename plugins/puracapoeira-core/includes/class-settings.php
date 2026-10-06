@@ -28,6 +28,7 @@ final class Settings {
 			'contact_to_emails'  => 'contacto@puracapoeira.com',
 			'contact_from_email' => '',
 			'contact_from_name'  => 'Pura Capoeira',
+			'cc_registrant'      => true,
 
 			// Redes y contacto.
 			'whatsapp_number'    => '18056385603',

@@ -51,6 +51,10 @@ final class Pura_Theme_Import_Command {
 			'title'   => 'Contacto',
 			'excerpt' => 'Contacta a Pura Capoeira y encuentra una sede cerca de ti en México, Brasil, Angola o Estados Unidos.',
 		),
+		'vadiando-na-ladeira' => array(
+			'title'   => 'Vadiando na Ladeira 2026',
+			'excerpt' => 'Vadiando na Ladeira, Guanajuato, 6, 7 y 8 de noviembre de 2026: tres días de rodas, entrenamientos y música con Pura Capoeira. Regístrate en línea.',
+		),
 	);
 
 	private const NAV_LABELS = array(

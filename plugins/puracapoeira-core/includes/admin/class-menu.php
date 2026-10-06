@@ -54,6 +54,10 @@ final class Menu {
 		.pura-meta-table input[type=text], .pura-meta-table input[type=url], .pura-meta-table input[type=email], .pura-meta-table input[type=number], .pura-meta-table select { width: 100%; max-width: 32em; }
 		.pura-meta-table textarea { width: 100%; max-width: 48em; }
 		.pura-i18n-keys code { margin-right: 6px; }
+		.pura-status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: #e5e5e5; }
+		.pura-status--registered { background: #dbeafe; color: #1e3a8a; }
+		.pura-status--confirmed { background: #d1f5d3; color: #0b5d1e; }
+		.pura-status--cancelled { background: #fee2e2; color: #991b1b; }
 		';
 		wp_add_inline_style( 'wp-admin', $css );
 	}

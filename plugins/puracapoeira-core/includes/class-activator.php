@@ -20,6 +20,7 @@ final class Activator {
 		( new Data\Profesor_Post_Type() )->register();
 		( new Data\Evento_Post_Type() )->register();
 		( new Data\Galeria_Post_Type() )->register();
+		( new Data\Event_Registration_Post_Type() )->register();
 
 		flush_rewrite_rules();
 	}
