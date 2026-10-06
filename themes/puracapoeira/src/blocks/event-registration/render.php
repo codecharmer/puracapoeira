@@ -37,6 +37,7 @@ $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-lay
 			<div class="form-grid">
 				<label class="field"><span><?php esc_html_e( 'Nombre(s) *', 'pura' ); ?></span><input type="text" name="first_name" autocomplete="given-name" required /></label>
 				<label class="field"><span><?php esc_html_e( 'Apellidos *', 'pura' ); ?></span><input type="text" name="last_name" autocomplete="family-name" required /></label>
+				<label class="field"><span><?php esc_html_e( 'Apelido (apodo de capoeira)', 'pura' ); ?></span><input type="text" name="nickname" autocomplete="nickname" /></label>
 				<label class="field"><span><?php esc_html_e( 'Correo electrónico *', 'pura' ); ?></span><input type="email" name="email" autocomplete="email" required /></label>
 				<label class="field"><span><?php esc_html_e( 'WhatsApp / teléfono *', 'pura' ); ?></span><input type="tel" name="phone" autocomplete="tel" required /></label>
 				<label class="field"><span><?php esc_html_e( 'Fecha de nacimiento *', 'pura' ); ?></span><input type="date" name="dob" autocomplete="bday" required data-event-dob /></label>

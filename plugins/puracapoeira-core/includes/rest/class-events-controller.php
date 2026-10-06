@@ -54,6 +54,7 @@ final class Events_Controller extends Base_Controller {
 					),
 					'first_name'      => $this->text_arg( 100 ),
 					'last_name'       => $this->text_arg( 100 ),
+					'nickname'        => $this->text_arg( 80 ),
 					'email'           => array(
 						'type'              => 'string',
 						'default'           => '',
@@ -110,6 +111,7 @@ final class Events_Controller extends Base_Controller {
 			'event_name'      => (string) $request->get_param( 'event_name' ),
 			'first_name'      => (string) $request->get_param( 'first_name' ),
 			'last_name'       => (string) $request->get_param( 'last_name' ),
+			'nickname'        => (string) $request->get_param( 'nickname' ),
 			'email'           => $email,
 			'phone'           => (string) $request->get_param( 'phone' ),
 			'dob'             => (string) $request->get_param( 'dob' ),

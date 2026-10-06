@@ -69,7 +69,7 @@ final class Csv_Export {
 			);
 		}
 
-		$columns = array( 'id', 'created_at', 'status', 'event', 'event_name', 'first_name', 'last_name', 'email', 'phone', 'dob', 'parent_name', 'parent_phone', 'city', 'academy', 'teacher', 'graduation', 'started_year', 'years_training', 'days', 'shirt_size', 'emergency_name', 'emergency_phone', 'notes', 'payment_proof_url' );
+		$columns = array( 'id', 'created_at', 'status', 'event', 'event_name', 'first_name', 'last_name', 'nickname', 'email', 'phone', 'dob', 'parent_name', 'parent_phone', 'city', 'academy', 'teacher', 'graduation', 'started_year', 'years_training', 'days', 'shirt_size', 'emergency_name', 'emergency_phone', 'notes', 'payment_proof_url' );
 
 		$query_args = array(
 			'post_type'      => Event_Registration_Post_Type::POST_TYPE,

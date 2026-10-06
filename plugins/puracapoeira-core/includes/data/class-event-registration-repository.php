@@ -30,6 +30,7 @@ final class Event_Registration_Repository {
 		'event_name',
 		'first_name',
 		'last_name',
+		'nickname',
 		'phone',
 		'dob',
 		'parent_name',
@@ -61,7 +62,11 @@ final class Event_Registration_Repository {
 	 * @return int Post ID, 0 on failure.
 	 */
 	public static function create( array $data ): int {
-		$name    = trim( (string) ( $data['first_name'] ?? '' ) . ' ' . (string) ( $data['last_name'] ?? '' ) );
+		$name = trim( (string) ( $data['first_name'] ?? '' ) . ' ' . (string) ( $data['last_name'] ?? '' ) );
+		$nick = trim( (string) ( $data['nickname'] ?? '' ) );
+		if ( '' !== $nick ) {
+			$name .= ' “' . $nick . '”';
+		}
 		$event   = (string) ( $data['event_name'] ?? $data['event'] ?? '' );
 		$created = current_time( 'mysql' );
 
@@ -254,6 +259,7 @@ final class Event_Registration_Repository {
 			'first_name'         => $meta( 'first_name' ),
 			'last_name'          => $meta( 'last_name' ),
 			'name'               => trim( $meta( 'first_name' ) . ' ' . $meta( 'last_name' ) ),
+			'nickname'           => $meta( 'nickname' ),
 			'email'              => $meta( 'email' ),
 			'phone'              => $meta( 'phone' ),
 			'dob'                => $meta( 'dob' ),

@@ -31,6 +31,7 @@ final class Event_Registration_Post_Type {
 		'_pura_event_name'      => 'string',
 		'_pura_first_name'      => 'string',
 		'_pura_last_name'       => 'string',
+		'_pura_nickname'        => 'string',
 		'_pura_email'           => 'string',
 		'_pura_phone'           => 'string',
 		'_pura_dob'             => 'string',
@@ -148,6 +149,7 @@ final class Event_Registration_Post_Type {
 		$rows = array(
 			__( 'Evento', 'pura' )                 => $data['event_name'] ?: $data['event'],
 			__( 'Nombre', 'pura' )                 => $data['name'],
+			__( 'Apelido', 'pura' )                => $data['nickname'],
 			__( 'Correo', 'pura' )                 => $data['email'],
 			__( 'Teléfono / WhatsApp', 'pura' )    => $data['phone'],
 			__( 'Fecha de nacimiento', 'pura' )    => $data['dob'],

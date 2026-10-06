@@ -31,6 +31,7 @@ async function postForm( path, formData ) {
 const TEXT_FIELDS = [
 	'first_name',
 	'last_name',
+	'nickname',
 	'email',
 	'phone',
 	'dob',

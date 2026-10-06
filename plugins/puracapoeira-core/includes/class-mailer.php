@@ -108,6 +108,7 @@ final class Mailer {
 		$rows = array(
 			'Evento'                 => $event,
 			'Nombre'                 => (string) ( $data['name'] ?? '' ),
+			'Apelido'                => (string) ( $data['nickname'] ?? '' ),
 			'Correo'                 => (string) ( $data['email'] ?? '' ),
 			'Teléfono / WhatsApp'    => (string) ( $data['phone'] ?? '' ),
 			'Fecha de nacimiento'    => (string) ( $data['dob'] ?? '' ),
