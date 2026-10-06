@@ -16,12 +16,16 @@ $pura_event_slug = sanitize_title( (string) ( $attributes['eventSlug'] ?? 'event
 $pura_event_name = trim( (string) ( $attributes['eventName'] ?? '' ) );
 $pura_days       = array_values( array_filter( array_map( 'trim', explode( '|', (string) ( $attributes['days'] ?? '' ) ) ) ) );
 $pura_ask_shirt  = ! empty( $attributes['askShirtSize'] );
+$pura_price      = trim( (string) ( $attributes['price'] ?? '' ) );
+$pura_ask_proof  = ! empty( $attributes['askPaymentProof'] );
+$pura_proof_max  = Pura\Core\Data\Event_Registration_Repository::proof_max_bytes();
 $pura_footnote   = trim( (string) ( $attributes['footnote'] ?? '' ) );
 $pura_sizes      = array( 'XS', 'S', 'M', 'L', 'XL', 'XXL' );
 $pura_config     = array(
-	'event'      => $pura_event_slug,
-	'event_name' => $pura_event_name,
-	'days'       => $pura_days,
+	'event'           => $pura_event_slug,
+	'event_name'      => $pura_event_name,
+	'days'            => $pura_days,
+	'max_proof_bytes' => $pura_ask_proof ? $pura_proof_max : 0,
 );
 
 $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout event-registration' ) );
@@ -90,6 +94,29 @@ $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-lay
 				<label class="field"><span><?php esc_html_e( 'Teléfono de emergencia *', 'pura' ); ?></span><input type="tel" name="emergency_phone" required /></label>
 			</div>
 		</fieldset>
+
+		<?php if ( $pura_ask_proof || '' !== $pura_price ) : ?>
+			<fieldset class="inscription-block">
+				<legend><?php esc_html_e( '5. Pago', 'pura' ); ?></legend>
+				<?php if ( '' !== $pura_price ) : ?>
+					<p class="payment-amount"><?php echo esc_html( $pura_price ); ?> <span class="payment-amount__unit"><?php esc_html_e( 'por persona', 'pura' ); ?></span></p>
+				<?php endif; ?>
+				<?php if ( $pura_ask_proof ) : ?>
+					<div class="form-grid">
+						<label class="field field--full"><span><?php esc_html_e( 'Comprobante de pago (imagen o PDF)', 'pura' ); ?></span><input type="file" name="payment_proof" accept="image/*,.pdf,application/pdf" data-event-proof /></label>
+					</div>
+					<p class="field-help">
+						<?php
+						printf(
+							/* translators: %s: maximum file size, e.g. "8 MB". */
+							esc_html__( 'Si ya realizaste tu pago, adjunta la captura o el PDF del comprobante (máximo %s). Si aún no, regístrate y envíalo después.', 'pura' ),
+							esc_html( size_format( $pura_proof_max ) )
+						);
+						?>
+					</p>
+				<?php endif; ?>
+			</fieldset>
+		<?php endif; ?>
 
 		<div class="inscription-result" data-event-result hidden role="status" aria-live="polite"></div>
 

@@ -52,8 +52,10 @@ final class Pura_Theme_Import_Command {
 			'excerpt' => 'Contacta a Pura Capoeira y encuentra una sede cerca de ti en México, Brasil, Angola o Estados Unidos.',
 		),
 		'vadiando-na-ladeira' => array(
-			'title'   => 'Vadiando na Ladeira 2026',
-			'excerpt' => 'Vadiando na Ladeira, Guanajuato, 6, 7 y 8 de noviembre de 2026: tres días de rodas, entrenamientos y música con Pura Capoeira. Regístrate en línea.',
+			'title'     => 'Vadiando na Ladeira 2026',
+			'excerpt'   => 'Vadiando na Ladeira, Guanajuato, 6, 7 y 8 de noviembre de 2026: tres días de rodas, entrenamientos y música con Pura Capoeira. Regístrate en línea.',
+			// Featured image = share preview (og:image); the poster is shown by the pattern itself.
+			'thumbnail' => 'assets/images/vadiando-na-ladeira-2026.jpg',
 		),
 	);
 
@@ -535,6 +537,12 @@ final class Pura_Theme_Import_Command {
 				continue;
 			}
 			$this->mark_imported( $id );
+			if ( ! empty( $meta['thumbnail'] ) ) {
+				$attachment = $this->import_local_file( PURA_THEME_DIR . '/' . $meta['thumbnail'], $meta['title'] );
+				if ( $attachment ) {
+					set_post_thumbnail( $id, $attachment );
+				}
+			}
 			WP_CLI::log( sprintf( 'pages: %s → #%d (%s)', $slug, $id, $existing ? 'updated' : 'created' ) );
 
 			if ( 'inicio' === $slug ) {

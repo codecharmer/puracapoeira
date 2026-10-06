@@ -56,7 +56,7 @@ abstract class Base_Controller {
 	}
 
 	/**
-	 * Permission callback factory for public POST routes: JSON content type, honeypot, rate limit.
+	 * Permission callback factory for public POST routes: JSON or multipart body, honeypot, rate limit.
 	 *
 	 * @return callable(WP_REST_Request): (bool|WP_Error)
 	 */
@@ -64,8 +64,8 @@ abstract class Base_Controller {
 		return static function ( WP_REST_Request $request ) use ( $bucket, $limit, $window ) {
 			if ( 'POST' === $request->get_method() ) {
 				$content_type = (string) $request->get_header( 'content-type' );
-				if ( false === stripos( $content_type, 'application/json' ) ) {
-					return new WP_Error( 'pura_bad_content_type', 'Se esperaba application/json.', array( 'status' => 415 ) );
+				if ( false === stripos( $content_type, 'application/json' ) && false === stripos( $content_type, 'multipart/form-data' ) ) {
+					return new WP_Error( 'pura_bad_content_type', 'Se esperaba application/json o multipart/form-data.', array( 'status' => 415 ) );
 				}
 
 				$honeypot = $request->get_param( 'website' );

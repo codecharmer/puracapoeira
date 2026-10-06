@@ -83,7 +83,15 @@ final class Mailer {
 			}
 		}
 
-		return self::send( $recipients, $subject, $body, $headers );
+		$attachments = array();
+		if ( ! empty( $data['payment_proof_id'] ) ) {
+			$path = (string) get_attached_file( (int) $data['payment_proof_id'] );
+			if ( '' !== $path && is_readable( $path ) ) {
+				$attachments[] = $path;
+			}
+		}
+
+		return self::send( $recipients, $subject, $body, $headers, $attachments );
 	}
 
 	/**
@@ -116,6 +124,7 @@ final class Mailer {
 			'Contacto de emergencia' => (string) ( $data['emergency_name'] ?? '' ),
 			'Teléfono de emergencia' => (string) ( $data['emergency_phone'] ?? '' ),
 			'Comentarios'            => (string) ( $data['notes'] ?? '' ),
+			'Comprobante de pago'    => (string) ( $data['payment_proof_url'] ?? '' ),
 			'Fecha de registro'      => (string) ( $data['created_at'] ?? $when ),
 		);
 
@@ -212,17 +221,18 @@ final class Mailer {
 	}
 
 	/**
-	 * @param string[] $to      Recipients.
-	 * @param string[] $headers Headers.
+	 * @param string[] $to          Recipients.
+	 * @param string[] $headers     Headers.
+	 * @param string[] $attachments Absolute paths.
 	 */
-	private static function send( array $to, string $subject, string $body, array $headers ): bool {
+	private static function send( array $to, string $subject, string $body, array $headers, array $attachments = array() ): bool {
 		self::$last_error = null;
 		$capture          = static function ( \WP_Error $error ): void {
 			self::$last_error = $error->get_error_message();
 		};
 
 		add_action( 'wp_mail_failed', $capture );
-		$ok = wp_mail( $to, $subject, $body, $headers );
+		$ok = wp_mail( $to, $subject, $body, $headers, $attachments );
 		remove_action( 'wp_mail_failed', $capture );
 
 		if ( ! $ok ) {

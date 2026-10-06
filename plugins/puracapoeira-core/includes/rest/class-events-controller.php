@@ -168,6 +168,11 @@ final class Events_Controller extends Base_Controller {
 		}
 		$data['days'] = $days;
 
+		$proof = $this->proof_file( $request );
+		if ( $proof instanceof WP_REST_Response ) {
+			return $proof;
+		}
+
 		if ( Event_Registration_Repository::exists( $email, $event ) ) {
 			return $this->error(
 				'Ese correo ya tiene un registro para este evento. Si necesitas cambiar algo, escríbenos por WhatsApp.',
@@ -181,14 +186,54 @@ final class Events_Controller extends Base_Controller {
 			return $this->error( 'No se pudo guardar el registro. Intenta de nuevo.', 500 );
 		}
 
+		if ( $proof ) {
+			$attachment_id = Event_Registration_Repository::attach_proof( $post_id, 'payment_proof' );
+			if ( is_wp_error( $attachment_id ) ) {
+				wp_delete_post( $post_id, true );
+				return $this->error( 'No se pudo guardar el comprobante de pago (' . $attachment_id->get_error_message() . '). Intenta con otro archivo.', 400 );
+			}
+		}
+
 		Mailer::notify_event_registration( $post_id );
 
 		return $this->ok(
 			array(
 				'registration_id' => $post_id,
-				'message'         => '¡Registro recibido! Te enviamos una copia a tu correo y te contactaremos con los detalles del evento.',
+				'message'         => $proof
+					? '¡Registro recibido junto con tu comprobante de pago! Te enviamos una copia a tu correo y te contactaremos con los detalles del evento.'
+					: '¡Registro recibido! Te enviamos una copia a tu correo y te contactaremos con los detalles del evento.',
 			)
 		);
+	}
+
+	/**
+	 * The optional proof of payment: null when none was sent, the `$_FILES` entry when it is
+	 * acceptable, or an error response.
+	 *
+	 * @return array<string, mixed>|WP_REST_Response|null
+	 */
+	private function proof_file( WP_REST_Request $request ) {
+		$files = $request->get_file_params();
+		$file  = $files['payment_proof'] ?? null;
+		if ( ! is_array( $file ) || UPLOAD_ERR_NO_FILE === (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) ) {
+			return null;
+		}
+
+		$max   = Event_Registration_Repository::proof_max_bytes();
+		$error = (int) $file['error'];
+		if ( in_array( $error, array( UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ), true ) || (int) ( $file['size'] ?? 0 ) > $max ) {
+			return $this->error( sprintf( 'El comprobante es demasiado grande (máximo %s).', size_format( $max ) ), 400 );
+		}
+		if ( UPLOAD_ERR_OK !== $error || empty( $file['tmp_name'] ) || ! is_uploaded_file( (string) $file['tmp_name'] ) ) {
+			return $this->error( 'No se pudo subir el comprobante. Intenta de nuevo.', 400 );
+		}
+
+		$check = wp_check_filetype_and_ext( (string) $file['tmp_name'], (string) $file['name'], Event_Registration_Repository::PROOF_MIMES );
+		if ( empty( $check['type'] ) ) {
+			return $this->error( 'El comprobante debe ser una imagen (JPG, PNG, WebP, HEIC) o un PDF.', 400 );
+		}
+
+		return $file;
 	}
 
 	private function valid_date( string $date ): bool {

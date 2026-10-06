@@ -13,6 +13,17 @@ defined( 'ABSPATH' ) || exit;
 
 final class Event_Registration_Repository {
 
+	/** Proof of payment: accepted types (extension regex => mime) and size cap. */
+	public const PROOF_MIMES     = array(
+		'jpg|jpeg|jpe' => 'image/jpeg',
+		'png'          => 'image/png',
+		'webp'         => 'image/webp',
+		'gif'          => 'image/gif',
+		'heic'         => 'image/heic',
+		'pdf'          => 'application/pdf',
+	);
+	public const PROOF_MAX_BYTES = 8 * MB_IN_BYTES;
+
 	/** @var string[] Fields copied verbatim into `_pura_*` meta. */
 	private const TEXT_FIELDS = array(
 		'event',
@@ -81,6 +92,44 @@ final class Event_Registration_Repository {
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Largest proof of payment the server accepts (our cap or PHP's upload limit, whichever is lower).
+	 */
+	public static function proof_max_bytes(): int {
+		$php_limit = (int) wp_max_upload_size();
+
+		return $php_limit > 0 ? min( self::PROOF_MAX_BYTES, $php_limit ) : self::PROOF_MAX_BYTES;
+	}
+
+	/**
+	 * Store the uploaded proof of payment (`$_FILES[ $file_id ]`) as an attachment of the registration.
+	 *
+	 * @return int|\WP_Error Attachment ID.
+	 */
+	public static function attach_proof( int $post_id, string $file_id ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$name          = trim( (string) get_post_meta( $post_id, '_pura_first_name', true ) . ' ' . (string) get_post_meta( $post_id, '_pura_last_name', true ) );
+		$attachment_id = media_handle_upload(
+			$file_id,
+			$post_id,
+			array( 'post_title' => 'Comprobante de pago — ' . $name ),
+			array(
+				'test_form' => false,
+				'mimes'     => self::PROOF_MIMES,
+			)
+		);
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		update_post_meta( $post_id, '_pura_payment_proof', (int) $attachment_id );
+
+		return (int) $attachment_id;
 	}
 
 	/**
@@ -191,34 +240,41 @@ final class Event_Registration_Repository {
 			return null;
 		}
 
-		$meta = static fn ( string $key ): string => (string) get_post_meta( $post_id, '_pura_' . $key, true );
+		$meta     = static fn ( string $key ): string => (string) get_post_meta( $post_id, '_pura_' . $key, true );
+		$proof_id = (int) get_post_meta( $post_id, '_pura_payment_proof', true );
+		if ( $proof_id && 'attachment' !== get_post_type( $proof_id ) ) {
+			$proof_id = 0;
+		}
 
 		return array(
-			'id'              => $post_id,
-			'status'          => $meta( 'status' ),
-			'event'           => $meta( 'event' ),
-			'event_name'      => $meta( 'event_name' ),
-			'first_name'      => $meta( 'first_name' ),
-			'last_name'       => $meta( 'last_name' ),
-			'name'            => trim( $meta( 'first_name' ) . ' ' . $meta( 'last_name' ) ),
-			'email'           => $meta( 'email' ),
-			'phone'           => $meta( 'phone' ),
-			'dob'             => $meta( 'dob' ),
-			'parent_name'     => $meta( 'parent_name' ),
-			'parent_phone'    => $meta( 'parent_phone' ),
-			'started_year'    => $meta( 'started_year' ),
-			'years_training'  => $meta( 'years_training' ),
-			'city'            => $meta( 'city' ),
-			'academy'         => $meta( 'academy' ),
-			'teacher'         => $meta( 'teacher' ),
-			'graduation'      => $meta( 'graduation' ),
-			'days'            => $meta( 'days' ),
-			'shirt_size'      => $meta( 'shirt_size' ),
-			'emergency_name'  => $meta( 'emergency_name' ),
-			'emergency_phone' => $meta( 'emergency_phone' ),
-			'notes'           => $meta( 'notes' ),
-			'created_at'      => $post->post_date,
-			'admin_url'       => (string) get_edit_post_link( $post_id, 'raw' ),
+			'id'                 => $post_id,
+			'status'             => $meta( 'status' ),
+			'event'              => $meta( 'event' ),
+			'event_name'         => $meta( 'event_name' ),
+			'first_name'         => $meta( 'first_name' ),
+			'last_name'          => $meta( 'last_name' ),
+			'name'               => trim( $meta( 'first_name' ) . ' ' . $meta( 'last_name' ) ),
+			'email'              => $meta( 'email' ),
+			'phone'              => $meta( 'phone' ),
+			'dob'                => $meta( 'dob' ),
+			'parent_name'        => $meta( 'parent_name' ),
+			'parent_phone'       => $meta( 'parent_phone' ),
+			'started_year'       => $meta( 'started_year' ),
+			'years_training'     => $meta( 'years_training' ),
+			'city'               => $meta( 'city' ),
+			'academy'            => $meta( 'academy' ),
+			'teacher'            => $meta( 'teacher' ),
+			'graduation'         => $meta( 'graduation' ),
+			'days'               => $meta( 'days' ),
+			'shirt_size'         => $meta( 'shirt_size' ),
+			'emergency_name'     => $meta( 'emergency_name' ),
+			'emergency_phone'    => $meta( 'emergency_phone' ),
+			'notes'              => $meta( 'notes' ),
+			'payment_proof_id'   => $proof_id,
+			'payment_proof_url'  => $proof_id ? (string) wp_get_attachment_url( $proof_id ) : '',
+			'payment_proof_name' => $proof_id ? wp_basename( (string) get_attached_file( $proof_id ) ) : '',
+			'created_at'         => $post->post_date,
+			'admin_url'          => (string) get_edit_post_link( $post_id, 'raw' ),
 		);
 	}
 }

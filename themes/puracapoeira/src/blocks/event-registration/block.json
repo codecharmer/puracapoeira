@@ -16,9 +16,11 @@
 			"default": "6 de noviembre|7 de noviembre|8 de noviembre"
 		},
 		"askShirtSize": { "type": "boolean", "default": true },
+		"price": { "type": "string", "default": "$1,600 MXN" },
+		"askPaymentProof": { "type": "boolean", "default": true },
 		"footnote": {
 			"type": "string",
-			"default": "El registro en línea no tiene costo. Las cuotas del evento, si las hay, se coordinan directamente con la organización."
+			"default": "La cuota del evento es de $1,600 MXN por persona. Si todavía no has pagado, puedes registrarte ahora y enviar tu comprobante después a la organización."
 		}
 	},
 	"supports": {

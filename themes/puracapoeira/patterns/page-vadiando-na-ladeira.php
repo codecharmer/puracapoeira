@@ -69,6 +69,17 @@
 				<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
 				<div class="wp-block-group event-fact">
 					<!-- wp:paragraph {"className":"event-fact__label"} -->
+					<p class="event-fact__label">Cuota</p>
+					<!-- /wp:paragraph -->
+					<!-- wp:paragraph {"className":"event-fact__value"} -->
+					<p class="event-fact__value">$1,600 MXN por persona</p>
+					<!-- /wp:paragraph -->
+				</div>
+				<!-- /wp:group -->
+
+				<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
+				<div class="wp-block-group event-fact">
+					<!-- wp:paragraph {"className":"event-fact__label"} -->
 					<p class="event-fact__label">Organiza</p>
 					<!-- /wp:paragraph -->
 					<!-- wp:paragraph {"className":"event-fact__value"} -->
@@ -110,8 +121,6 @@
 					<!-- /wp:button -->
 				</div>
 				<!-- /wp:buttons -->
-
-				<!-- wp:pura/contact-link {"channel":"whatsapp","label":"Preguntas por WhatsApp","variant":"btn-outline","message":"Hola, tengo una pregunta sobre Vadiando na Ladeira 2026."} /-->
 			</div>
 			<!-- /wp:group -->
 		</div>
@@ -140,7 +149,7 @@
 			<!-- /wp:group -->
 
 			<!-- wp:paragraph -->
-			<p>Un registro por persona. Al enviarlo recibirás una copia en tu correo y la organización te contactará con los detalles.</p>
+			<p>Un registro por persona. La cuota es de $1,600 MXN; si ya pagaste, adjunta tu comprobante. Al enviarlo recibirás una copia en tu correo y la organización te contactará con los detalles.</p>
 			<!-- /wp:paragraph -->
 		</div>
 		<!-- /wp:group -->

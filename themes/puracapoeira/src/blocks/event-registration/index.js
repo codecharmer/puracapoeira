@@ -10,7 +10,15 @@ import metadata from './block.json';
 import { createServerSideEdit } from '../../shared/ssr-edit';
 
 function Controls( { attributes, setAttributes } ) {
-	const { eventSlug, eventName, days, askShirtSize, footnote } = attributes;
+	const {
+		eventSlug,
+		eventName,
+		days,
+		askShirtSize,
+		price,
+		askPaymentProof,
+		footnote,
+	} = attributes;
 
 	return (
 		<PanelBody title={ __( 'Evento', 'pura' ) }>
@@ -44,6 +52,19 @@ function Controls( { attributes, setAttributes } ) {
 				checked={ askShirtSize }
 				onChange={ ( value ) =>
 					setAttributes( { askShirtSize: value } )
+				}
+			/>
+			<TextControl
+				label={ __( 'Cuota (texto)', 'pura' ) }
+				help={ __( 'Vacío para no mostrar la cuota.', 'pura' ) }
+				value={ price }
+				onChange={ ( value ) => setAttributes( { price: value } ) }
+			/>
+			<ToggleControl
+				label={ __( 'Pedir comprobante de pago', 'pura' ) }
+				checked={ askPaymentProof }
+				onChange={ ( value ) =>
+					setAttributes( { askPaymentProof: value } )
 				}
 			/>
 			<TextareaControl

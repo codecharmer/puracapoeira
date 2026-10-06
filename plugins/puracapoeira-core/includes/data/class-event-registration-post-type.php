@@ -47,6 +47,7 @@ final class Event_Registration_Post_Type {
 		'_pura_emergency_name'  => 'string',
 		'_pura_emergency_phone' => 'string',
 		'_pura_notes'           => 'string',
+		'_pura_payment_proof'   => 'integer',
 	);
 
 	private const NONCE = 'pura_event_reg_status';
@@ -98,6 +99,20 @@ final class Event_Registration_Post_Type {
 		add_filter( 'manage_edit-' . self::POST_TYPE . '_sortable_columns', array( $this, 'sortable_columns' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'filters' ) );
 		add_action( 'pre_get_posts', array( $this, 'apply_filters_and_search' ) );
+		add_action( 'before_delete_post', array( $this, 'delete_proof' ), 10, 2 );
+	}
+
+	/**
+	 * The proof of payment belongs to the registration: remove it when the registration is deleted.
+	 */
+	public function delete_proof( int $post_id, ?\WP_Post $post = null ): void {
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+			return;
+		}
+		$proof_id = (int) get_post_meta( $post_id, '_pura_payment_proof', true );
+		if ( $proof_id && 'attachment' === get_post_type( $proof_id ) ) {
+			wp_delete_attachment( $proof_id, true );
+		}
 	}
 
 	public static function status_label( string $status ): string {
@@ -149,7 +164,6 @@ final class Event_Registration_Post_Type {
 			__( 'Contacto de emergencia', 'pura' ) => $data['emergency_name'],
 			__( 'Teléfono de emergencia', 'pura' ) => $data['emergency_phone'],
 			__( 'Comentarios', 'pura' )            => $data['notes'],
-			__( 'Registrado el', 'pura' )          => $data['created_at'],
 		);
 
 		echo '<table class="widefat striped"><tbody>';
@@ -159,6 +173,18 @@ final class Event_Registration_Post_Type {
 			}
 			echo '<tr><th style="width:14em">' . esc_html( $label ) . '</th><td>' . nl2br( esc_html( (string) $value ) ) . '</td></tr>';
 		}
+
+		echo '<tr><th style="width:14em">' . esc_html__( 'Comprobante de pago', 'pura' ) . '</th><td>';
+		if ( $data['payment_proof_id'] ) {
+			echo '<a href="' . esc_url( $data['payment_proof_url'] ) . '" target="_blank" rel="noopener">' . esc_html( $data['payment_proof_name'] ) . '</a>';
+			if ( wp_attachment_is_image( (int) $data['payment_proof_id'] ) ) {
+				echo '<br />' . wp_get_attachment_image( (int) $data['payment_proof_id'], 'medium', false, array( 'style' => 'margin-top:8px;max-width:320px;height:auto;border:1px solid #ddd' ) );
+			}
+		} else {
+			esc_html_e( 'No adjuntó comprobante.', 'pura' );
+		}
+		echo '</td></tr>';
+		echo '<tr><th style="width:14em">' . esc_html__( 'Registrado el', 'pura' ) . '</th><td>' . esc_html( (string) $data['created_at'] ) . '</td></tr>';
 		echo '</tbody></table>';
 	}
 
@@ -189,6 +215,7 @@ final class Event_Registration_Post_Type {
 			'title'      => __( 'Nombre', 'pura' ),
 			'status'     => __( 'Estado', 'pura' ),
 			'event'      => __( 'Evento', 'pura' ),
+			'payment'    => __( 'Pago', 'pura' ),
 			'days'       => __( 'Días', 'pura' ),
 			'academy'    => __( 'Grupo', 'pura' ),
 			'graduation' => __( 'Graduación', 'pura' ),
@@ -207,6 +234,14 @@ final class Event_Registration_Post_Type {
 			case 'event':
 				$name = (string) get_post_meta( $post_id, '_pura_event_name', true );
 				echo esc_html( '' !== $name ? $name : (string) get_post_meta( $post_id, '_pura_event', true ) );
+				break;
+			case 'payment':
+				$proof_id = (int) get_post_meta( $post_id, '_pura_payment_proof', true );
+				if ( $proof_id && 'attachment' === get_post_type( $proof_id ) ) {
+					echo '<a href="' . esc_url( (string) wp_get_attachment_url( $proof_id ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Comprobante', 'pura' ) . '</a>';
+				} else {
+					echo '&mdash;';
+				}
 				break;
 			case 'days':
 			case 'academy':

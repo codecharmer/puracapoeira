@@ -12,14 +12,12 @@ function restUrl( path ) {
 	return base.replace( /\/?$/, '/' ) + path;
 }
 
-async function postJson( path, payload ) {
+// Multipart so the proof of payment can travel with the rest of the fields.
+async function postForm( path, formData ) {
 	const res = await fetch( restUrl( path ), {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Accept: 'application/json',
-		},
-		body: JSON.stringify( payload ),
+		headers: { Accept: 'application/json' },
+		body: formData,
 	} );
 	let json = {};
 	try {
@@ -57,7 +55,7 @@ function initEventForm( root ) {
 		return;
 	}
 
-	let config = { event: '', event_name: '', days: [] };
+	let config = { event: '', event_name: '', days: [], max_proof_bytes: 0 };
 	try {
 		config = Object.assign(
 			config,
@@ -73,6 +71,12 @@ function initEventForm( root ) {
 	const dobInput = $( '[data-event-dob]', form );
 	const parentWrap = $( '[data-event-parent]', form );
 	const parentPhone = $( '[data-event-parent-phone]', form );
+	const proofInput = $( '[data-event-proof]', form );
+
+	const formatBytes = ( bytes ) =>
+		bytes >= 1048576
+			? `${ Math.round( bytes / 1048576 ) } MB`
+			: `${ Math.round( bytes / 1024 ) } KB`;
 
 	// Under 18 on the day of the form: ask for a parent or guardian's phone.
 	const isMinor = ( dob ) => {
@@ -133,16 +137,39 @@ function initEventForm( root ) {
 			return;
 		}
 
-		const fd = new FormData( form );
-		const payload = {
-			event: config.event,
-			event_name: config.event_name,
-			days,
-			days_offered: config.days,
-		};
+		const proof = proofInput && proofInput.files && proofInput.files[ 0 ];
+		if (
+			proof &&
+			config.max_proof_bytes &&
+			proof.size > config.max_proof_bytes
+		) {
+			showResult(
+				`El comprobante pesa ${ formatBytes(
+					proof.size
+				) }; el máximo es ${ formatBytes( config.max_proof_bytes ) }.`,
+				false
+			);
+			proofInput.focus();
+			return;
+		}
+
+		const fields = new FormData( form );
+		const payload = new FormData();
+		payload.append( 'event', config.event );
+		payload.append( 'event_name', config.event_name );
+		days.forEach( ( day ) => payload.append( 'days[]', day ) );
+		config.days.forEach( ( day ) =>
+			payload.append( 'days_offered[]', day )
+		);
 		TEXT_FIELDS.forEach( ( key ) => {
-			payload[ key ] = ( fd.get( key ) || '' ).toString().trim();
+			payload.append(
+				key,
+				( fields.get( key ) || '' ).toString().trim()
+			);
 		} );
+		if ( proof ) {
+			payload.append( 'payment_proof', proof, proof.name );
+		}
 
 		if ( submitBtn ) {
 			submitBtn.disabled = true;
@@ -150,7 +177,7 @@ function initEventForm( root ) {
 		showResult( 'Enviando tu registro...', true );
 
 		try {
-			const { res, json } = await postJson( 'events/register', payload );
+			const { res, json } = await postForm( 'events/register', payload );
 			if ( ! res.ok || ! json.ok ) {
 				throw new Error(
 					json.error ||
