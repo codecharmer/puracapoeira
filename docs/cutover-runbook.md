@@ -11,7 +11,7 @@ the live docroot, so follow the order below.
       that docroot while that workflow still exists, the next push wipes it. The retirement
       commit (step 1) must be on `master` **before** WordPress is installed (step 2).
 - [ ] Run **Actions → Server check (pre-cutover) → Run workflow** and read the log: `wp` is
-      installed, `sudo -u puracapoeirasite -i -- wp --info` works, `ea-nginx` is present, the
+      installed, `su -s /bin/bash puracapoeirasite -c 'wp --info'` works, `ea-nginx` is present, the
       vhost PHP version is ≥ 8.1, and `DEPLOY_PATH` is the vhost document root (the setup script's
       default was `/home/<owner>/public_html/puracapoeirasite`, a sub-folder; the deploy target
       must be the folder Apache/NGINX serves for the domain).
@@ -65,7 +65,8 @@ The site now shows the default WordPress theme for a few minutes; that is expect
 
 ## 4. Seed the content
 
-Over SSH as the cPanel user (`sudo -u puracapoeirasite -i`, then `cd <docroot>`):
+Over SSH as root, become the cPanel user with `su -s /bin/bash puracapoeirasite` (the account has
+no login shell, so `sudo -u … -i` does not work), then `cd <docroot>`:
 
 ```bash
 wp option update blog_public 1
