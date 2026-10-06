@@ -1,6 +1,6 @@
 <?php
 /**
- * Shared helpers for the theme's dynamic blocks (loaded by the blocks that need them).
+ * Shared helpers for the theme's dynamic blocks (loaded by functions.php; src/ is not deployed).
  *
  * @package Pura
  */

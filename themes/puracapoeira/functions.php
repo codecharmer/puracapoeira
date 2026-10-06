@@ -17,6 +17,7 @@ define( 'PURA_THEME_URI', get_template_directory_uri() );
 
 require_once PURA_THEME_DIR . '/inc/setup.php';
 require_once PURA_THEME_DIR . '/inc/blocks.php';
+require_once PURA_THEME_DIR . '/inc/block-helpers.php';
 require_once PURA_THEME_DIR . '/inc/block-styles.php';
 require_once PURA_THEME_DIR . '/inc/seo.php';
 require_once PURA_THEME_DIR . '/inc/speculation.php';

@@ -137,6 +137,13 @@ foreach ( array_merge( glob( $root . '/parts/*.html' ) ?: array(), glob( $root .
 	$fails = array_merge( $fails, check_markup( basename( dirname( $file ) ) . '/' . basename( $file ), (string) file_get_contents( $file ), $pattern_slugs, $block_names ) );
 }
 
+// The deploy ships build/ but not src/: a render.php must never reference files under src/.
+foreach ( glob( $root . '/src/blocks/*/render.php' ) ?: array() as $file ) {
+	if ( preg_match( "#['\"]/src/#", (string) file_get_contents( $file ) ) ) {
+		$fails[] = "$file: references a path under src/, which is not deployed (use inc/ instead)";
+	}
+}
+
 $theme_json = json_decode( (string) file_get_contents( $root . '/theme.json' ), true );
 if ( ! is_array( $theme_json ) ) {
 	$fails[] = 'theme.json: invalid JSON';
