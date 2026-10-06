@@ -1,0 +1,126 @@
+name: Deploy WordPress theme and plugin
+
+# Push to master → build, lint, test, then rsync the theme and plugin into the live
+# WordPress install at secrets.DEPLOY_PATH (the same docroot the static site used).
+#
+# The job is skipped until the repository variable WP_DEPLOY_ENABLED is "true"
+# (Settings → Secrets and variables → Actions → Variables). Set it right after
+# WordPress is installed on the server; see docs/cutover-runbook.md. The
+# "Check the target is a WordPress install" step stays as the hard safety net.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  # Same group as the legacy static deploy so the two never run at once.
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, test, deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ vars.WP_DEPLOY_ENABLED == 'true' }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build blocks
+        run: npm run build
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dev dependencies
+        working-directory: plugins/puracapoeira-core
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Lint PHP (WordPress coding standards)
+        working-directory: plugins/puracapoeira-core
+        run: composer run lint
+
+      - name: Unit tests
+        working-directory: plugins/puracapoeira-core
+        run: composer run test:unit
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Check the target is a WordPress install
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "test -f '${{ secrets.DEPLOY_PATH }}/wp-config.php' && test -d '${{ secrets.DEPLOY_PATH }}/wp-content' \
+             || { echo 'DEPLOY_PATH does not contain a WordPress install (no wp-config.php / wp-content)'; exit 1; }"
+
+      - name: Deploy theme
+        run: |
+          rsync -az --delete \
+            --exclude='node_modules/' --exclude='src/' --exclude='package*.json' \
+            --exclude='tests/' --exclude='.wp-env*' --exclude='*.md' \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            themes/puracapoeira/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/wp-content/themes/puracapoeira/"
+
+      - name: Deploy plugin
+        run: |
+          rsync -az --delete \
+            --exclude='node_modules/' --exclude='src/' --exclude='package*.json' \
+            --exclude='vendor/' --exclude='composer.*' --exclude='phpunit.xml.dist' --exclude='phpcs.xml.dist' \
+            --exclude='tests/' --exclude='.phpunit.cache/' \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            plugins/puracapoeira-core/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/wp-content/plugins/puracapoeira-core/"
+
+      - name: Fix ownership and permissions
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "for d in '${{ secrets.DEPLOY_PATH }}/wp-content/themes/puracapoeira' '${{ secrets.DEPLOY_PATH }}/wp-content/plugins/puracapoeira-core'; do \
+               chown -R puracapoeirasite:puracapoeirasite \"\$d\" && \
+               find \"\$d\" -type d -exec chmod 755 {} \; && \
+               find \"\$d\" -type f -exec chmod 644 {} \; ; done"
+
+      # The cPanel account has no login shell, so `sudo -u user -i` cannot run wp-cli;
+      # `su -s /bin/bash user -c` runs it as that user with the CLI PHP binary.
+      - name: Activate and flush (only if WP-CLI is installed on the server)
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "if command -v wp >/dev/null 2>&1; then \
+               su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' plugin activate puracapoeira-core\" && \
+               su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' theme activate puracapoeira\" && \
+               su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' cache flush\" && \
+               su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' rewrite flush --hard\"; \
+             else echo 'wp-cli not found on the server; skipping activate/flush (files are deployed).'; fi"
+
+      - name: Clear cPanel NGINX cache
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "if [ -x /usr/local/cpanel/scripts/ea-nginx ]; then \
+               /usr/local/cpanel/scripts/ea-nginx clear_cache puracapoeirasite && /usr/local/cpanel/scripts/ea-nginx reload; \
+             else echo 'ea-nginx not present; nothing to clear.'; fi"

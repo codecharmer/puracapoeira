@@ -1,0 +1,40 @@
+name: Server check (pre-cutover)
+
+# Manual, read-only inspection of the VPS with the deploy credentials. Run it before
+# the cutover to confirm what deploy-wordpress.yml assumes: the cPanel user, WP-CLI,
+# sudo as that user, PHP version, ea-nginx, and what currently lives at DEPLOY_PATH.
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Inspect the server
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Inspect
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "set +e; \
+             echo '== deploy user'; whoami; hostname; \
+             echo '== cPanel user'; id puracapoeirasite; \
+             echo '== wp-cli'; if command -v wp >/dev/null 2>&1; then wp --version 2>/dev/null || true; else echo 'wp: not found'; fi; \
+             echo '== wp --info as puracapoeirasite'; su -s /bin/bash puracapoeirasite -c 'wp --info' 2>&1 | head -20; \
+             echo '== PHP (cli)'; php -v | head -1; \
+             echo '== PHP for the vhost'; /usr/local/cpanel/bin/rebuild_phpconf --current 2>/dev/null | head -20; \
+             echo '== ea-nginx'; if [ -x /usr/local/cpanel/scripts/ea-nginx ]; then echo present; else echo absent; fi; \
+             echo '== vhost docroots'; grep -rh -i documentroot /var/cpanel/userdata/puracapoeirasite/ 2>/dev/null | sort -u; \
+             echo '== DEPLOY_PATH contents'; ls -la '${{ secrets.DEPLOY_PATH }}' 2>&1 | head -40; \
+             if [ -f '${{ secrets.DEPLOY_PATH }}/wp-config.php' ]; then echo 'WordPress: wp-config.php present'; else echo 'WordPress: not installed at DEPLOY_PATH'; fi"

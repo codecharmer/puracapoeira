@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [master]
+
+jobs:
+  lint-and-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint JS and CSS
+        run: npm run lint
+
+      - name: JS unit tests
+        run: npm run test:unit
+
+      - name: Build blocks
+        run: npm run build
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: PHP syntax check (theme and plugin)
+        run: |
+          find themes plugins -name '*.php' -not -path '*/vendor/*' -not -path '*/node_modules/*' -print0 \
+            | xargs -0 -n1 -P4 php -l > /dev/null
+
+      - name: Validate block markup in patterns, parts and templates
+        run: php bin/check-patterns.php
+
+      - name: Install PHP dev dependencies
+        working-directory: plugins/puracapoeira-core
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHPCS
+        working-directory: plugins/puracapoeira-core
+        run: composer run lint
+
+      - name: PHPUnit
+        working-directory: plugins/puracapoeira-core
+        run: composer run test:unit

@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/sedes-map",
+	"version": "1.0.0",
+	"title": "Mapa de sedes",
+	"category": "pura",
+	"icon": "location",
+	"description": "Mapa interactivo (OpenStreetMap) con un marcador por sede.",
+	"textdomain": "pura",
+	"attributes": {
+		"title": { "type": "string", "default": "Mapa interactivo de sedes" },
+		"hint": { "type": "string", "default": "Explora marcadores y acerca el mapa para encontrar la sede más cercana." },
+		"height": { "type": "number", "default": 0 }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

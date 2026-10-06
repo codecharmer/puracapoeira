@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/timeline-item",
+	"version": "1.0.0",
+	"title": "Hito",
+	"category": "pura",
+	"icon": "marker",
+	"description": "Un año, un título y una descripción dentro de la línea de tiempo.",
+	"textdomain": "pura",
+	"parent": [ "pura/timeline" ],
+	"attributes": {
+		"year": { "type": "rich-text", "source": "rich-text", "selector": ".timeline-item__year" },
+		"title": { "type": "rich-text", "source": "rich-text", "selector": ".timeline-item__card h4" },
+		"text": { "type": "rich-text", "source": "rich-text", "selector": ".timeline-item__card p" },
+		"i18nKey": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js"
+}

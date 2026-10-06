@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/contact-cards",
+	"version": "1.0.0",
+	"title": "Contactos por sede",
+	"category": "pura",
+	"icon": "id-alt",
+	"description": "Una tarjeta de contacto por sede (WhatsApp, Instagram, Facebook, enlace a la sede).",
+	"textdomain": "pura",
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

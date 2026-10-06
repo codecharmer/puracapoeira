@@ -1,0 +1,146 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": false,
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"custom": false,
+			"customDuotone": false,
+			"customGradient": false,
+			"palette": [
+				{ "slug": "bg", "name": "Fondo", "color": "#FDFBF7" },
+				{ "slug": "surface", "name": "Superficie", "color": "#FFFFFF" },
+				{ "slug": "surface-2", "name": "Superficie 2", "color": "#F3F5F4" },
+				{ "slug": "gold", "name": "Oro", "color": "#FFD700" },
+				{ "slug": "gold-hover", "name": "Oro hover", "color": "#FFC400" },
+				{ "slug": "gold-deep", "name": "Oro profundo", "color": "#B8860B" },
+				{ "slug": "green", "name": "Verde", "color": "#009E60" },
+				{ "slug": "green-hover", "name": "Verde hover", "color": "#00B56E" },
+				{ "slug": "green-deep", "name": "Verde profundo", "color": "#00794A" },
+				{ "slug": "blue", "name": "Azul cobalto", "color": "#0047AB" },
+				{ "slug": "blue-hover", "name": "Azul hover", "color": "#0055CC" },
+				{ "slug": "blue-deep", "name": "Azul profundo", "color": "#06234E" },
+				{ "slug": "red", "name": "Rojo", "color": "#E0463C" },
+				{ "slug": "text", "name": "Texto", "color": "#111827" },
+				{ "slug": "muted", "name": "Apagado", "color": "#4B5563" },
+				{ "slug": "border", "name": "Borde", "color": "#E5E7EB" }
+			]
+		},
+		"custom": {
+			"radius": {
+				"default": "1.25rem",
+				"sm": "0.75rem"
+			},
+			"shadow": {
+				"card": "0 10px 40px -10px rgba(0, 71, 171, 0.12)",
+				"card-hover": "0 18px 50px -12px rgba(0, 71, 171, 0.22)"
+			},
+			"container": "1280px"
+		},
+		"layout": {
+			"contentSize": "1280px",
+			"wideSize": "1280px"
+		},
+		"typography": {
+			"fluid": true,
+			"fontFamilies": [
+				{
+					"slug": "display",
+					"name": "Outfit",
+					"fontFamily": "'Outfit', 'DM Sans', system-ui, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Outfit",
+							"fontStyle": "normal",
+							"fontWeight": "100 900",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/outfit-latin-wght-normal.woff2" ]
+						}
+					]
+				},
+				{
+					"slug": "body",
+					"name": "DM Sans",
+					"fontFamily": "'DM Sans', 'Outfit', system-ui, -apple-system, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "DM Sans",
+							"fontStyle": "normal",
+							"fontWeight": "100 1000",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/dm-sans-latin-wght-normal.woff2" ]
+						}
+					]
+				}
+			],
+			"fontSizes": [
+				{ "slug": "small", "name": "Pequeño", "size": "0.85rem", "fluid": false },
+				{ "slug": "base", "name": "Base", "size": "1rem", "fluid": false },
+				{ "slug": "lead", "name": "Entrada", "size": "1.25rem", "fluid": { "min": "1.05rem", "max": "1.25rem" } },
+				{ "slug": "h3", "name": "Título 3", "size": "1.75rem", "fluid": { "min": "1.35rem", "max": "1.75rem" } },
+				{ "slug": "h2", "name": "Título 2", "size": "3.5rem", "fluid": { "min": "2rem", "max": "3.5rem" } },
+				{ "slug": "h1", "name": "Título 1", "size": "5.5rem", "fluid": { "min": "2.75rem", "max": "5.5rem" } },
+				{ "slug": "display", "name": "Display", "size": "6.5rem", "fluid": { "min": "3rem", "max": "6.5rem" } }
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var(--wp--preset--color--bg)",
+			"text": "var(--wp--preset--color--text)"
+		},
+		"typography": {
+			"fontFamily": "var(--wp--preset--font-family--body)",
+			"fontSize": "var(--wp--preset--font-size--base)",
+			"lineHeight": "1.65"
+		},
+		"elements": {
+			"heading": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--display)",
+					"fontWeight": "800",
+					"lineHeight": "1.02",
+					"letterSpacing": "-0.02em",
+					"textTransform": "uppercase"
+				},
+				"spacing": { "margin": { "top": "0", "bottom": "0" } }
+			},
+			"h1": { "typography": { "fontSize": "var(--wp--preset--font-size--h-1)" } },
+			"h2": { "typography": { "fontSize": "var(--wp--preset--font-size--h-2)" } },
+			"h3": { "typography": { "fontSize": "var(--wp--preset--font-size--h-3)" } },
+			"link": {
+				"color": { "text": "inherit" },
+				"typography": { "textDecoration": "none" }
+			},
+			"button": {
+				"color": {
+					"background": "var(--wp--preset--color--gold)",
+					"text": "var(--wp--preset--color--text)"
+				},
+				"typography": {
+					"fontSize": "0.78rem",
+					"fontWeight": "700",
+					"letterSpacing": "0.16em",
+					"textTransform": "uppercase"
+				},
+				"border": { "radius": "999px" },
+				"spacing": { "padding": { "top": "0.95rem", "bottom": "0.95rem", "left": "1.9rem", "right": "1.9rem" } },
+				":hover": {
+					"color": {
+						"background": "var(--wp--preset--color--gold-hover)",
+						"text": "var(--wp--preset--color--text)"
+					}
+				}
+			}
+		}
+	},
+	"templateParts": [
+		{ "name": "header", "title": "Encabezado", "area": "header" },
+		{ "name": "footer", "title": "Pie de página", "area": "footer" }
+	],
+	"customTemplates": []
+}

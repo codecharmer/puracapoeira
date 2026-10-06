@@ -1,0 +1,50 @@
+/*
+ * Editor-only adjustments so patterns look like the front end while
+ * staying editable. Loaded after theme.css via add_editor_style(); WordPress
+ * prefixes both sheets with .editor-styles-wrapper, so every selector here
+ * carries that prefix explicitly to win ties against the theme sheet.
+ */
+
+/* Scroll-reveal must never hide content in the canvas (the static site only
+   hides timeline items under html.js-reveal; keep that contract, but neutralise
+   it inside the editor regardless of the root class). */
+.editor-styles-wrapper .timeline-item,
+.editor-styles-wrapper .js-reveal .timeline-item,
+.editor-styles-wrapper .reveal-on-scroll {
+	opacity: 1;
+	transform: none;
+	transition: none;
+}
+.editor-styles-wrapper .timeline::before,
+.editor-styles-wrapper .js-reveal .timeline::before {
+	opacity: 1;
+	transform: none;
+	transition: none;
+}
+
+/* The sticky header would float over the canvas; render it in flow. It stays
+   `relative` (not static) so the ::after blur layer keeps its containing block. */
+.editor-styles-wrapper .site-header {
+	position: relative;
+	top: auto;
+}
+
+/* Core's hamburger/overlay never opens inside the canvas and the canvas is
+   often narrower than 900px: always show the inline menu so items stay
+   editable, and hide the toggle. */
+.editor-styles-wrapper .site-header .site-nav .wp-block-navigation__responsive-container-open:not(.always-shown) {
+	display: none;
+}
+.editor-styles-wrapper .site-header .site-nav .wp-block-navigation__responsive-container:not(.hidden-by-default):not(.is-menu-open) {
+	display: block;
+	position: relative;
+	width: 100%;
+}
+.editor-styles-wrapper .nav-inner > .wp-block-pura-lang-switch {
+	display: block;
+}
+
+/* Hero backgrounds rely on 86vh; cap them in the editor canvas. */
+.editor-styles-wrapper .hero {
+	min-height: 60vh;
+}

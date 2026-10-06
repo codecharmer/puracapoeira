@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/profesor-profile",
+	"version": "1.0.0",
+	"title": "Perfil de profesor",
+	"category": "pura",
+	"icon": "businessperson",
+	"description": "Encabezado, foto o redes del profesor actual. Para la plantilla de profesor.",
+	"textdomain": "pura",
+	"attributes": {
+		"part": { "type": "string", "enum": [ "hero-text", "photo", "social" ], "default": "photo" }
+	},
+	"usesContext": [ "postId" ],
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}
