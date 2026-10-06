@@ -93,6 +93,10 @@ afterwards are skipped unless `--force` is given.
 3. Install `docs/htaccess.production` as `<docroot>/.htaccess` (merge with whatever WP Toolkit
    wrote; keep the WordPress block at the end). Then `wp rewrite flush --hard`.
 4. `/usr/local/cpanel/scripts/ea-nginx clear_cache puracapoeirasite` (as root).
+5. Upload limit for the event registration's proof of payment: the web PHP (ea-php83, CGI)
+   defaults to `upload_max_filesize = 2M`. `<docroot>/.user.ini` raises it
+   (`upload_max_filesize = 8M`, `post_max_size = 10M`); the plugin caps receipts at 8 MB and
+   the form shows whichever limit is lower. PHP re-reads `.user.ini` every 5 minutes.
 
 ## 6. Production checklist
 
