@@ -106,6 +106,8 @@ jobs:
 
       # The cPanel account has no login shell, so `sudo -u user -i` cannot run wp-cli;
       # `su -s /bin/bash user -c` runs it as that user with the CLI PHP binary.
+      # WordPress caches the theme's pattern file list keyed on the theme version, so a
+      # new pattern file is invisible until that cache is dropped (`delete_pattern_cache`).
       - name: Activate and flush (only if WP-CLI is installed on the server)
         run: |
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
@@ -114,6 +116,7 @@ jobs:
                su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' plugin activate puracapoeira-core\" && \
                su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' theme activate puracapoeira\" && \
                su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' cache flush\" && \
+               su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' eval 'wp_get_theme()->delete_pattern_cache();'\" && \
                su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' rewrite flush --hard\"; \
              else echo 'wp-cli not found on the server; skipping activate/flush (files are deployed).'; fi"
 
