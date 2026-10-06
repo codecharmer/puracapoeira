@@ -8,8 +8,6 @@
 
 declare( strict_types=1 );
 
-require_once PURA_THEME_DIR . '/src/shared/notice.php';
-
 if ( pura_theme_plugin_notice( 'Pura\Core\Data\Profesor_Post_Type' ) ) {
 	return;
 }

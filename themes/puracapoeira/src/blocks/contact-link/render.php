@@ -8,8 +8,6 @@
 
 declare( strict_types=1 );
 
-require_once PURA_THEME_DIR . '/src/shared/notice.php';
-
 if ( ! function_exists( 'pura_setting' ) ) {
 	if ( current_user_can( 'edit_posts' ) ) {
 		echo '<p class="pura-notice">' . esc_html__( 'Activa el plugin Pura Capoeira Core para mostrar este bloque.', 'pura' ) . '</p>';
