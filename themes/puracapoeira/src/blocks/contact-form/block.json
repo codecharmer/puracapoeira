@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/contact-form",
+	"version": "1.0.0",
+	"title": "Formulario de contacto",
+	"category": "pura",
+	"icon": "email-alt",
+	"description": "Envía el mensaje por correo a los destinatarios configurados en Pura Capoeira → Ajustes.",
+	"textdomain": "pura",
+	"attributes": {
+		"submitLabel": { "type": "string", "default": "Enviar mensaje" },
+		"successText": { "type": "string", "default": "¡Mensaje enviado! Te responderemos pronto." },
+		"errorText": { "type": "string", "default": "No se pudo enviar el mensaje. Inténtalo de nuevo o escríbenos por WhatsApp." }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

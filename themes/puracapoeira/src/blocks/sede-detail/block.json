@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/sede-detail",
+	"version": "1.0.0",
+	"title": "Detalle de sede",
+	"category": "pura",
+	"icon": "location",
+	"description": "Encabezado o cuerpo (horarios, costos, contacto) de la sede actual. Para la plantilla de sede.",
+	"textdomain": "pura",
+	"attributes": {
+		"part": { "type": "string", "enum": [ "hero", "body" ], "default": "body" }
+	},
+	"usesContext": [ "postId" ],
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

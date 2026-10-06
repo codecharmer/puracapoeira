@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/eventos-list",
+	"version": "1.0.0",
+	"title": "Eventos",
+	"category": "pura",
+	"icon": "calendar-alt",
+	"description": "Lista de rodas, talleres y encuentros (Pura Capoeira → Eventos).",
+	"textdomain": "pura",
+	"attributes": {
+		"limit": { "type": "number", "default": 0 },
+		"showPast": { "type": "boolean", "default": true }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

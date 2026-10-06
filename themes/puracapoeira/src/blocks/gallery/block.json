@@ -1,0 +1,22 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/gallery",
+	"version": "1.0.0",
+	"title": "Galería",
+	"category": "pura",
+	"icon": "format-gallery",
+	"description": "Galería con filtros por categoría y sede (Pura Capoeira → Galería).",
+	"textdomain": "pura",
+	"attributes": {
+		"showFilters": { "type": "boolean", "default": true },
+		"limit": { "type": "number", "default": 48 }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/lang-switch",
+	"version": "1.0.0",
+	"title": "Selector de idioma",
+	"category": "pura",
+	"icon": "translation",
+	"description": "Botones para cambiar el idioma del sitio (español, inglés, portugués).",
+	"textdomain": "pura",
+	"attributes": {
+		"variant": {
+			"type": "string",
+			"enum": [ "header", "overlay" ],
+			"default": "header"
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

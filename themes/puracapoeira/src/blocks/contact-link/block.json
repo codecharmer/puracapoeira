@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/contact-link",
+	"version": "1.0.0",
+	"title": "Enlace de contacto",
+	"category": "pura",
+	"icon": "share",
+	"description": "Enlace a WhatsApp, Instagram, Facebook, YouTube o al álbum de iCloud configurados en Ajustes.",
+	"textdomain": "pura",
+	"attributes": {
+		"channel": { "type": "string", "enum": [ "whatsapp", "instagram", "facebook", "youtube", "icloud" ], "default": "whatsapp" },
+		"label": { "type": "string", "default": "" },
+		"showValue": { "type": "boolean", "default": false },
+		"variant": { "type": "string", "enum": [ "link", "btn-primary", "btn-ghost", "btn-outline" ], "default": "link" },
+		"message": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

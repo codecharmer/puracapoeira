@@ -1,0 +1,41 @@
+# Production .htaccess for puracapoeira.com (WordPress document root).
+# Managed on the server; this file is the template. Keep everything above the
+# "# BEGIN WordPress" block — WordPress rewrites only what is inside its markers.
+
+RewriteEngine On
+
+# Never serve dotfiles (.git, .env, editor backups) except ACME challenges.
+RedirectMatch 404 /\.(?!well-known/)
+
+# Legacy static URLs → WordPress permalinks (query strings are preserved).
+RewriteRule ^index\.html$ / [R=301,L]
+RewriteRule ^(grupo|profesores|sedes|galeria|eventos|contacto)\.html$ /$1/ [R=301,L]
+RewriteRule ^sedes/(cuernavaca|toluca|guanajuato|ceara|angola|austin)\.html$ /sedes/$1/ [R=301,L]
+
+# Teacher profiles: old file names → /profesores/<slug>/ (slug = capoeira name).
+RewriteRule ^profesor-mestre-madona\.html$ /profesores/mestre-madona/ [R=301,L]
+RewriteRule ^profesor-mestre-romim\.html$ /profesores/mestre-romim/ [R=301,L]
+RewriteRule ^profesor-mestre-junior-paludo\.html$ /profesores/mestre-junior-paludo/ [R=301,L]
+RewriteRule ^profesor-contramestre-pepe-mortales\.html$ /profesores/contramestre-pepe-mortales/ [R=301,L]
+RewriteRule ^profesor-malandro\.html$ /profesores/profesor-malandro/ [R=301,L]
+RewriteRule ^profesora-laura\.html$ /profesores/profesora-laura/ [R=301,L]
+RewriteRule ^instructora-palito\.html$ /profesores/instructora-palito/ [R=301,L]
+RewriteRule ^instructor-dudu\.html$ /profesores/instructor-dudu/ [R=301,L]
+RewriteRule ^instructor-chino\.html$ /profesores/instructor-chino/ [R=301,L]
+
+# The static assets and JSON data no longer exist; tell crawlers so.
+RewriteRule ^(assets|data)/ - [R=410,L]
+
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress

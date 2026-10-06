@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/sedes-grid",
+	"version": "1.0.0",
+	"title": "Sedes",
+	"category": "pura",
+	"icon": "location-alt",
+	"description": "Tarjetas de las sedes (Pura Capoeira → Sedes). Variante de enlaces para el pie de página.",
+	"textdomain": "pura",
+	"attributes": {
+		"limit": { "type": "number", "default": 0 },
+		"layout": { "type": "string", "enum": [ "cards", "links" ], "default": "cards" }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}
