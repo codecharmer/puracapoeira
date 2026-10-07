@@ -17,6 +17,10 @@ $pura_event_name = trim( (string) ( $attributes['eventName'] ?? '' ) );
 $pura_days       = array_values( array_filter( array_map( 'trim', explode( '|', (string) ( $attributes['days'] ?? '' ) ) ) ) );
 $pura_ask_shirt  = ! empty( $attributes['askShirtSize'] );
 $pura_price      = trim( (string) ( $attributes['price'] ?? '' ) );
+$pura_pay_bank   = trim( (string) ( $attributes['paymentBank'] ?? '' ) );
+$pura_pay_clabe  = trim( (string) ( $attributes['paymentClabe'] ?? '' ) );
+$pura_pay_holder = trim( (string) ( $attributes['paymentHolder'] ?? '' ) );
+$pura_has_account = '' !== $pura_pay_clabe || '' !== $pura_pay_holder;
 $pura_ask_proof  = ! empty( $attributes['askPaymentProof'] );
 $pura_proof_max  = Pura\Core\Data\Event_Registration_Repository::proof_max_bytes();
 $pura_footnote   = trim( (string) ( $attributes['footnote'] ?? '' ) );
@@ -96,11 +100,27 @@ $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-lay
 			</div>
 		</fieldset>
 
-		<?php if ( $pura_ask_proof || '' !== $pura_price ) : ?>
+		<?php if ( $pura_ask_proof || '' !== $pura_price || $pura_has_account ) : ?>
 			<fieldset class="inscription-block">
 				<legend><?php esc_html_e( '5. Pago', 'pura' ); ?></legend>
 				<?php if ( '' !== $pura_price ) : ?>
 					<p class="payment-amount"><?php echo esc_html( $pura_price ); ?> <span class="payment-amount__unit"><?php esc_html_e( 'por persona', 'pura' ); ?></span></p>
+				<?php endif; ?>
+				<?php if ( $pura_has_account ) : ?>
+					<div class="payment-account">
+						<p class="payment-account__intro"><?php esc_html_e( 'Transfiere la cuota a esta cuenta y guarda tu comprobante:', 'pura' ); ?></p>
+						<dl class="payment-account__rows">
+							<?php if ( '' !== $pura_pay_bank ) : ?>
+								<div class="payment-account__row"><dt><?php esc_html_e( 'Banco / app', 'pura' ); ?></dt><dd><?php echo esc_html( $pura_pay_bank ); ?></dd></div>
+							<?php endif; ?>
+							<?php if ( '' !== $pura_pay_clabe ) : ?>
+								<div class="payment-account__row"><dt><?php esc_html_e( 'CLABE', 'pura' ); ?></dt><dd class="payment-account__clabe"><?php echo esc_html( $pura_pay_clabe ); ?></dd></div>
+							<?php endif; ?>
+							<?php if ( '' !== $pura_pay_holder ) : ?>
+								<div class="payment-account__row"><dt><?php esc_html_e( 'Titular', 'pura' ); ?></dt><dd><?php echo esc_html( $pura_pay_holder ); ?></dd></div>
+							<?php endif; ?>
+						</dl>
+					</div>
 				<?php endif; ?>
 				<?php if ( $pura_ask_proof ) : ?>
 					<div class="form-grid">

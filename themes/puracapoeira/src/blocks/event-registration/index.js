@@ -16,6 +16,9 @@ function Controls( { attributes, setAttributes } ) {
 		days,
 		askShirtSize,
 		price,
+		paymentBank,
+		paymentClabe,
+		paymentHolder,
 		askPaymentProof,
 		footnote,
 	} = attributes;
@@ -59,6 +62,33 @@ function Controls( { attributes, setAttributes } ) {
 				help={ __( 'Vacío para no mostrar la cuota.', 'pura' ) }
 				value={ price }
 				onChange={ ( value ) => setAttributes( { price: value } ) }
+			/>
+			<TextControl
+				label={ __( 'Cuenta: banco o app', 'pura' ) }
+				value={ paymentBank }
+				onChange={ ( value ) =>
+					setAttributes( { paymentBank: value } )
+				}
+			/>
+			<TextControl
+				label={ __( 'Cuenta: CLABE', 'pura' ) }
+				help={ __(
+					'Vacío (junto con el titular) para no mostrar la cuenta.',
+					'pura'
+				) }
+				value={ paymentClabe }
+				onChange={ ( value ) =>
+					setAttributes( {
+						paymentClabe: value.replace( /\s+/g, '' ),
+					} )
+				}
+			/>
+			<TextControl
+				label={ __( 'Cuenta: titular', 'pura' ) }
+				value={ paymentHolder }
+				onChange={ ( value ) =>
+					setAttributes( { paymentHolder: value } )
+				}
 			/>
 			<ToggleControl
 				label={ __( 'Pedir comprobante de pago', 'pura' ) }

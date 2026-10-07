@@ -17,10 +17,13 @@
 		},
 		"askShirtSize": { "type": "boolean", "default": true },
 		"price": { "type": "string", "default": "$1,600 MXN" },
+		"paymentBank": { "type": "string", "default": "Mercado Pago" },
+		"paymentClabe": { "type": "string", "default": "722969016003937282" },
+		"paymentHolder": { "type": "string", "default": "Mardonio Sales Linhares" },
 		"askPaymentProof": { "type": "boolean", "default": true },
 		"footnote": {
 			"type": "string",
-			"default": "La cuota del evento es de $1,600 MXN por persona. Si todavía no has pagado, puedes registrarte ahora y enviar tu comprobante después a la organización."
+			"default": "La cuota del evento es de $1,600 MXN por persona, por transferencia a la cuenta de Mercado Pago indicada arriba. Si todavía no has pagado, puedes registrarte ahora y enviar tu comprobante después a la organización."
 		}
 	},
 	"supports": {

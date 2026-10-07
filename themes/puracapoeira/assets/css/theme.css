@@ -2079,6 +2079,36 @@ figure.wp-block-image.event-poster { margin: 0; }
   color: var(--blue);
 }
 .payment-amount__unit { font-size: 0.95rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.payment-account {
+  margin: 0 0 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.payment-account__intro { margin: 0 0 0.85rem; font-size: 0.95rem; color: var(--muted); }
+.payment-account__rows { margin: 0; display: grid; gap: 0.6rem; }
+.payment-account__row { display: grid; grid-template-columns: minmax(6.5em, auto) 1fr; gap: 0.25rem 1rem; align-items: baseline; }
+.payment-account__row dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+.payment-account__row dd { margin: 0; font-weight: 600; }
+.payment-account__clabe {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  word-break: break-all;
+  user-select: all;
+}
+@media (max-width: 480px) {
+  .payment-account__row { grid-template-columns: 1fr; }
+}
 .field input[type="file"] {
   padding: 0.6rem 0.75rem;
   border-style: dashed;

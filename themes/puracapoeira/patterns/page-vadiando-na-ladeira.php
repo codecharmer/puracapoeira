@@ -149,7 +149,7 @@
 			<!-- /wp:group -->
 
 			<!-- wp:paragraph -->
-			<p>Un registro por persona. La cuota es de $1,600 MXN; si ya pagaste, adjunta tu comprobante. Al enviarlo recibirás una copia en tu correo y la organización te contactará con los detalles.</p>
+			<p>Un registro por persona. La cuota es de $1,600 MXN por transferencia a la cuenta de Mercado Pago que aparece en el formulario; si ya pagaste, adjunta tu comprobante. Al enviarlo recibirás una copia en tu correo y la organización te contactará con los detalles.</p>
 			<!-- /wp:paragraph -->
 		</div>
 		<!-- /wp:group -->
