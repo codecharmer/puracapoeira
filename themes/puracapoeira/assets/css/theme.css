@@ -2107,7 +2107,10 @@ figure.wp-block-image.event-poster { margin: 0; }
   user-select: all;
 }
 @media (max-width: 480px) {
+  .payment-account { padding: 1rem; }
   .payment-account__row { grid-template-columns: 1fr; }
+  /* 18 digits must stay on one line on a phone: smaller type, tighter tracking. */
+  .payment-account__clabe { font-size: 1rem; letter-spacing: 0.04em; }
 }
 .field input[type="file"] {
   padding: 0.6rem 0.75rem;
@@ -2130,6 +2133,15 @@ figure.wp-block-image.event-poster { margin: 0; }
   cursor: pointer;
 }
 .field-help { margin: 0.75rem 0 0; font-size: 0.85rem; color: var(--muted); }
+/* Grid/flex items default to min-width:auto, so a file input's intrinsic width (its button +
+   "no file chosen" text) can force the grid, the fieldset and the page wider than a phone
+   screen. Let fields shrink and fill their column instead. */
+.inscription-block { min-inline-size: 0; }
+.form-grid > *,
+.field > * { min-width: 0; }
+.field input,
+.field select,
+.field textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
 @media (max-width: 600px) {
   .form-grid { grid-template-columns: 1fr; }
   .inscription-submit { align-self: stretch; justify-content: center; }
