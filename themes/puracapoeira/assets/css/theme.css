@@ -2146,3 +2146,30 @@ figure.wp-block-image.event-poster { margin: 0; }
   .form-grid { grid-template-columns: 1fr; }
   .inscription-submit { align-self: stretch; justify-content: center; }
 }
+
+/* ================================================================
+   LEGAL PAGES (aviso de privacidad)
+   ================================================================ */
+.legal-langs a { font-weight: 700; color: var(--blue); text-decoration: none; }
+.legal-langs a:hover { text-decoration: underline; }
+.legal-section + .legal-section { padding-top: 0; }
+.legal { max-width: 760px; }
+.legal h2.display { font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.25rem); margin: 0 0 1.5rem; }
+.legal__lang {
+  display: inline-block;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+  font-family: var(--font-body, inherit);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.legal p { margin: 0 0 1rem; line-height: 1.7; }
+.legal p strong { color: var(--text); }
+.legal ul { margin: 0 0 1.25rem; padding-left: 1.25rem; display: grid; gap: 0.6rem; }
+.legal li { line-height: 1.65; }
+.legal li em { font-style: normal; font-weight: 700; color: var(--blue); }
+.legal a { color: var(--blue); overflow-wrap: anywhere; }
+.footer-bottom .footer-legal a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }

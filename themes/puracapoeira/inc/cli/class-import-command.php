@@ -57,6 +57,10 @@ final class Pura_Theme_Import_Command {
 			// Featured image = share preview (og:image); the poster is shown by the pattern itself.
 			'thumbnail' => 'assets/images/vadiando-na-ladeira-2026.jpg',
 		),
+		'privacidad'          => array(
+			'title'   => 'Aviso de privacidad',
+			'excerpt' => 'Aviso de privacidad de Pura Capoeira: qué datos tratamos en el sitio y en la app, para qué, dónde se guardan y tus derechos. Español, English, Português.',
+		),
 	);
 
 	private const NAV_LABELS = array(
@@ -548,6 +552,9 @@ final class Pura_Theme_Import_Command {
 			if ( 'inicio' === $slug ) {
 				update_option( 'show_on_front', 'page' );
 				update_option( 'page_on_front', $id );
+			}
+			if ( 'privacidad' === $slug ) {
+				update_option( 'wp_page_for_privacy_policy', $id );
 			}
 		}
 
