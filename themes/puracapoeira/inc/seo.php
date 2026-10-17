@@ -103,3 +103,25 @@ function pura_theme_print_meta(): void {
 	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
 }
 add_action( 'wp_head', 'pura_theme_print_meta', 1 );
+
+/**
+ * Mi cuenta is personal and empty for crawlers: noindex, follow.
+ *
+ * @param array<string, bool|string> $robots Robots directives.
+ * @return array<string, bool|string>
+ */
+function pura_theme_noindex_account( array $robots ): array {
+	if ( ! is_page() ) {
+		return $robots;
+	}
+	$id         = get_queried_object_id();
+	$account_id = (int) ( function_exists( 'pura_setting' ) ? pura_setting( 'account_page_id', 0 ) : 0 );
+	if ( ( $account_id > 0 && $id === $account_id ) || 'cuenta' === (string) get_post_field( 'post_name', $id ) ) {
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+		unset( $robots['max-image-preview'] );
+	}
+
+	return $robots;
+}
+add_filter( 'wp_robots', 'pura_theme_noindex_account' );

@@ -32,9 +32,28 @@ $pura_config     = array(
 	'max_proof_bytes' => $pura_ask_proof ? $pura_proof_max : 0,
 );
 
+$pura_providers  = function_exists( 'pura_auth_providers' ) ? pura_auth_providers() : array();
+$pura_account    = function_exists( 'pura_account_url' ) ? pura_account_url() : '';
+$pura_this_url   = (string) get_permalink();
+
 $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout event-registration' ) );
 ?>
-<div <?php echo $pura_wrapper; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> data-event-root data-config="<?php echo esc_attr( (string) wp_json_encode( $pura_config ) ); ?>">
+<div <?php echo $pura_wrapper; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> data-event-root data-event-auth-state="pending" data-config="<?php echo esc_attr( (string) wp_json_encode( $pura_config ) ); ?>">
+	<?php if ( $pura_providers ) : ?>
+		<?php // Session box and sign-in offer. Nothing user-specific is printed: view.js fills and toggles them. ?>
+		<div class="event-session" data-event-session hidden>
+			<p class="event-session__text"><span class="i18n-session-prefix"><?php esc_html_e( 'Registrando como', 'pura' ); ?></span> <strong data-event-session-name></strong> <span class="event-session__email" data-event-session-email></span></p>
+			<p class="event-session__links"><a href="<?php echo esc_url( $pura_account ); ?>" class="i18n-session-account"><?php esc_html_e( 'Mi cuenta', 'pura' ); ?></a> · <a href="#" data-event-logout rel="nofollow" class="i18n-session-logout"><?php esc_html_e( 'Cerrar sesión', 'pura' ); ?></a></p>
+		</div>
+		<div class="event-login" data-event-login>
+			<p class="event-login__text i18n-login-prefill"><?php esc_html_e( '¿Ya tienes cuenta? Entra con Google o Apple para llenar tus datos automáticamente y ver tus registros en Mi cuenta.', 'pura' ); ?></p>
+			<div class="account-login__providers">
+				<?php foreach ( $pura_providers as $pura_provider ) : ?>
+					<?php echo pura_theme_provider_form( $pura_provider, $pura_this_url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside the helper. ?>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	<?php endif; ?>
 	<form class="inscription-form event-form" data-event-form novalidate>
 		<fieldset class="inscription-block">
 			<legend><?php esc_html_e( '1. Tus datos', 'pura' ); ?></legend>

@@ -28,6 +28,9 @@ add_filter( 'wp_speculation_rules_configuration', 'pura_theme_speculation_config
  */
 function pura_theme_speculation_exclude( array $paths ): array {
 	$paths[] = '/wp-json/*';
+	// Mi cuenta is personal: its script fires credentialed requests, which a prerender must not.
+	// Core already excludes /wp-*.php (login/logout), /wp-admin/* and any URL carrying a nonce.
+	$paths[] = '/cuenta/*';
 
 	return $paths;
 }

@@ -12,11 +12,18 @@ function restUrl( path ) {
 	return base.replace( /\/?$/, '/' ) + path;
 }
 
-// Multipart so the proof of payment can travel with the rest of the fields.
-async function postForm( path, formData ) {
+// Multipart so the proof of payment can travel with the rest of the fields. A signed-in visitor
+// sends the REST nonce too, so the registration is linked to their account.
+async function postForm( path, formData, nonce ) {
+	const headers = { Accept: 'application/json' };
+	if ( nonce ) {
+		headers[ 'X-WP-Nonce' ] = nonce;
+	}
 	const res = await fetch( restUrl( path ), {
 		method: 'POST',
-		headers: { Accept: 'application/json' },
+		credentials: 'same-origin',
+		cache: 'no-store',
+		headers,
 		body: formData,
 	} );
 	let json = {};
@@ -178,7 +185,27 @@ function initEventForm( root ) {
 		showResult( 'Enviando tu registro...', true );
 
 		try {
-			const { res, json } = await postForm( 'events/register', payload );
+			const auth = window.puraAuth;
+			let nonce = auth ? await auth.nonce() : null;
+			let { res, json } = await postForm(
+				'events/register',
+				payload,
+				nonce
+			);
+			if (
+				res.status === 403 &&
+				json.code === 'rest_cookie_invalid_nonce' &&
+				auth
+			) {
+				// Stale nonce (the session changed in another tab). The handler never ran, so a
+				// retry cannot duplicate anything: refresh the nonce, or fall back to anonymous.
+				nonce = await auth.refreshNonce();
+				( { res, json } = await postForm(
+					'events/register',
+					payload,
+					nonce
+				) );
+			}
 			if ( ! res.ok || ! json.ok ) {
 				throw new Error(
 					json.error ||
@@ -203,4 +230,69 @@ function initEventForm( root ) {
 	} );
 }
 
-document.querySelectorAll( '[data-event-root]' ).forEach( initEventForm );
+/**
+ * Signed-in visitors: prefill name and email from Mi cuenta and swap the sign-in offer for the
+ * session box. Everything stays usable without JS or without a session.
+ *
+ * @param {HTMLElement} root Block root.
+ */
+async function initSession( root ) {
+	const form = $( '[data-event-form]', root );
+	const sessionBox = $( '[data-event-session]', root );
+	const loginBox = $( '[data-event-login]', root );
+	const auth = window.puraAuth;
+
+	const setState = ( state ) => {
+		root.dataset.eventAuthState = state;
+		if ( sessionBox ) {
+			sessionBox.hidden = state !== 'logged-in';
+		}
+		if ( loginBox ) {
+			loginBox.hidden = state !== 'logged-out';
+		}
+	};
+
+	if ( ! auth || ! form || ( ! sessionBox && ! loginBox ) ) {
+		setState( 'logged-out' );
+		return;
+	}
+
+	const { res, json } = await auth.me();
+	if ( ! res.ok || ! json.ok || ! json.user ) {
+		setState( 'logged-out' );
+		return;
+	}
+
+	const user = json.user;
+	const display = ( user.displayName || '' ).trim();
+	const fallbackFirst = display.split( /\s+/ )[ 0 ] || '';
+	const fallbackLast = display.split( /\s+/ ).slice( 1 ).join( ' ' );
+	const fill = ( name, value ) => {
+		const input = form.elements[ name ];
+		if ( input && ! input.value && value ) {
+			input.value = value;
+		}
+	};
+	fill( 'first_name', user.firstName || fallbackFirst );
+	fill( 'last_name', user.lastName || fallbackLast );
+	fill( 'email', user.email || '' );
+
+	const nameEl = $( '[data-event-session-name]', root );
+	const emailEl = $( '[data-event-session-email]', root );
+	const logout = $( '[data-event-logout]', root );
+	if ( nameEl ) {
+		nameEl.textContent = user.firstName || display;
+	}
+	if ( emailEl ) {
+		emailEl.textContent = user.email ? `· ${ user.email }` : '';
+	}
+	if ( logout && json.logoutUrl ) {
+		logout.href = json.logoutUrl;
+	}
+	setState( 'logged-in' );
+}
+
+document.querySelectorAll( '[data-event-root]' ).forEach( ( root ) => {
+	initEventForm( root );
+	initSession( root );
+} );

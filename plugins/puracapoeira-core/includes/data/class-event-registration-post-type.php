@@ -49,6 +49,7 @@ final class Event_Registration_Post_Type {
 		'_pura_emergency_phone' => 'string',
 		'_pura_notes'           => 'string',
 		'_pura_payment_proof'   => 'integer',
+		'_pura_user_id'         => 'integer',
 	);
 
 	private const NONCE = 'pura_event_reg_status';
@@ -186,6 +187,16 @@ final class Event_Registration_Post_Type {
 			esc_html_e( 'No adjuntó comprobante.', 'pura' );
 		}
 		echo '</td></tr>';
+		if ( $data['user_id'] > 0 ) {
+			$account = get_user_by( 'id', (int) $data['user_id'] );
+			echo '<tr><th style="width:14em">' . esc_html__( 'Cuenta', 'pura' ) . '</th><td>';
+			if ( $account ) {
+				echo '<a href="' . esc_url( (string) get_edit_user_link( $account->ID ) ) . '">' . esc_html( $account->display_name ) . '</a> <span class="description">(' . esc_html( $account->user_email ) . ')</span>';
+			} else {
+				echo esc_html__( 'Cuenta eliminada', 'pura' );
+			}
+			echo '</td></tr>';
+		}
 		echo '<tr><th style="width:14em">' . esc_html__( 'Registrado el', 'pura' ) . '</th><td>' . esc_html( (string) $data['created_at'] ) . '</td></tr>';
 		echo '</tbody></table>';
 	}

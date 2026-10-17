@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/account",
+	"version": "1.0.0",
+	"title": "Mi cuenta (capoeiristas)",
+	"category": "pura",
+	"icon": "admin-users",
+	"description": "Inicio de sesión con Google o Apple y la página Mi cuenta: los registros a eventos de la persona que entra.",
+	"textdomain": "pura",
+	"attributes": {
+		"introLoggedOut": {
+			"type": "string",
+			"default": "Entra con la cuenta de Google o Apple que uses normalmente. Si tu correo coincide con el de tus registros a eventos, los verás de inmediato."
+		},
+		"emptyText": {
+			"type": "string",
+			"default": "Aún no hay registros a eventos con esta cuenta. Si te registraste con otro correo, escríbenos por WhatsApp y lo vinculamos."
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": [ "pura-auth", "file:./view.js" ],
+	"render": "file:./render.php"
+}

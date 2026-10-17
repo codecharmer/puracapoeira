@@ -21,6 +21,7 @@ final class Activator {
 		( new Data\Evento_Post_Type() )->register();
 		( new Data\Galeria_Post_Type() )->register();
 		( new Data\Event_Registration_Post_Type() )->register();
+		Auth\Member_Accounts::register_role();
 
 		flush_rewrite_rules();
 	}

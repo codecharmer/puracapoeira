@@ -48,6 +48,15 @@ final class Settings_Page {
 				'default'           => Settings::defaults(),
 			)
 		);
+		register_setting(
+			self::GROUP,
+			Settings::SECRETS,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( $this, 'sanitize_secrets' ),
+				'default'           => array(),
+			)
+		);
 
 		$sections = array(
 			'contacto' => array(
@@ -80,6 +89,19 @@ final class Settings_Page {
 					'tagline'     => array( 'textarea', __( 'Texto del pie de página', 'pura' ) ),
 					'motto'       => array( 'text', __( 'Lema (pie de página)', 'pura' ) ),
 					'og_image_id' => array( 'media', __( 'Imagen para compartir (Open Graph)', 'pura' ), __( 'Recomendado 1200 × 630 px. Se usa cuando la página no tiene imagen destacada.', 'pura' ) ),
+				),
+			),
+			'cuentas'  => array(
+				'title'  => __( 'Cuentas de capoeiristas (Google y Apple)', 'pura' ),
+				'fields' => array(
+					'account_page_id'      => array( 'page', __( 'Página "Mi cuenta"', 'pura' ), __( 'Déjalo en "Detectar por slug" si la página se llama /cuenta/.', 'pura' ) ),
+					'google_client_id'     => array( 'text', __( 'Google: Client ID', 'pura' ), __( 'OAuth 2.0 Client ID (tipo Web) en Google Cloud Console.', 'pura' ) ),
+					'google_client_secret' => array( 'secret', __( 'Google: Client secret', 'pura' ) ),
+					'apple_services_id'    => array( 'text', __( 'Apple: Services ID', 'pura' ), __( 'Identificador del Services ID con Sign in with Apple (p. ej. com.puracapoeira.web).', 'pura' ) ),
+					'apple_team_id'        => array( 'text', __( 'Apple: Team ID', 'pura' ) ),
+					'apple_key_id'         => array( 'text', __( 'Apple: Key ID', 'pura' ), __( 'ID de la llave .p8 con Sign in with Apple habilitado.', 'pura' ) ),
+					'apple_private_key'    => array( 'secret_multiline', __( 'Apple: llave privada (.p8)', 'pura' ) ),
+					'_auth_callbacks'      => array( 'auth_callbacks', __( 'URLs de retorno', 'pura' ) ),
 				),
 			),
 		);
@@ -115,6 +137,49 @@ final class Settings_Page {
 		$locked = 'constant' === Settings::source( $key );
 
 		switch ( $type ) {
+			case 'secret':
+			case 'secret_multiline':
+				$source = Settings::secret_source( $key );
+				$sname  = Settings::SECRETS . '[' . $key . ']';
+				if ( 'constant' === $source ) {
+					echo '<input type="password" id="' . esc_attr( $id ) . '" class="regular-text pura-locked" value="••••••••••••" disabled />';
+					echo '<p class="description">' . esc_html__( 'Definido en wp-config.php', 'pura' ) . ' (<code>' . esc_html( Settings::secret_constant( $key ) ) . '</code>).</p>';
+				} else {
+					$placeholder = 'option' === $source ? __( 'guardado — escribe para reemplazar', 'pura' ) : __( 'no configurado', 'pura' );
+					if ( 'secret_multiline' === $type ) {
+						echo '<textarea id="' . esc_attr( $id ) . '" name="' . esc_attr( $sname ) . '" rows="4" class="large-text code" autocomplete="off" placeholder="' . esc_attr( $placeholder ) . '"></textarea>';
+					} else {
+						echo '<input type="password" id="' . esc_attr( $id ) . '" name="' . esc_attr( $sname ) . '" class="regular-text" value="" autocomplete="new-password" placeholder="' . esc_attr( $placeholder ) . '" />';
+					}
+					if ( 'option' === $source ) {
+						echo ' <label><input type="checkbox" name="pura_secrets_delete[' . esc_attr( $key ) . ']" value="1" /> ' . esc_html__( 'Borrar', 'pura' ) . '</label>';
+					}
+					echo '<p class="description">' . esc_html__( 'En producción se recomienda definirlo como constante en wp-config.php.', 'pura' ) . '</p>';
+				}
+				return;
+
+			case 'auth_callbacks':
+				echo '<p class="description">' . esc_html__( 'Regístralas como URI de redirección autorizada (Google) y Return URL (Apple):', 'pura' ) . '</p>';
+				foreach ( array( 'google', 'apple' ) as $provider ) {
+					echo '<p><code>' . esc_html( rest_url( 'pura/v1/auth/' . $provider . '/callback' ) ) . '</code></p>';
+				}
+				echo '<p class="description">' . esc_html__( 'Apple exige HTTPS y un dominio verificado: pruébalo en producción.', 'pura' ) . '</p>';
+				return;
+
+			case 'page':
+				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- core escapes its own markup.
+				wp_dropdown_pages(
+					array(
+						'id'                => $id,
+						'name'              => $name,
+						'selected'          => (int) Settings::get( $key, 0 ),
+						'show_option_none'  => __( '— Detectar por slug —', 'pura' ),
+						'option_none_value' => '0',
+					)
+				);
+				// phpcs:enable
+				break;
+
 			case 'test_mail':
 				$url = wp_nonce_url( admin_url( 'admin-post.php?action=pura_test_mail' ), 'pura_test_mail' );
 				echo '<a href="' . esc_url( $url ) . '" class="button">' . esc_html__( 'Enviar correo de prueba a los destinatarios', 'pura' ) . '</a>';
@@ -203,6 +268,34 @@ final class Settings_Page {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Empty inputs keep the stored secret; the "Borrar" checkbox removes it.
+	 *
+	 * @param mixed $input Submitted pura_secrets.
+	 * @return array<string, string>
+	 */
+	public function sanitize_secrets( $input ): array {
+		$stored = get_option( Settings::SECRETS, array() );
+		$stored = is_array( $stored ) ? $stored : array();
+		$input  = is_array( $input ) ? $input : array();
+
+		// options.php has already verified the settings nonce for this request.
+		$delete = isset( $_POST['pura_secrets_delete'] ) && is_array( $_POST['pura_secrets_delete'] ) ? array_map( 'sanitize_key', array_keys( wp_unslash( $_POST['pura_secrets_delete'] ) ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		foreach ( Settings::SECRET_KEYS as $key ) {
+			if ( in_array( $key, $delete, true ) ) {
+				unset( $stored[ $key ] );
+				continue;
+			}
+			$value = isset( $input[ $key ] ) ? trim( (string) $input[ $key ] ) : '';
+			if ( '' !== $value ) {
+				$stored[ $key ] = in_array( $key, Settings::MULTILINE_SECRET_KEYS, true ) ? sanitize_textarea_field( $value ) : sanitize_text_field( $value );
+			}
+		}
+
+		return $stored;
 	}
 
 	public function handle_test_mail(): void {

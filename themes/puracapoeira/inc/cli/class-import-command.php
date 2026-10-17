@@ -61,6 +61,10 @@ final class Pura_Theme_Import_Command {
 			'title'   => 'Aviso de privacidad',
 			'excerpt' => 'Aviso de privacidad de Pura Capoeira: qué datos tratamos en el sitio y en la app, para qué, dónde se guardan y tus derechos. Español, English, Português.',
 		),
+		'cuenta'              => array(
+			'title'   => 'Mi cuenta',
+			'excerpt' => 'Entra con Google o Apple para ver tus registros a eventos de Pura Capoeira y llenar los formularios más rápido.',
+		),
 	);
 
 	private const NAV_LABELS = array(
@@ -71,6 +75,7 @@ final class Pura_Theme_Import_Command {
 		'galeria'    => 'Galería',
 		'eventos'    => 'Eventos',
 		'contacto'   => 'Contacto',
+		'cuenta'     => 'Mi cuenta',
 	);
 
 	private const MENU_SLUG  = 'navegacion-principal';
@@ -556,6 +561,9 @@ final class Pura_Theme_Import_Command {
 			if ( 'privacidad' === $slug ) {
 				update_option( 'wp_page_for_privacy_policy', $id );
 			}
+			if ( 'cuenta' === $slug && class_exists( 'Pura\\Core\\Settings' ) ) {
+				Pura\Core\Settings::update( array( 'account_page_id' => $id ) );
+			}
 		}
 
 		// Retire the sample page/post if they still exist.
@@ -642,14 +650,26 @@ final class Pura_Theme_Import_Command {
 			WP_CLI::warning( 'settings: plugin not active; skipping.' );
 			return;
 		}
+		$update = array();
+
+		// Mi cuenta: point the plugin at the imported page when nothing was chosen in the admin.
+		$account = get_page_by_path( 'cuenta' );
+		if ( $account && 'default' === Pura\Core\Settings::source( 'account_page_id' ) ) {
+			$update['account_page_id'] = $account->ID;
+		}
+
 		$items = $this->read_json( 'data/sedes.json', 'settings', false );
 		if ( ! $items ) {
-			WP_CLI::log( 'settings: nothing to seed (no sedes.json).' );
+			if ( $update ) {
+				Pura\Core\Settings::update( $update );
+				WP_CLI::log( 'settings: seeded ' . implode( ', ', array_keys( $update ) ) );
+			} else {
+				WP_CLI::log( 'settings: nothing to seed (no sedes.json).' );
+			}
 			return;
 		}
 
-		$first  = $items[0];
-		$update = array();
+		$first = $items[0];
 		$map    = array(
 			'whatsapp_number'  => preg_replace( '/\D+/', '', (string) ( $first['whatsapp'] ?? '' ) ),
 			'whatsapp_display' => (string) ( $first['whatsappDisplay'] ?? '' ),

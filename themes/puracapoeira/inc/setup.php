@@ -96,9 +96,10 @@ add_action( 'wp_enqueue_scripts', 'pura_theme_enqueue_assets' );
 /**
  * Mark the document as JS-capable as early as possible so the scroll-reveal CSS can hide
  * content without a flash for no-JS visitors or crawlers (`html.js-reveal .reveal-on-scroll`).
+ * `js` is the generic flag the Mi cuenta / sign-in states key on.
  */
 function pura_theme_js_class(): void {
-	echo "<script>document.documentElement.classList.add('js-reveal');</script>\n";
+	echo "<script>document.documentElement.classList.add('js-reveal','js');</script>\n";
 }
 add_action( 'wp_head', 'pura_theme_js_class', 0 );
 

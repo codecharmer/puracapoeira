@@ -2173,3 +2173,130 @@ figure.wp-block-image.event-poster { margin: 0; }
 .legal li em { font-style: normal; font-weight: 700; color: var(--blue); }
 .legal a { color: var(--blue); overflow-wrap: anywhere; }
 .footer-bottom .footer-legal a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ================================================================
+   MI CUENTA + SIGN-IN (Google / Apple)
+   States live on data attributes; `hidden` wins over any display rule.
+   ================================================================ */
+.account { display: grid; gap: 2.5rem; max-width: 880px; margin: 0 auto; }
+.account [hidden] { display: none !important; }
+/* Without JS the sign-in buttons simply show (plain POST forms); with JS they wait for the session check. */
+.account__loading { display: none; margin: 0; }
+html.js .account__loading { display: block; }
+html.js .account[data-account-state="pending"] [data-account-logged-out] { display: none; }
+.account-notice { margin: 0; }
+
+.account-login { display: grid; gap: 1.5rem; }
+.account-login .lead { margin: 0; max-width: 62ch; }
+.account-login__providers { display: flex; flex-wrap: wrap; gap: 0.85rem; }
+.account-login__form { margin: 0; }
+.account-login__legal { margin: 0; font-size: 0.9rem; max-width: 62ch; }
+.account-login__legal a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+
+.btn--provider {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 6px 18px -10px rgba(17, 24, 39, 0.35);
+}
+.btn--provider:hover { background: #ffffff; border-color: var(--text); transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(17, 24, 39, 0.35); }
+.btn--provider svg { flex: none; }
+.btn--provider span { line-height: 1; }
+
+.account-portal { display: grid; gap: 2.5rem; }
+.account-portal__head { display: grid; gap: 0.35rem; justify-items: start; }
+.account-portal__title { margin: 0; font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem); }
+.account-portal__email,
+.account-portal__private { margin: 0; }
+.account-portal__private { max-width: 62ch; font-size: 0.9rem; }
+.account-logout { margin-top: 0.75rem; }
+
+.account-history { display: grid; gap: 1.25rem; }
+.account-history__title { margin: 0; font-size: 1.15rem; }
+.account-history__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.account-history__table { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
+.account-history__table th,
+.account-history__table td { text-align: left; padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+.account-history__table tbody tr:last-child td { border-bottom: 0; }
+.account-history__table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.account-history__event { font-weight: 600; white-space: normal; min-width: 14rem; }
+.account-history__proof { color: var(--muted); }
+.account-history__proof.is-attached { color: var(--green-deep); font-weight: 600; }
+.account-history__empty { margin: 0; max-width: 62ch; }
+.account-actions { margin-top: 0.25rem; }
+
+.status-pill {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.status-pill--registered { border-color: var(--blue); color: var(--blue); background: rgba(0, 71, 171, 0.08); }
+.status-pill--confirmed { border-color: var(--green); color: var(--green-deep); background: rgba(0, 158, 96, 0.12); }
+.status-pill--cancelled { text-decoration: line-through; }
+
+/* Event form: signed-in session box / sign-in offer (plain POST forms live outside the <form>). */
+.event-session,
+.event-login {
+  margin: 0 0 1.5rem;
+  padding: 1.1rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  display: grid;
+  gap: 0.85rem;
+}
+.event-session[hidden],
+.event-login[hidden] { display: none; }
+html.js .event-registration[data-event-auth-state="pending"] .event-login { display: none; }
+.event-session__text,
+.event-session__links,
+.event-login__text { margin: 0; }
+.event-session__email { color: var(--muted); }
+.event-session__links { font-size: 0.9rem; color: var(--muted); }
+.event-session__links a { color: var(--blue); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.event-login__text { font-size: 0.98rem; max-width: 62ch; }
+
+@media (max-width: 600px) {
+  .account-login__providers { flex-direction: column; }
+  .account-login__form,
+  .account-login__providers .btn--provider { width: 100%; }
+  .account-actions .btn { width: 100%; }
+}
+
+/* ----------------------------------------------------------------
+   Header nav with eight items (Mi cuenta): keep every label on one line
+   and tighten the type between the hamburger breakpoint and wide screens.
+   ---------------------------------------------------------------- */
+.site-header .site-nav .wp-block-navigation-item__content { white-space: nowrap; }
+.site-header .site-nav .wp-block-navigation__responsive-container:not(.is-menu-open) .wp-block-navigation__container { flex-wrap: nowrap; }
+@media (min-width: 900px) and (max-width: 1400px) {
+  .site-header .nav-inner { gap: 0.75rem; }
+  .site-header .site-nav.wp-block-navigation,
+  .site-header .site-nav .wp-block-navigation__responsive-container-content,
+  .site-header .site-nav .wp-block-navigation__container { gap: 1.1rem; }
+  .site-header .site-nav .wp-block-navigation-item__content { font-size: 0.7rem; letter-spacing: 0.12em; }
+}

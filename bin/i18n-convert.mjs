@@ -345,6 +345,32 @@ const EXTRA_VALUES = {
 		'Sitio web': 'Website',
 		'Enlace por confirmar': 'Link coming soon',
 		'Ver perfil': 'View profile',
+		// Mi cuenta / sign-in (rendered by scripts, translated through data-tv).
+		'Continuar con Google': 'Continue with Google',
+		'Continuar con Apple': 'Continue with Apple',
+		Registrado: 'Registered',
+		Confirmado: 'Confirmed',
+		Cancelado: 'Cancelled',
+		Adjuntado: 'Attached',
+		Pendiente: 'Pending',
+		'Cancelaste el inicio de sesión. Puedes intentarlo de nuevo cuando quieras.':
+			'You cancelled the sign-in. You can try again whenever you like.',
+		'La sesión de inicio expiró. Vuelve a intentarlo.':
+			'The sign-in session expired. Please try again.',
+		'No recibimos la autorización del proveedor. Vuelve a intentarlo.':
+			'We did not receive the provider’s authorization. Please try again.',
+		'El proveedor no confirmó tu identidad. Vuelve a intentarlo en unos minutos.':
+			'The provider did not confirm your identity. Try again in a few minutes.',
+		'No pudimos verificar tu identidad con el proveedor.':
+			'We could not verify your identity with the provider.',
+		'Ese correo pertenece a una cuenta del equipo. Entra por el acceso de administración.':
+			'That email belongs to a team account. Sign in through the admin login.',
+		'No se pudo crear tu cuenta. Escríbenos por WhatsApp.':
+			'Your account could not be created. Write to us on WhatsApp.',
+		'Este método de acceso no está disponible.':
+			'This sign-in method is not available.',
+		'No se pudo iniciar sesión. Vuelve a intentarlo.':
+			'Sign-in failed. Please try again.',
 	},
 	pt: {
 		Ene: 'Jan',
@@ -367,6 +393,115 @@ const EXTRA_VALUES = {
 		'Sitio web': 'Site',
 		'Enlace por confirmar': 'Link em breve',
 		'Ver perfil': 'Ver perfil',
+		// Mi cuenta / sign-in (rendered by scripts, translated through data-tv).
+		'Continuar con Google': 'Continuar com o Google',
+		'Continuar con Apple': 'Continuar com a Apple',
+		Registrado: 'Inscrito',
+		Confirmado: 'Confirmado',
+		Cancelado: 'Cancelado',
+		Adjuntado: 'Anexado',
+		Pendiente: 'Pendente',
+		'Cancelaste el inicio de sesión. Puedes intentarlo de nuevo cuando quieras.':
+			'Você cancelou o login. Pode tentar de novo quando quiser.',
+		'La sesión de inicio expiró. Vuelve a intentarlo.':
+			'A sessão de login expirou. Tente novamente.',
+		'No recibimos la autorización del proveedor. Vuelve a intentarlo.':
+			'Não recebemos a autorização do provedor. Tente novamente.',
+		'El proveedor no confirmó tu identidad. Vuelve a intentarlo en unos minutos.':
+			'O provedor não confirmou sua identidade. Tente novamente em alguns minutos.',
+		'No pudimos verificar tu identidad con el proveedor.':
+			'Não foi possível verificar sua identidade com o provedor.',
+		'Ese correo pertenece a una cuenta del equipo. Entra por el acceso de administración.':
+			'Esse e-mail pertence a uma conta da equipe. Entre pelo acesso de administração.',
+		'No se pudo crear tu cuenta. Escríbenos por WhatsApp.':
+			'Não foi possível criar sua conta. Fale conosco pelo WhatsApp.',
+		'Este método de acceso no está disponible.':
+			'Este método de acesso não está disponível.',
+		'No se pudo iniciar sesión. Vuelve a intentarlo.':
+			'Não foi possível entrar. Tente novamente.',
+	},
+};
+
+/**
+ * `shared` keys with no legacy page behind them: the "Mi cuenta" nav item and the signed-in
+ * state of the event registration form (which appears on arbitrary pages).
+ */
+const EXTRA_SHARED = {
+	en: {
+		'nav-cuenta': 'My account',
+		'session-prefix': 'Registering as',
+		'session-account': 'My account',
+		'session-logout': 'Sign out',
+		'login-prefill':
+			'Already have an account? Sign in with Google or Apple to fill in your details automatically and see your registrations in My account.',
+	},
+	pt: {
+		'nav-cuenta': 'Minha conta',
+		'session-prefix': 'Inscrevendo como',
+		'session-account': 'Minha conta',
+		'session-logout': 'Sair',
+		'login-prefill':
+			'Já tem conta? Entre com Google ou Apple para preencher seus dados automaticamente e ver suas inscrições em Minha conta.',
+	},
+};
+
+/** Pages that exist only in WordPress (no legacy HTML to convert): slug → lang → keys. */
+const EXTRA_PAGES = {
+	cuenta: {
+		en: {
+			'hero-eyebrow': 'Capoeiristas',
+			'hero-title': 'My account',
+			'hero-lead':
+				'Sign in with Google or Apple to see your event registrations and fill in forms faster.',
+			loading: 'Checking your session…',
+			'login-intro':
+				'Sign in with the Google or Apple account you normally use. If your email matches the one on your event registrations, you will see them right away.',
+			'login-unavailable':
+				'Sign-in is not set up yet. Write to us on WhatsApp if you need help with your registration.',
+			'login-legal':
+				'We only receive your name and email from the provider. See the',
+			'login-legal-link': 'Privacy notice',
+			'portal-hello': 'Hello,',
+			'portal-private':
+				'You signed in with Apple hiding your email, so only registrations made from this account appear here.',
+			logout: 'Sign out',
+			'history-title': 'My event registrations',
+			'col-event': 'Event',
+			'col-date': 'Date',
+			'col-status': 'Status',
+			'col-proof': 'Payment proof',
+			'history-empty':
+				'There are no event registrations on this account yet. If you registered with another email, write to us on WhatsApp and we will link it.',
+			'see-events': 'See events',
+			whatsapp: 'Write on WhatsApp',
+		},
+		pt: {
+			'hero-eyebrow': 'Capoeiristas',
+			'hero-title': 'Minha conta',
+			'hero-lead':
+				'Entre com Google ou Apple para ver suas inscrições em eventos e preencher os formulários mais rápido.',
+			loading: 'Verificando sua sessão…',
+			'login-intro':
+				'Entre com a conta Google ou Apple que você costuma usar. Se o seu e-mail for o mesmo das suas inscrições em eventos, você as verá na hora.',
+			'login-unavailable':
+				'O login ainda não está configurado. Fale conosco pelo WhatsApp se precisar de ajuda com sua inscrição.',
+			'login-legal':
+				'Recebemos apenas seu nome e e-mail do provedor. Consulte o',
+			'login-legal-link': 'Aviso de privacidade',
+			'portal-hello': 'Olá,',
+			'portal-private':
+				'Você entrou com a Apple ocultando seu e-mail: aqui aparecem apenas as inscrições feitas a partir desta conta.',
+			logout: 'Sair',
+			'history-title': 'Minhas inscrições em eventos',
+			'col-event': 'Evento',
+			'col-date': 'Data',
+			'col-status': 'Status',
+			'col-proof': 'Comprovante',
+			'history-empty':
+				'Ainda não há inscrições em eventos nesta conta. Se você se inscreveu com outro e-mail, fale conosco pelo WhatsApp e nós vinculamos.',
+			'see-events': 'Ver eventos',
+			whatsapp: 'Falar pelo WhatsApp',
+		},
 	},
 };
 
@@ -1167,6 +1302,21 @@ function main() {
 				'\n  '
 			) }`
 		);
+	}
+
+	// Strings with no legacy page behind them: Mi cuenta and the signed-in event form.
+	for ( const lang of LANGS ) {
+		for ( const [ key, value ] of Object.entries( EXTRA_SHARED[ lang ] ) ) {
+			addShared( dict, lang, key, value, 'EXTRA_SHARED' );
+		}
+		for ( const [ slug, pages ] of Object.entries( EXTRA_PAGES ) ) {
+			if ( hasOwn( dict[ lang ].pages, slug ) ) {
+				fail(
+					`EXTRA_PAGES.${ slug } collides with a page converted from main.js`
+				);
+			}
+			dict[ lang ].pages[ slug ] = sortObject( pages[ lang ] );
+		}
 	}
 
 	const enKeys = Object.keys( dict.en.shared ).sort();
