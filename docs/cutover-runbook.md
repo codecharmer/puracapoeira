@@ -50,7 +50,14 @@ define( 'DISALLOW_FILE_EDIT', true );
 define( 'WP_AUTO_UPDATE_CORE', 'minor' );
 define( 'WP_ENVIRONMENT_TYPE', 'production' );
 // Optional: pin any plugin setting, e.g. define( 'PURA_CONTACT_TO_EMAILS', 'contacto@puracapoeira.com' );
+// Sign in with Google / Apple (Mi cuenta): secrets stay here, never in the repo or the admin.
+define( 'PURA_GOOGLE_CLIENT_SECRET', 'GOCSPX-…' );
+define( 'PURA_APPLE_PRIVATE_KEY', "-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----" );
 ```
+
+Client ID, Services ID, Team ID and Key ID go in **Pura Capoeira → Ajustes → Cuentas**; the provider
+setup (redirect URIs, Apple domain verification) is documented in
+`plugins/puracapoeira-core/README.md`.
 
 The site now shows the default WordPress theme for a few minutes; that is expected.
 

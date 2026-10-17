@@ -1,0 +1,6 @@
+{
+	"config": {
+		"PURA_GOOGLE_CLIENT_SECRET": "GOCSPX-replace_me (the Client ID goes in Ajustes → Cuentas)",
+		"PURA_APPLE_PRIVATE_KEY": ""
+	}
+}

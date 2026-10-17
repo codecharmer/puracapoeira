@@ -17,7 +17,27 @@ defined( 'ABSPATH' ) || exit;
 
 final class Settings {
 
-	public const OPTION = 'pura_settings';
+	public const OPTION  = 'pura_settings';
+	public const SECRETS = 'pura_secrets';
+
+	/** @var string[] Keys stored in pura_secrets (not autoloaded) and overridable by constants. */
+	public const SECRET_KEYS = array(
+		'google_client_secret',
+		'apple_private_key',
+	);
+
+	/** @var string[] Secrets that may span several lines (PEM keys). */
+	public const MULTILINE_SECRET_KEYS = array(
+		'apple_private_key',
+	);
+
+	/** @var array<string, array{option:string,slug:string}> Pages the plugin links to. */
+	private const PAGES = array(
+		'account' => array(
+			'option' => 'account_page_id',
+			'slug'   => 'cuenta',
+		),
+	);
 
 	/**
 	 * @return array<string, mixed>
@@ -45,6 +65,13 @@ final class Settings {
 			'tagline'            => 'Escuela y comunidad internacional de capoeira. Cultura afrobrasileña, música, disciplina y movimiento conectando comunidades en México, Brasil, Angola y Estados Unidos.',
 			'motto'              => 'Capoeira · Cultura · Comunidade',
 			'og_image_id'        => 0,
+
+			// Cuentas (Google / Apple). Secrets live in pura_secrets.
+			'account_page_id'    => 0,
+			'google_client_id'   => '',
+			'apple_services_id'  => '',
+			'apple_team_id'      => '',
+			'apple_key_id'       => '',
 		);
 	}
 
@@ -104,6 +131,84 @@ final class Settings {
 	}
 
 	/**
+	 * Secret: the constant wins over the stored option. '' when neither is set.
+	 */
+	public static function get_secret( string $key ): string {
+		$constant = self::secret_constant( $key );
+		if ( defined( $constant ) ) {
+			return (string) constant( $constant );
+		}
+
+		$secrets = get_option( self::SECRETS, array() );
+
+		return is_array( $secrets ) && isset( $secrets[ $key ] ) ? (string) $secrets[ $key ] : '';
+	}
+
+	/**
+	 * 'constant', 'option' or 'missing'.
+	 */
+	public static function secret_source( string $key ): string {
+		if ( defined( self::secret_constant( $key ) ) ) {
+			return 'constant';
+		}
+
+		return '' !== self::get_secret( $key ) ? 'option' : 'missing';
+	}
+
+	public static function secret_constant( string $key ): string {
+		return 'PURA_' . strtoupper( $key );
+	}
+
+	public static function delete_secret( string $key ): void {
+		$secrets = get_option( self::SECRETS, array() );
+		if ( is_array( $secrets ) && isset( $secrets[ $key ] ) ) {
+			unset( $secrets[ $key ] );
+			update_option( self::SECRETS, $secrets, false );
+		}
+	}
+
+	/**
+	 * Permalink of a configured page, with a slug-based fallback.
+	 *
+	 * @param string $which 'account'.
+	 */
+	public static function page_url( string $which ): string {
+		$spec = self::PAGES[ $which ] ?? self::PAGES['account'];
+		$id   = (int) self::get( $spec['option'], 0 );
+
+		if ( $id > 0 ) {
+			$url = get_permalink( $id );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		$page = get_page_by_path( $spec['slug'] );
+		if ( $page ) {
+			return (string) get_permalink( $page );
+		}
+
+		return home_url( '/' . $spec['slug'] . '/' );
+	}
+
+	/**
+	 * URL of the Aviso de privacidad: WordPress' privacy page, else the `privacidad` slug.
+	 */
+	public static function privacy_url(): string {
+		$url = (string) get_privacy_policy_url();
+		if ( '' !== $url ) {
+			return $url;
+		}
+
+		$page = get_page_by_path( 'privacidad' );
+		if ( $page ) {
+			return (string) get_permalink( $page );
+		}
+
+		return home_url( '/privacidad/' );
+	}
+
+	/**
 	 * Digits-only WhatsApp number from the setting.
 	 */
 	public static function whatsapp_number(): string {
@@ -121,14 +226,18 @@ final class Settings {
 	}
 
 	/**
-	 * Values safe to expose to the browser.
+	 * Values safe to expose to the browser (no secrets).
 	 *
 	 * @return array<string, mixed>
 	 */
 	public static function public_config(): array {
 		return array(
-			'restUrl'  => esc_url_raw( rest_url( 'pura/v1/' ) ),
-			'whatsapp' => self::whatsapp_number(),
+			'restUrl'    => esc_url_raw( rest_url( 'pura/v1/' ) ),
+			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+			'accountUrl' => self::page_url( 'account' ),
+			'privacyUrl' => self::privacy_url(),
+			'providers'  => Auth\Providers::configured(),
+			'whatsapp'   => self::whatsapp_number(),
 		);
 	}
 }

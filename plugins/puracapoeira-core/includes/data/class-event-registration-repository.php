@@ -58,7 +58,7 @@ final class Event_Registration_Repository {
 	 * @param array<string, mixed> $data Keys: event, event_name, first_name, last_name, email,
 	 *                                   phone, dob, parent_*, started_year, years_training, city,
 	 *                                   academy, teacher, graduation, days (string[]), shirt_size,
-	 *                                   emergency_name, emergency_phone, notes.
+	 *                                   emergency_name, emergency_phone, notes, user_id (signed-in account).
 	 * @return int Post ID, 0 on failure.
 	 */
 	public static function create( array $data ): int {
@@ -88,6 +88,9 @@ final class Event_Registration_Repository {
 		update_post_meta( $post_id, '_pura_status', 'registered' );
 		update_post_meta( $post_id, '_pura_email', self::normalize_email( (string) ( $data['email'] ?? '' ) ) );
 		update_post_meta( $post_id, '_pura_days', implode( ', ', (array) ( $data['days'] ?? array() ) ) );
+		if ( (int) ( $data['user_id'] ?? 0 ) > 0 ) {
+			update_post_meta( $post_id, '_pura_user_id', (int) $data['user_id'] );
+		}
 
 		foreach ( self::TEXT_FIELDS as $field ) {
 			$value = trim( (string) ( $data[ $field ] ?? '' ) );
@@ -279,6 +282,7 @@ final class Event_Registration_Repository {
 			'payment_proof_id'   => $proof_id,
 			'payment_proof_url'  => $proof_id ? (string) wp_get_attachment_url( $proof_id ) : '',
 			'payment_proof_name' => $proof_id ? wp_basename( (string) get_attached_file( $proof_id ) ) : '',
+			'user_id'            => (int) get_post_meta( $post_id, '_pura_user_id', true ),
 			'created_at'         => $post->post_date,
 			'admin_url'          => (string) get_edit_post_link( $post_id, 'raw' ),
 		);

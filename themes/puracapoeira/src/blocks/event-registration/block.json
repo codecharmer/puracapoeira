@@ -31,6 +31,6 @@
 		"customClassName": true
 	},
 	"editorScript": "file:./index.js",
-	"viewScript": "file:./view.js",
+	"viewScript": [ "pura-auth", "file:./view.js" ],
 	"render": "file:./render.php"
 }

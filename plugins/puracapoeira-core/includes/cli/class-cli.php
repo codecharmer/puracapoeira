@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace Pura\Core\Cli;
 
+use Pura\Core\Auth\Member_Accounts;
+use Pura\Core\Auth\Providers;
 use Pura\Core\Data\Evento_Post_Type;
 use Pura\Core\Data\Galeria_Post_Type;
 use Pura\Core\Data\Profesor_Post_Type;
@@ -45,12 +47,13 @@ final class Cli {
 		$checks['theme'] = array( 'puracapoeira' === $theme->get_stylesheet(), $theme->get_stylesheet() );
 
 		$missing = array();
-		foreach ( array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto' ) as $slug ) {
+		$slugs   = array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto', 'vadiando-na-ladeira', 'privacidad', 'cuenta' );
+		foreach ( $slugs as $slug ) {
 			if ( ! get_page_by_path( $slug ) ) {
 				$missing[] = $slug;
 			}
 		}
-		$checks['pages'] = array( array() === $missing, $missing ? 'faltan: ' . implode( ', ', $missing ) : '7 páginas' );
+		$checks['pages'] = array( array() === $missing, $missing ? 'faltan: ' . implode( ', ', $missing ) : count( $slugs ) . ' páginas' );
 
 		$front                = get_page_by_path( 'inicio' );
 		$checks['front_page'] = array(
@@ -82,6 +85,16 @@ final class Cli {
 		$checks['smtp_plugin'] = array( is_plugin_active( 'fluent-smtp/fluent-smtp.php' ), 'fluent-smtp' );
 
 		$checks['file_edit'] = array( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT, 'DISALLOW_FILE_EDIT' );
+
+		$account_page           = get_page_by_path( 'cuenta' );
+		$checks['account_page'] = array( $account_page instanceof \WP_Post, $account_page ? Settings::page_url( 'account' ) : 'sin página /cuenta/ (wp pura-theme import pages)' );
+		$checks['member_role']  = array( null !== get_role( Member_Accounts::ROLE ), Member_Accounts::ROLE );
+		foreach ( Providers::all() as $provider ) {
+			$checks[ 'auth_' . $provider->id() ] = array(
+				$provider->is_configured(),
+				( $provider->is_configured() ? 'configurado · ' : 'sin configurar · ' ) . $provider->redirect_uri(),
+			);
+		}
 
 		if ( 'production' === wp_get_environment_type() ) {
 			$checks['blog_public'] = array( '1' === (string) get_option( 'blog_public' ), 'blog_public=' . (string) get_option( 'blog_public' ) );

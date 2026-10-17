@@ -127,6 +127,8 @@ final class Events_Controller extends Base_Controller {
 			'emergency_name'  => (string) $request->get_param( 'emergency_name' ),
 			'emergency_phone' => (string) $request->get_param( 'emergency_phone' ),
 			'notes'           => (string) $request->get_param( 'notes' ),
+			// Set when the browser sent a valid REST nonce for a signed-in capoeirista; 0 otherwise.
+			'user_id'         => get_current_user_id(),
 		);
 
 		$required = array(

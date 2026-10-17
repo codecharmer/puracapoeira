@@ -54,6 +54,18 @@ Profesores / Eventos / Galería** (cada uno con su caja de datos), **Pura Capoei
 (destinatarios del formulario, redes, lema, imagen para compartir). La biografía larga de cada
 profesor es el contenido de su entrada (bloques, con el bloque *Línea de tiempo*).
 
+## Cuentas (Mi cuenta)
+
+Las personas pueden entrar con **Google o Apple** (`/cuenta/`) para ver sus registros a eventos y
+llenar el formulario de registro más rápido. Las cuentas son usuarios de WordPress con el rol
+*Capoeirista* (sin acceso al admin); los secretos de los proveedores viven en `wp-config.php`
+(`PURA_GOOGLE_CLIENT_SECRET`, `PURA_APPLE_PRIVATE_KEY`) y el resto en **Pura Capoeira → Ajustes →
+Cuentas**. Pasos de configuración en Google Cloud y Apple Developer:
+[`plugins/puracapoeira-core/README.md`](plugins/puracapoeira-core/README.md#cuentas-de-capoeiristas-sign-in-with-google--apple).
+Apple solo funciona con HTTPS y dominio verificado (producción); Google también en
+`http://localhost:8888` si añades esa URL de retorno al cliente OAuth. Para wp-env copia
+`docs/wp-env.override.example.json` a `.wp-env.override.json`.
+
 ## Idiomas
 
 El contenido se escribe en español. Inglés y portugués se aplican en el navegador (selector de
@@ -71,6 +83,10 @@ caché NGINX de cPanel. Se ejecuta en cada push a `master` (o a mano con *Run wo
 la variable del repositorio `WP_DEPLOY_ENABLED` vale `true`**. Usa los mismos secretos de siempre:
 `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS` y `DEPLOY_PATH` (la raíz
 del sitio, donde vive `wp-config.php`). Antes de desplegar comprueba que ahí hay un WordPress.
+
+El despliegue no ejecuta el importador. Cuando una versión añade páginas o entradas de menú (p. ej.
+Mi cuenta), en el servidor: `wp pura-theme import pages && wp pura-theme import menu && wp pura-theme
+import settings` (como el usuario de cPanel) y después `wp pura doctor`.
 
 `.github/workflows/server-check.yml` (manual) inspecciona el servidor con esas credenciales:
 WP-CLI, sudo, PHP, ea-nginx y el contenido de `DEPLOY_PATH`.

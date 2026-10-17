@@ -34,6 +34,8 @@ final class Plugin {
 		add_action( 'init', array( $this, 'register_data' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'print_front_config' ), 5 );
 
+		Auth\Member_Accounts::register_hooks();
+
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();
 			( new Admin\Settings_Page() )->register();
@@ -63,13 +65,18 @@ final class Plugin {
 	public function register_rest_routes(): void {
 		( new Rest\Contact_Controller() )->register_routes();
 		( new Rest\Events_Controller() )->register_routes();
+		( new Rest\Auth_Controller() )->register_routes();
+		( new Rest\Account_Controller() )->register_routes();
 
 		add_filter( 'rest_request_after_callbacks', array( Rest\Base_Controller::class, 'shape_wp_error' ), 10, 3 );
 	}
 
 	/**
-	 * `window.puraConfig` for the theme's view scripts: REST root and contact details.
+	 * `window.puraConfig` for the theme's view scripts: REST root, page URLs, contact details.
 	 * Printed in <head> as an inline-only handle so deferred view scripts always find it.
+	 *
+	 * Also registers `pura-auth` (window.puraAuth): the browser-side helper that discovers the
+	 * session via admin-ajax and signs REST calls with a nonce. Blocks list it as a dependency.
 	 */
 	public function print_front_config(): void {
 		wp_register_script( 'pura-core-config', false, array(), PURA_CORE_VERSION, false );
@@ -77,6 +84,14 @@ final class Plugin {
 		wp_add_inline_script(
 			'pura-core-config',
 			'window.puraConfig = ' . wp_json_encode( Settings::public_config() ) . ';'
+		);
+
+		wp_register_script(
+			'pura-auth',
+			PURA_CORE_URL . 'assets/js/pura-auth.js',
+			array( 'pura-core-config' ),
+			PURA_CORE_VERSION,
+			array( 'in_footer' => true )
 		);
 	}
 }
