@@ -16,6 +16,7 @@ use Pura\Core\Data\Galeria_Post_Type;
 use Pura\Core\Data\Profesor_Post_Type;
 use Pura\Core\Data\Sede_Post_Type;
 use Pura\Core\Mailer;
+use Pura\Core\Photo_Uploads;
 use Pura\Core\Settings;
 use WP_CLI;
 
@@ -47,7 +48,7 @@ final class Cli {
 		$checks['theme'] = array( 'puracapoeira' === $theme->get_stylesheet(), $theme->get_stylesheet() );
 
 		$missing = array();
-		$slugs   = array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto', 'vadiando-na-ladeira', 'privacidad', 'cuenta' );
+		$slugs   = array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto', 'vadiando-na-ladeira', 'privacidad', 'cuenta', 'fotos' );
 		foreach ( $slugs as $slug ) {
 			if ( ! get_page_by_path( $slug ) ) {
 				$missing[] = $slug;
@@ -89,6 +90,9 @@ final class Cli {
 		$account_page           = get_page_by_path( 'cuenta' );
 		$checks['account_page'] = array( $account_page instanceof \WP_Post, $account_page ? Settings::page_url( 'account' ) : 'sin página /cuenta/ (wp pura-theme import pages)' );
 		$checks['member_role']  = array( null !== get_role( Member_Accounts::ROLE ), Member_Accounts::ROLE );
+
+		$photos_page           = get_page_by_path( 'fotos' );
+		$checks['photos_page'] = array( $photos_page instanceof \WP_Post, $photos_page ? Photo_Uploads::link() : 'sin página /fotos/ (se crea sola al cargar el sitio con el tema activo)' );
 		foreach ( Providers::all() as $provider ) {
 			$checks[ 'auth_' . $provider->id() ] = array(
 				$provider->is_configured(),

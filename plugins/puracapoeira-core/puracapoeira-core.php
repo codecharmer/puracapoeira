@@ -3,7 +3,7 @@
  * Plugin Name: Pura Capoeira Core
  * Plugin URI: https://puracapoeira.com
  * Description: Settings, locations (sedes), teachers, events, gallery, contact form REST API, event registrations, Google/Apple sign-in and translations for the Pura Capoeira site.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.8
  * Requires PHP: 8.1
  * Author: Pura Capoeira
@@ -17,7 +17,7 @@ declare( strict_types=1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PURA_CORE_VERSION', '1.1.0' );
+define( 'PURA_CORE_VERSION', '1.2.0' );
 define( 'PURA_CORE_FILE', __FILE__ );
 define( 'PURA_CORE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PURA_CORE_URL', plugin_dir_url( __FILE__ ) );

@@ -113,3 +113,28 @@ composer run lint            # PHPCS (WordPress-Extra + Docs)
 composer run lint:fix
 composer run test:unit       # PHPUnit sin WordPress (Contact_Message, Settings, Mailer, registros, JWT/ES256, Apple client secret, State_Store)
 ```
+
+## Fotos de profesores e instructores (/fotos/)
+
+Página privada donde profesores e instructores suben su foto de perfil y fotos de su sede, para
+que el administrador las use en los perfiles y en las páginas de las sedes.
+
+- **Enlace secreto**: `/fotos/?clave=…`. La clave vive en `pura_settings.photo_upload_key`
+  (se genera sola la primera vez; se puede fijar con `PURA_PHOTO_UPLOAD_KEY`). Se copia y se
+  regenera en **Pura Capoeira → Ajustes → Fotos de profesores e instructores**. El formulario no
+  aparece hasta que el navegador valida la clave (`GET pura/v1/photos/access`), y la página lleva
+  `noindex`.
+- **Subida**: una sesión por envío (`POST pura/v1/photos/batches` → id + token de 24 h) y una
+  foto por petición (`POST pura/v1/photos/batches/{id}/files`, multipart `file`, `kind`
+  `profile|photo`), así ninguna supera `post_max_size` y el navegador muestra progreso y reintenta
+  una foto suelta. Las fotos grandes se reducen en el navegador (lado mayor 2400 px, JPEG) antes de
+  subirse; el servidor acepta JPG/PNG/WebP/GIF/HEIC hasta 15 MB (o el límite de PHP) y 40 fotos
+  por envío. `POST …/finish` cierra el envío y avisa por correo a `photo_to_emails` (o a los
+  destinatarios del formulario de contacto).
+- **Dónde queda**: cada envío es un `pura_photo_batch` (**Pura Capoeira → Fotos recibidas**) y
+  cada foto un adjunto normal de la Biblioteca de medios con el envío como padre, título
+  «Nombre — Sede — Foto n» y texto alternativo. Desde el envío se aplica una foto al perfil del
+  profesor o a la sede con un clic (imagen destacada). Borrar un envío no borra sus fotos.
+- La página se crea sola en el primer `init` tras el despliegue (`Content_Migrations`,
+  opción `pura_content_migrations`) a partir del patrón `puracapoeira/page-fotos`; en local
+  también la crea `wp pura-theme import pages`.

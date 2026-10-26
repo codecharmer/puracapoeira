@@ -38,6 +38,82 @@ final class Mailer {
 	}
 
 	/**
+	 * Recipients of "fotos recibidas" notices: `photo_to_emails` when set, else the contact recipients.
+	 *
+	 * @return string[]
+	 */
+	public static function photo_recipients(): array {
+		$raw  = (string) Settings::get( 'photo_to_emails', '' );
+		$list = array_values( array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', $raw ) ) ), 'is_email' ) );
+
+		return $list ? $list : self::recipients();
+	}
+
+	/**
+	 * Tell the recipients that a colleague finished uploading photos.
+	 */
+	public static function notify_photo_batch( int $post_id ): bool {
+		$data = Data\Photo_Batch_Repository::to_array( $post_id );
+		if ( ! $data ) {
+			return false;
+		}
+
+		$recipients = self::photo_recipients();
+		if ( ! $recipients ) {
+			self::$last_error = 'No hay destinatarios configurados.';
+			return false;
+		}
+
+		$where   = '' !== $data['sede_name'] ? ' (' . $data['sede_name'] . ')' : '';
+		$subject = sprintf( 'Fotos recibidas: %s%s — %d %s', $data['name'], $where, $data['file_count'], 1 === (int) $data['file_count'] ? 'foto' : 'fotos' );
+		$body    = self::build_photo_body( $data, home_url( '/' ), wp_date( 'Y-m-d H:i:s' ) );
+		$headers = self::headers();
+
+		$contact = trim( (string) $data['contact'] );
+		if ( is_email( $contact ) ) {
+			$headers[] = 'Reply-To: ' . str_replace( array( "\r", "\n" ), '', (string) $data['name'] ) . ' <' . sanitize_email( $contact ) . '>';
+		}
+
+		return self::send( $recipients, $subject, $body, $headers );
+	}
+
+	/**
+	 * Plain-text body of the "fotos recibidas" mail. Pure: no WordPress calls.
+	 *
+	 * @param array<string, mixed> $data     Batch (see Photo_Batch_Repository::to_array()).
+	 * @param string               $site_url Site URL for the first line.
+	 * @param string               $when     Fallback timestamp.
+	 */
+	public static function build_photo_body( array $data, string $site_url, string $when ): string {
+		$count = (int) ( $data['file_count'] ?? 0 );
+		$lines = array( 'Nuevas fotos de un profesor o instructor en ' . $site_url, '' );
+
+		$rows = array(
+			'Nombre'         => (string) ( $data['name'] ?? '' ),
+			'Perfil'         => (string) ( $data['profesor_name'] ?? '' ),
+			'Sede'           => (string) ( $data['sede_name'] ?? '' ),
+			'Contacto'       => (string) ( $data['contact'] ?? '' ),
+			'Fotos'          => $count . ( ! empty( $data['profile_photo_id'] ) ? ' (incluye foto de perfil)' : '' ),
+			'Nota'           => (string) ( $data['note'] ?? '' ),
+			'Fecha de envío' => (string) ( $data['created_at'] ?? $when ),
+		);
+
+		foreach ( $rows as $label => $value ) {
+			if ( '' === trim( $value ) ) {
+				continue;
+			}
+			$lines[] = $label . ': ' . $value;
+		}
+
+		if ( ! empty( $data['admin_url'] ) ) {
+			$lines[] = '';
+			$lines[] = 'Ver las fotos y aplicarlas al perfil o a la sede: ' . $data['admin_url'];
+		}
+
+		return implode( "\n", $lines ) . "\n";
+	}
+
+	/**
 	 * Send a validated contact message (see Contact_Message::from_array()) to the recipients.
 	 *
 	 * @param array<string, string> $data nombre, ciudad, telefono, email, mensaje.

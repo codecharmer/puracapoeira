@@ -58,6 +58,16 @@ final class Menu {
 		.pura-status--registered { background: #dbeafe; color: #1e3a8a; }
 		.pura-status--confirmed { background: #d1f5d3; color: #0b5d1e; }
 		.pura-status--cancelled { background: #fee2e2; color: #991b1b; }
+		.pura-status--open { background: #fef3c7; color: #92400e; }
+		.pura-status--done { background: #d1f5d3; color: #0b5d1e; }
+		.pura-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+		.pura-photo-card { margin: 0; border: 1px solid #ddd; border-radius: 4px; background: #fff; overflow: hidden; }
+		.pura-photo-card img { display: block; width: 100%; height: 160px; object-fit: cover; }
+		.pura-photo-card figcaption { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px; font-size: 12px; }
+		.pura-photo-card__meta { color: #646970; margin-right: auto; }
+		.pura-photo-card__current { color: #0b5d1e; font-weight: 600; }
+		.pura-photo-strip { display: inline-flex; gap: 2px; vertical-align: middle; margin-right: 6px; }
+		.pura-photo-strip img { width: 32px; height: 32px; object-fit: cover; border-radius: 3px; }
 		';
 		wp_add_inline_style( 'wp-admin', $css );
 	}
