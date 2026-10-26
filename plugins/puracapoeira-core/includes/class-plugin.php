@@ -35,11 +35,13 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( $this, 'print_front_config' ), 5 );
 
 		Auth\Member_Accounts::register_hooks();
+		Content_Migrations::register();
 
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();
 			( new Admin\Settings_Page() )->register();
 			( new Admin\Csv_Export() )->register();
+			( new Admin\Photo_Actions() )->register();
 		}
 
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
@@ -58,6 +60,7 @@ final class Plugin {
 		( new Data\Evento_Post_Type() )->register();
 		( new Data\Galeria_Post_Type() )->register();
 		( new Data\Event_Registration_Post_Type() )->register();
+		( new Data\Photo_Batch_Post_Type() )->register();
 		( new Data\Block_Bindings() )->register();
 		( new Data\I18n_Meta() )->register();
 	}
@@ -67,6 +70,7 @@ final class Plugin {
 		( new Rest\Events_Controller() )->register_routes();
 		( new Rest\Auth_Controller() )->register_routes();
 		( new Rest\Account_Controller() )->register_routes();
+		( new Rest\Photos_Controller() )->register_routes();
 
 		add_filter( 'rest_request_after_callbacks', array( Rest\Base_Controller::class, 'shape_wp_error' ), 10, 3 );
 	}

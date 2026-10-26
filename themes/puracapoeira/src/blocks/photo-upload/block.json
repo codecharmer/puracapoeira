@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/photo-upload",
+	"version": "1.0.0",
+	"title": "Subida de fotos (profesores)",
+	"category": "pura",
+	"icon": "camera",
+	"description": "Formulario privado para que profesores e instructores suban su foto de perfil y fotos de su sede. Solo funciona con el enlace secreto de Ajustes → Fotos de profesores; lo recibido aparece en Pura Capoeira → Fotos recibidas.",
+	"textdomain": "pura",
+	"attributes": {
+		"askProfile": { "type": "boolean", "default": true },
+		"footnote": {
+			"type": "string",
+			"default": "Solo las personas con este enlace pueden subir fotos. Las revisamos antes de publicarlas."
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

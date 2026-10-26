@@ -12,6 +12,7 @@ declare( strict_types=1 );
 namespace Pura\Core\Admin;
 
 use Pura\Core\Mailer;
+use Pura\Core\Photo_Uploads;
 use Pura\Core\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -104,6 +105,14 @@ final class Settings_Page {
 					'_auth_callbacks'      => array( 'auth_callbacks', __( 'URLs de retorno', 'pura' ) ),
 				),
 			),
+			'fotos'    => array(
+				'title'  => __( 'Fotos de profesores e instructores', 'pura' ),
+				'fields' => array(
+					'_photo_link'          => array( 'photo_link', __( 'Enlace para subir fotos', 'pura' ) ),
+					'photo_upload_page_id' => array( 'page', __( 'Página de subida', 'pura' ), __( 'Déjalo en "Detectar por slug" si la página se llama /fotos/.', 'pura' ) ),
+					'photo_to_emails'      => array( 'text', __( 'Avisar a', 'pura' ), __( 'Correos separados por comas. Vacío: los mismos destinatarios del formulario de contacto.', 'pura' ) ),
+				),
+			),
 		);
 
 		foreach ( $sections as $id => $section ) {
@@ -119,7 +128,7 @@ final class Settings_Page {
 						'key'         => $key,
 						'type'        => $def[0],
 						'description' => $def[2] ?? '',
-						'label_for'   => in_array( $def[0], array( 'test_mail', 'media' ), true ) ? '' : 'pura_' . $key,
+						'label_for'   => in_array( $def[0], array( 'test_mail', 'media', 'photo_link' ), true ) ? '' : 'pura_' . $key,
 					)
 				);
 			}
@@ -184,6 +193,15 @@ final class Settings_Page {
 				$url = wp_nonce_url( admin_url( 'admin-post.php?action=pura_test_mail' ), 'pura_test_mail' );
 				echo '<a href="' . esc_url( $url ) . '" class="button">' . esc_html__( 'Enviar correo de prueba a los destinatarios', 'pura' ) . '</a>';
 				echo '<p class="description">' . esc_html__( 'Guarda los cambios antes de probar.', 'pura' ) . '</p>';
+				return;
+
+			case 'photo_link':
+				$link       = Photo_Uploads::link();
+				$regenerate = wp_nonce_url( admin_url( 'admin-post.php?action=' . Photo_Actions::ACTION_REGENERATE ), Photo_Actions::NONCE );
+				echo '<input type="text" class="regular-text code" readonly value="' . esc_attr( $link ) . '" onfocus="this.select()" style="width:36em;max-width:100%" /> ';
+				echo '<a href="' . esc_url( $link ) . '" class="button" target="_blank" rel="noopener">' . esc_html__( 'Abrir', 'pura' ) . '</a> ';
+				echo '<a href="' . esc_url( $regenerate ) . '" class="button-link button-link-delete" onclick="return confirm(' . esc_attr( wp_json_encode( __( 'Los enlaces que ya compartiste dejarán de funcionar. ¿Generar uno nuevo?', 'pura' ) ) ) . ')">' . esc_html__( 'Generar enlace nuevo', 'pura' ) . '</a>';
+				echo '<p class="description">' . esc_html__( 'Compártelo por WhatsApp con profesores e instructores: con él suben su foto de perfil y fotos de su sede. Lo que suben aparece en Pura Capoeira → Fotos recibidas y en la Biblioteca de medios.', 'pura' ) . '</p>';
 				return;
 
 			case 'media':
@@ -253,7 +271,7 @@ final class Settings_Page {
 				$out[ $key ] = max( 0, (int) $raw );
 			} elseif ( str_ends_with( $key, '_url' ) ) {
 				$out[ $key ] = esc_url_raw( (string) $raw );
-			} elseif ( in_array( $key, array( 'contact_to_emails', 'event_to_emails' ), true ) ) {
+			} elseif ( in_array( $key, array( 'contact_to_emails', 'event_to_emails', 'photo_to_emails' ), true ) ) {
 				$emails      = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', (string) $raw ) ) ) );
 				$out[ $key ] = implode( ', ', array_filter( $emails, 'is_email' ) );
 			} elseif ( 'contact_from_email' === $key ) {

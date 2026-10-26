@@ -65,6 +65,11 @@ final class Pura_Theme_Import_Command {
 			'title'   => 'Mi cuenta',
 			'excerpt' => 'Entra con Google o Apple para ver tus registros a eventos de Pura Capoeira y llenar los formularios más rápido.',
 		),
+		// Reached only through the secret link (Ajustes → Fotos de profesores); never in the menu.
+		'fotos'               => array(
+			'title'   => 'Sube tus fotos',
+			'excerpt' => 'Página privada para que profesores e instructores de Pura Capoeira compartan su foto de perfil y fotos de su sede.',
+		),
 	);
 
 	private const NAV_LABELS = array(
@@ -563,6 +568,9 @@ final class Pura_Theme_Import_Command {
 			}
 			if ( 'cuenta' === $slug && class_exists( 'Pura\\Core\\Settings' ) ) {
 				Pura\Core\Settings::update( array( 'account_page_id' => $id ) );
+			}
+			if ( 'fotos' === $slug && class_exists( 'Pura\\Core\\Settings' ) ) {
+				Pura\Core\Settings::update( array( 'photo_upload_page_id' => $id ) );
 			}
 		}
 

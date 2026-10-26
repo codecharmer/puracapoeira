@@ -37,6 +37,10 @@ final class Settings {
 			'option' => 'account_page_id',
 			'slug'   => 'cuenta',
 		),
+		'photos'  => array(
+			'option' => 'photo_upload_page_id',
+			'slug'   => 'fotos',
+		),
 	);
 
 	/**
@@ -45,33 +49,38 @@ final class Settings {
 	public static function defaults(): array {
 		return array(
 			// Formulario de contacto.
-			'contact_to_emails'  => 'contacto@puracapoeira.com',
-			'contact_from_email' => '',
-			'contact_from_name'  => 'Pura Capoeira',
-			'cc_registrant'      => true,
-			'event_to_emails'    => '',
+			'contact_to_emails'    => 'contacto@puracapoeira.com',
+			'contact_from_email'   => '',
+			'contact_from_name'    => 'Pura Capoeira',
+			'cc_registrant'        => true,
+			'event_to_emails'      => '',
 
 			// Redes y contacto.
-			'whatsapp_number'    => '18056385603',
-			'whatsapp_display'   => '+1 (805) 638-5603',
-			'instagram_url'      => 'https://www.instagram.com/profesor.malandro/',
-			'instagram_handle'   => '@profesor.malandro',
-			'facebook_url'       => 'https://www.facebook.com/share/192u2wDfbR/?mibextid=wwXIfr',
-			'facebook_label'     => 'Pura Capoeira',
-			'youtube_url'        => '',
-			'icloud_album_url'   => 'https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR',
+			'whatsapp_number'      => '18056385603',
+			'whatsapp_display'     => '+1 (805) 638-5603',
+			'instagram_url'        => 'https://www.instagram.com/profesor.malandro/',
+			'instagram_handle'     => '@profesor.malandro',
+			'facebook_url'         => 'https://www.facebook.com/share/192u2wDfbR/?mibextid=wwXIfr',
+			'facebook_label'       => 'Pura Capoeira',
+			'youtube_url'          => '',
+			'icloud_album_url'     => 'https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR',
 
 			// Sitio.
-			'tagline'            => 'Escuela y comunidad internacional de capoeira. Cultura afrobrasileña, música, disciplina y movimiento conectando comunidades en México, Brasil, Angola y Estados Unidos.',
-			'motto'              => 'Capoeira · Cultura · Comunidade',
-			'og_image_id'        => 0,
+			'tagline'              => 'Escuela y comunidad internacional de capoeira. Cultura afrobrasileña, música, disciplina y movimiento conectando comunidades en México, Brasil, Angola y Estados Unidos.',
+			'motto'                => 'Capoeira · Cultura · Comunidade',
+			'og_image_id'          => 0,
 
 			// Cuentas (Google / Apple). Secrets live in pura_secrets.
-			'account_page_id'    => 0,
-			'google_client_id'   => '',
-			'apple_services_id'  => '',
-			'apple_team_id'      => '',
-			'apple_key_id'       => '',
+			'account_page_id'      => 0,
+			'google_client_id'     => '',
+			'apple_services_id'    => '',
+			'apple_team_id'        => '',
+			'apple_key_id'         => '',
+
+			// Fotos de profesores (/fotos/?clave=…). The key is generated on first use.
+			'photo_upload_page_id' => 0,
+			'photo_upload_key'     => '',
+			'photo_to_emails'      => '',
 		);
 	}
 

@@ -2300,3 +2300,68 @@ html.js .event-registration[data-event-auth-state="pending"] .event-login { disp
   .site-header .site-nav .wp-block-navigation__container { gap: 1.1rem; }
   .site-header .site-nav .wp-block-navigation-item__content { font-size: 0.7rem; letter-spacing: 0.12em; }
 }
+
+/* ================================================================
+   PHOTO UPLOAD (profesores e instructores, /fotos/?clave=…)
+   ================================================================ */
+.photo-upload__checking { color: var(--muted); font-size: 0.95rem; }
+/* The form and the buttons carry display rules of their own, which would beat the UA's [hidden]. */
+.photo-form[hidden],
+.photo-form__actions .btn[hidden],
+.photo-upload__done[hidden] { display: none; }
+.photo-upload__gate p { margin: 0 0 0.75rem; }
+.photo-upload__gate p:last-child { margin-bottom: 0; }
+.photo-help { margin: 0 0 1rem; font-size: 0.92rem; color: var(--muted); }
+.photo-pick { display: inline-block; position: relative; cursor: pointer; }
+.photo-pick input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.photo-pick:focus-within .btn { outline: 2px solid var(--blue); outline-offset: 4px; }
+.photo-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.photo-list:empty { display: none; }
+.photo-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.photo-item__thumb { width: 64px; height: 64px; object-fit: cover; border-radius: calc(var(--radius-sm) - 2px); background: var(--border); }
+.photo-item__body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.photo-item__name { font-weight: 600; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.photo-item__meta { font-size: 0.8rem; color: var(--muted); }
+.photo-item__bar { display: block; height: 4px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.photo-item__bar-fill { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s ease; }
+.photo-item.is-done .photo-item__bar-fill { background: var(--green); }
+.photo-item.is-error .photo-item__bar-fill { background: var(--red); width: 100% !important; }
+.photo-item.is-error .photo-item__meta { color: var(--red); }
+.photo-item.is-pending .photo-item__bar { visibility: hidden; }
+.photo-item__remove {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+}
+.photo-item__remove:hover { color: var(--text); border-color: var(--muted); }
+.photo-form__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.photo-upload__done {
+  padding: 2rem;
+  border: 1px solid var(--green);
+  border-radius: var(--radius);
+  background: rgba(0, 158, 96, 0.08);
+}
+.photo-upload__done h3 { font-family: var(--font-display); margin: 0 0 0.5rem; font-size: 1.6rem; }
+.photo-upload__done p { margin: 0 0 1rem; }
+.photo-upload__done p:last-child { margin-bottom: 0; }
+@media (max-width: 640px) {
+  .photo-item { grid-template-columns: 56px 1fr; }
+  .photo-item__thumb { width: 56px; height: 56px; }
+  .photo-item__remove { grid-column: 2; justify-self: start; }
+}
