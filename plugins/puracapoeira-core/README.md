@@ -121,7 +121,8 @@ que el administrador las use en los perfiles y en las páginas de las sedes.
 
 - **Enlace secreto**: `/fotos/?clave=…`. La clave vive en `pura_settings.photo_upload_key`
   (se genera sola la primera vez; se puede fijar con `PURA_PHOTO_UPLOAD_KEY`). Se copia y se
-  regenera en **Pura Capoeira → Ajustes → Fotos de profesores e instructores**. El formulario no
+  regenera en **Pura Capoeira → Ajustes → Fotos de profesores e instructores** (o `wp pura photo-link
+  [--regenerate]`; nunca la imprimas en CI: los registros de Actions son públicos). El formulario no
   aparece hasta que el navegador valida la clave (`GET pura/v1/photos/access`), y la página lleva
   `noindex`.
 - **Subida**: una sesión por envío (`POST pura/v1/photos/batches` → id + token de 24 h) y una

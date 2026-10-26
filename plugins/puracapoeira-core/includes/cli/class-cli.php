@@ -91,8 +91,9 @@ final class Cli {
 		$checks['account_page'] = array( $account_page instanceof \WP_Post, $account_page ? Settings::page_url( 'account' ) : 'sin página /cuenta/ (wp pura-theme import pages)' );
 		$checks['member_role']  = array( null !== get_role( Member_Accounts::ROLE ), Member_Accounts::ROLE );
 
+		// Never print the key here: CI logs of a public repository are public (see `wp pura photo-link`).
 		$photos_page           = get_page_by_path( 'fotos' );
-		$checks['photos_page'] = array( $photos_page instanceof \WP_Post, $photos_page ? Photo_Uploads::link() : 'sin página /fotos/ (se crea sola al cargar el sitio con el tema activo)' );
+		$checks['photos_page'] = array( $photos_page instanceof \WP_Post, $photos_page ? Photo_Uploads::page_url() . ' (clave en Ajustes → Fotos de profesores, o wp pura photo-link)' : 'sin página /fotos/ (se crea sola al cargar el sitio con el tema activo)' );
 		foreach ( Providers::all() as $provider ) {
 			$checks[ 'auth_' . $provider->id() ] = array(
 				$provider->is_configured(),
@@ -116,6 +117,37 @@ final class Cli {
 			WP_CLI::warning( "{$failures} comprobación(es) requieren atención." );
 		} else {
 			WP_CLI::success( 'Todo en orden.' );
+		}
+	}
+
+	/**
+	 * Print the secret link colleagues use to upload photos, or replace it.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--regenerate]
+	 * : Generate a new key; every link handed out before stops working.
+	 *
+	 * [--quiet]
+	 * : Do not print the link (for scripts whose output is logged).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp pura photo-link
+	 *     wp pura photo-link --regenerate --quiet
+	 *
+	 * @subcommand photo-link
+	 *
+	 * @param string[]              $args       Positional.
+	 * @param array<string, string> $assoc_args Named.
+	 */
+	public function photo_link( array $args, array $assoc_args ): void {
+		if ( isset( $assoc_args['regenerate'] ) ) {
+			Photo_Uploads::regenerate();
+			WP_CLI::success( 'Clave nueva generada; los enlaces anteriores ya no funcionan.' );
+		}
+		if ( ! isset( $assoc_args['quiet'] ) ) {
+			WP_CLI::log( Photo_Uploads::link() );
 		}
 	}
 }
