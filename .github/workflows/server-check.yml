@@ -5,6 +5,11 @@ name: Server check (pre-cutover)
 # sudo as that user, PHP version, ea-nginx, and what currently lives at DEPLOY_PATH.
 on:
   workflow_dispatch:
+    inputs:
+      regenerate_photo_key:
+        description: Replace the colleagues' photo upload key (the link in Ajustes changes; nothing is printed)
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -33,6 +38,7 @@ jobs:
              echo '== wp-cli'; if command -v wp >/dev/null 2>&1; then wp --version 2>/dev/null || true; else echo 'wp: not found'; fi; \
              echo '== wp --info as puracapoeirasite'; su -s /bin/bash puracapoeirasite -c 'wp --info' 2>&1 | head -20; \
              echo '== pura doctor'; su -s /bin/bash puracapoeirasite -c 'wp --path=${{ secrets.DEPLOY_PATH }} pura doctor' 2>&1 | grep -v -E 'perl: warning|LANGUAGE|LC_ALL|LANG =|are supported'; \
+             if [ '${{ inputs.regenerate_photo_key }}' = 'true' ]; then echo '== photo upload key'; su -s /bin/bash puracapoeirasite -c 'wp --path=${{ secrets.DEPLOY_PATH }} pura photo-link --regenerate --quiet' 2>&1 | grep -v -E 'perl: warning|LANGUAGE|LC_ALL|LANG =|are supported'; fi; \
              echo '== content migrations'; su -s /bin/bash puracapoeirasite -c 'wp --path=${{ secrets.DEPLOY_PATH }} option get pura_content_migrations --format=json' 2>&1 | tail -n 1; \
              echo '== PHP (cli)'; php -v | head -1; \
              echo '== PHP for the vhost'; /usr/local/cpanel/bin/rebuild_phpconf --current 2>/dev/null | head -20; \
