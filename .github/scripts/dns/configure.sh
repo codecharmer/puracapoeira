@@ -9,6 +9,7 @@
 # cPanel bumps the serial and, when a DNS cluster is configured, pushes the zone to the peers.
 # Expects: APPLY ("true" to change anything), SPF, DMARC.
 set -u
+export PYTHONIOENCODING=utf-8  # the root shell over ssh has an ASCII locale
 
 D=puracapoeira.com
 SPF="${SPF:-}"
@@ -45,7 +46,7 @@ for r in records:
         print(f"    line {r.get('Line')}: {r.get('name')} NS {r.get('nsdname')}")
     elif t == "TXT":
         data = r.get("txtdata", "")
-        print(f"    line {r.get('Line')}: {r.get('name')} TXT {data[:110]}{'…' if len(data) > 110 else ''}")
+        print(f"    line {r.get('Line')}: {r.get('name')} TXT {data[:110]}{'...' if len(data) > 110 else ''}")
 PY
 
 if [ "${APPLY:-false}" != "true" ]; then
