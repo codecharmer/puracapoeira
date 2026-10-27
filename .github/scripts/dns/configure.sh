@@ -77,20 +77,25 @@ case "${SPF_LINE:-}${DMARC_LINE:-}" in *[!0-9]*|"") echo "  could not read the z
 echo "  zone dump: SPF at line ${SPF_LINE}, _dmarc at line ${DMARC_LINE} (0 = absent)"
 echo "== 1. SPF (apex TXT)"
 ok() { grep -q '"result":1' <<<"$1" && echo "  ok" || { echo "  WHM API refused: $(grep -o '"reason":"[^"]*"' <<<"$1")"; exit 1; }; }
+# whmapi1 URL-decodes its key=value arguments, so a literal "+" (as in +a +mx) would turn into a
+# space and "%" would start an escape; encode both before handing a record value over.
+enc() { printf '%s' "$1" | sed -e 's/%/%25/g' -e 's/+/%2B/g'; }
+SPF_ARG="$(enc "$SPF")"
+DMARC_ARG="$(enc "$DMARC")"
 if [ "${SPF_LINE:-0}" -gt 0 ]; then
   echo "  replacing line $SPF_LINE with: $SPF"
-  ok "$(whmapi1 --output=json editzonerecord domain="$D" line="$SPF_LINE" name="$D." class=IN ttl=14400 type=TXT txtdata="$SPF")"
+  ok "$(whmapi1 --output=json editzonerecord domain="$D" line="$SPF_LINE" name="$D." class=IN ttl=14400 type=TXT txtdata="$SPF_ARG")"
 else
   echo "  no v=spf1 record found; adding: $SPF"
-  ok "$(whmapi1 --output=json addzonerecord domain="$D" name="$D." class=IN ttl=14400 type=TXT txtdata="$SPF")"
+  ok "$(whmapi1 --output=json addzonerecord domain="$D" name="$D." class=IN ttl=14400 type=TXT txtdata="$SPF_ARG")"
 fi
 echo "== 2. DMARC (_dmarc TXT)"
 if [ "${DMARC_LINE:-0}" -gt 0 ]; then
   echo "  replacing line $DMARC_LINE with: $DMARC"
-  ok "$(whmapi1 --output=json editzonerecord domain="$D" line="$DMARC_LINE" name="_dmarc.$D." class=IN ttl=14400 type=TXT txtdata="$DMARC")"
+  ok "$(whmapi1 --output=json editzonerecord domain="$D" line="$DMARC_LINE" name="_dmarc.$D." class=IN ttl=14400 type=TXT txtdata="$DMARC_ARG")"
 else
   echo "  adding: $DMARC"
-  ok "$(whmapi1 --output=json addzonerecord domain="$D" name="_dmarc.$D." class=IN ttl=14400 type=TXT txtdata="$DMARC")"
+  ok "$(whmapi1 --output=json addzonerecord domain="$D" name="_dmarc.$D." class=IN ttl=14400 type=TXT txtdata="$DMARC_ARG")"
 fi
 echo "== 3. zone now (TXT records and serial)"
 whmapi1 --output=json dumpzone domain="$D" 2>/dev/null | python3 -c '
@@ -98,8 +103,10 @@ import json, sys
 zone = json.load(sys.stdin)
 for z in zone.get("data", {}).get("zone", []):
     for r in z.get("record", []):
-        if r.get("type") == "SOA": print(f"    serial {r.get(\"serial\")}")
-        if r.get("type") == "TXT": print(f"    {r.get(\"name\")} TXT {str(r.get(\"txtdata\", \"\"))[:110]}")
+        if r.get("type") == "SOA":
+            print("    serial %s" % r.get("serial"))
+        if r.get("type") == "TXT":
+            print("    %s TXT %s" % (r.get("name"), str(r.get("txtdata", ""))[:110]))
 '
 echo "  answer from this server: $(dig +short TXT "_dmarc.$D" @127.0.0.1 | head -1)"
 echo "== done"
