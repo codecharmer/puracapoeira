@@ -95,8 +95,11 @@ afterwards are skipped unless `--force` is given.
 
 1. WP admin → **Pura Capoeira → Ajustes**: recipients, sender, social links; save; click
    "Enviar correo de prueba".
-2. Settings → **FluentSMTP**: host `mail.puracapoeira.com`, port 465 (SSL), user
-   `contacto@puracapoeira.com`, password from cPanel. Send the test mail.
+2. Outgoing mail: run the **Configure SMTP** workflow (`.github/workflows/configure-smtp.yml`)
+   first unchecked to inspect, then with *apply*. It stores a FluentSMTP connection on port 465
+   (SSL) whose host is the **server hostname**, not `mail.puracapoeira.com`: the certificate on
+   that port is issued for the hostname, so `mail.<domain>` fails verification. Credentials live
+   in `wp-config.php` (`FLUENTMAIL_SMTP_USERNAME` / `FLUENTMAIL_SMTP_PASSWORD`).
 3. Install `docs/htaccess.production` as `<docroot>/.htaccess` (merge with whatever WP Toolkit
    wrote; keep the WordPress block at the end). Then `wp rewrite flush --hard`.
 4. `/usr/local/cpanel/scripts/ea-nginx clear_cache puracapoeirasite` (as root).
