@@ -97,5 +97,10 @@ y, con *apply* marcado, lo deja configurado: buzón en cPanel, credenciales en `
 conexión SSL en FluentSMTP, remitente del plugin y un correo de prueba. Los scripts viven en
 `.github/scripts/smtp/`; la contraseña del buzón se genera en el servidor y nunca se imprime.
 
+`.github/workflows/configure-dns.yml` (manual) revisa y, con *apply*, corrige los registros TXT de
+autenticación de correo (SPF y DMARC) de la zona `puracapoeira.com`. La zona vive en este mismo VPS:
+el registro delega el dominio a `ns1/ns2.codecharmer.io` (ambos apuntan al servidor), así que se
+edita con la API de WHM, no en un registrador.
+
 El mapa de sedes usa Leaflet (BSD-2, incluido en `assets/vendor/leaflet`) con teselas de
 OpenStreetMap (© colaboradores de OpenStreetMap).
