@@ -15,7 +15,7 @@ SPF="${SPF:-}"
 DMARC="${DMARC:-}"
 
 echo "== delegation: registry vs. the zone's own NS/SOA"
-echo "  registry (whois):     $(timeout 20 whois "$D" 2>/dev/null | grep -i 'name server' | awk '{print tolower($NF)}' | sort -u | tr '\n' ' ')"
+echo "  registry delegation:  $(dig +norecurse +time=5 +tries=1 NS "$D" @a.gtld-servers.net 2>/dev/null | awk '$4=="NS"{print tolower($5)}' | sort -u | tr '\n' ' ')$(command -v whois >/dev/null && timeout 20 whois "$D" 2>/dev/null | grep -i 'name server' | awk '{print "(whois: "tolower($NF)")"}' | sort -u | tr '\n' ' ')"
 echo "  public resolver NS:   $(dig +short NS "$D" @8.8.8.8 | tr '\n' ' ')"
 echo "  public resolver SOA:  $(dig +short SOA "$D" @8.8.8.8)"
 for ns in ns1.codecharmer.io ns2.codecharmer.io; do
@@ -31,10 +31,12 @@ fi
 echo "  python3:              $(command -v python3 || echo missing)"
 echo "  NS / SOA / TXT records in the zone (whmapi1 dumpzone):"
 whmapi1 --output=json dumpzone domain="$D" > /tmp/pura-zone.json 2>/dev/null
-python3 - "$D" <<'PY' < /tmp/pura-zone.json
+python3 - "$D" /tmp/pura-zone.json <<'PY'
 import json, sys
-zone = json.load(sys.stdin)
+zone = json.load(open(sys.argv[2]))
 records = [r for z in zone.get("data", {}).get("zone", []) for r in z.get("record", [])]
+if not records:
+    print("    (no records parsed; raw head: " + open(sys.argv[2]).read(300).replace("\n", " ") + ")")
 for r in records:
     t = r.get("type")
     if t == "SOA":
@@ -58,10 +60,10 @@ case "$DMARC" in v=DMARC1*) ;; *) echo "DMARC must start with v=DMARC1"; exit 1;
 
 # Line numbers of the apex SPF record and of an existing _dmarc record, from the dump above.
 read -r SPF_LINE DMARC_LINE <<EOF
-$(python3 - "$D" <<'PY' < /tmp/pura-zone.json
+$(python3 - "$D" /tmp/pura-zone.json <<'PY'
 import json, sys
 d = sys.argv[1]
-zone = json.load(sys.stdin)
+zone = json.load(open(sys.argv[2]))
 records = [r for z in zone.get("data", {}).get("zone", []) for r in z.get("record", [])]
 spf = [r["Line"] for r in records if r.get("type") == "TXT" and r.get("name") in (d + ".", d, "@") and str(r.get("txtdata", "")).lower().startswith("v=spf1")]
 dmarc = [r["Line"] for r in records if r.get("type") == "TXT" and r.get("name") in ("_dmarc." + d + ".", "_dmarc." + d, "_dmarc")]
@@ -70,6 +72,8 @@ PY
 )
 EOF
 rm -f /tmp/pura-zone.json
+case "${SPF_LINE:-}${DMARC_LINE:-}" in *[!0-9]*|"") echo "  could not read the zone dump (SPF_LINE='${SPF_LINE:-}' DMARC_LINE='${DMARC_LINE:-}'); nothing changed."; exit 1;; esac
+echo "  zone dump: SPF at line ${SPF_LINE}, _dmarc at line ${DMARC_LINE} (0 = absent)"
 echo "== 1. SPF (apex TXT)"
 ok() { grep -q '"result":1' <<<"$1" && echo "  ok" || { echo "  WHM API refused: $(grep -o '"reason":"[^"]*"' <<<"$1")"; exit 1; }; }
 if [ "${SPF_LINE:-0}" -gt 0 ]; then
