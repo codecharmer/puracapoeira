@@ -91,5 +91,11 @@ import settings` (como el usuario de cPanel) y después `wp pura doctor`.
 `.github/workflows/server-check.yml` (manual) inspecciona el servidor con esas credenciales:
 WP-CLI, sudo, PHP, ea-nginx y el contenido de `DEPLOY_PATH`.
 
+`.github/workflows/configure-smtp.yml` (manual) revisa el correo saliente (conexiones de
+FluentSMTP, constantes en `wp-config.php`, buzones, certificado TLS del puerto 465, SPF/DKIM/DMARC)
+y, con *apply* marcado, lo deja configurado: buzón en cPanel, credenciales en `wp-config.php`,
+conexión SSL en FluentSMTP, remitente del plugin y un correo de prueba. Los scripts viven en
+`.github/scripts/smtp/`; la contraseña del buzón se genera en el servidor y nunca se imprime.
+
 El mapa de sedes usa Leaflet (BSD-2, incluido en `assets/vendor/leaflet`) con teselas de
 OpenStreetMap (© colaboradores de OpenStreetMap).
