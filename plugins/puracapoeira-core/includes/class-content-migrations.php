@@ -20,6 +20,8 @@ final class Content_Migrations {
 	/** @var string[] Method names, in order. Append; never rename or remove. */
 	private const MIGRATIONS = array(
 		'create_fotos_page',
+		'create_app_page',
+		'add_app_nav_link',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -29,6 +31,15 @@ final class Content_Migrations {
 		'excerpt' => 'Página privada para que profesores e instructores de Pura Capoeira compartan su foto de perfil y fotos de su sede.',
 		'pattern' => 'puracapoeira/page-fotos',
 		'option'  => 'photo_upload_page_id',
+	);
+
+	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
+	private const APP_PAGE = array(
+		'slug'    => 'app',
+		'title'   => 'La app',
+		'excerpt' => 'Descarga la app de Pura Capoeira: avisos, eventos, sedes y galería desde tu teléfono. En App Store para iPhone y como APK directo para Android.',
+		'pattern' => 'puracapoeira/page-app',
+		'option'  => 'app_page_id',
 	);
 
 	public static function register(): void {
@@ -64,6 +75,56 @@ final class Content_Migrations {
 	 */
 	public static function create_fotos_page(): bool {
 		return self::publish_page_from_pattern( self::FOTOS_PAGE );
+	}
+
+	/**
+	 * Publish /app/ (the app download page) from its pattern and remember its ID in settings.
+	 */
+	public static function create_app_page(): bool {
+		return self::publish_page_from_pattern( self::APP_PAGE );
+	}
+
+	/**
+	 * Append the "App" item to the main navigation. The importer only rebuilds the menu when run
+	 * by hand, so the live menu needs this once. Same link shape as the importer's menu().
+	 */
+	public static function add_app_nav_link(): bool {
+		$page = get_page_by_path( self::APP_PAGE['slug'] );
+		if ( ! $page ) {
+			// create_app_page has not succeeded yet; try again on the next request.
+			return false;
+		}
+
+		$menu = get_page_by_path( 'navegacion-principal', OBJECT, 'wp_navigation' );
+		if ( ! $menu ) {
+			// No imported menu to extend; the importer builds it with the link included.
+			return true;
+		}
+		if ( false !== strpos( (string) $menu->post_content, 'i18n-nav-app' ) ) {
+			return true;
+		}
+
+		$link = '<!-- wp:navigation-link ' . wp_json_encode(
+			array(
+				'label'     => 'App',
+				'type'      => 'page',
+				'id'        => $page->ID,
+				'url'       => get_permalink( $page ),
+				'kind'      => 'post-type',
+				'className' => 'i18n-nav-app',
+			),
+			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+		) . ' /-->';
+
+		$result = wp_update_post(
+			array(
+				'ID'           => $menu->ID,
+				'post_content' => $menu->post_content . "\n" . $link,
+			),
+			true
+		);
+
+		return ! is_wp_error( $result );
 	}
 
 	/**
