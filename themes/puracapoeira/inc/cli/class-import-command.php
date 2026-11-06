@@ -70,6 +70,10 @@ final class Pura_Theme_Import_Command {
 			'title'   => 'Sube tus fotos',
 			'excerpt' => 'Página privada para que profesores e instructores de Pura Capoeira compartan su foto de perfil y fotos de su sede.',
 		),
+		'app'                 => array(
+			'title'   => 'La app',
+			'excerpt' => 'Descarga la app de Pura Capoeira: avisos, eventos, sedes y galería desde tu teléfono. En App Store para iPhone y como APK directo para Android.',
+		),
 	);
 
 	private const NAV_LABELS = array(
@@ -81,6 +85,7 @@ final class Pura_Theme_Import_Command {
 		'eventos'    => 'Eventos',
 		'contacto'   => 'Contacto',
 		'cuenta'     => 'Mi cuenta',
+		'app'        => 'App',
 	);
 
 	private const MENU_SLUG  = 'navegacion-principal';
@@ -571,6 +576,9 @@ final class Pura_Theme_Import_Command {
 			}
 			if ( 'fotos' === $slug && class_exists( 'Pura\\Core\\Settings' ) ) {
 				Pura\Core\Settings::update( array( 'photo_upload_page_id' => $id ) );
+			}
+			if ( 'app' === $slug && class_exists( 'Pura\\Core\\Settings' ) ) {
+				Pura\Core\Settings::update( array( 'app_page_id' => $id ) );
 			}
 		}
 

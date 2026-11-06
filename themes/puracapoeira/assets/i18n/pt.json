@@ -172,6 +172,7 @@
 		"footer-rights": "© {year} Pura Capoeira. Todos os direitos reservados.",
 		"footer-sedes-title": "Sedes",
 		"login-prefill": "Já tem conta? Entre com Google ou Apple para preencher seus dados automaticamente e ver suas inscrições em Minha conta.",
+		"nav-app": "App",
 		"nav-contacto": "Contato",
 		"nav-cuenta": "Minha conta",
 		"nav-eventos": "Eventos",
@@ -187,6 +188,23 @@
 		"traj-title": "Trajetoria"
 	},
 	"pages": {
+		"app": {
+			"android-text": "Baixe o arquivo APK diretamente desta página e instale no seu celular ou tablet Android.",
+			"android-title": "Android",
+			"btn-android": "Baixar o APK",
+			"btn-ios": "Baixar na App Store",
+			"hero-eyebrow": "Avisos · Eventos · Comunidade",
+			"hero-lead": "Avisos da escola, eventos com inscrição, sedes, professores e galeria: tudo no seu celular, em espanhol, inglês e português.",
+			"hero-title": "O app do Pura Capoeira",
+			"ios-text": "Disponível na App Store. As atualizações chegam sozinhas.",
+			"ios-title": "iPhone e iPad",
+			"note": "Para atualizar o app no Android, baixe o APK desta página de novo. No iPhone, as atualizações chegam pela App Store.",
+			"step-1": "Toque em “Baixar o APK” e espere o download terminar.",
+			"step-2": "Abra o arquivo nas notificações ou na pasta Downloads.",
+			"step-3": "Se o celular pedir, permita instalar apps desconhecidos a partir do seu navegador.",
+			"step-4": "Abra o app e pronto. Axé!",
+			"steps-title": "Como instalar no Android"
+		},
 		"contacto": {
 			"form-eyebrow": "Formulario geral",
 			"form-title": "Escreva para nos",

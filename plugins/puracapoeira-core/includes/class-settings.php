@@ -81,6 +81,9 @@ final class Settings {
 			'photo_upload_page_id' => 0,
 			'photo_upload_key'     => '',
 			'photo_to_emails'      => '',
+
+			// Página de descarga de la app (/app/).
+			'app_page_id'          => 0,
 		);
 	}
 

@@ -48,7 +48,7 @@ final class Cli {
 		$checks['theme'] = array( 'puracapoeira' === $theme->get_stylesheet(), $theme->get_stylesheet() );
 
 		$missing = array();
-		$slugs   = array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto', 'vadiando-na-ladeira', 'privacidad', 'cuenta', 'fotos' );
+		$slugs   = array( 'inicio', 'grupo', 'profesores', 'sedes', 'galeria', 'eventos', 'contacto', 'vadiando-na-ladeira', 'privacidad', 'cuenta', 'fotos', 'app' );
 		foreach ( $slugs as $slug ) {
 			if ( ! get_page_by_path( $slug ) ) {
 				$missing[] = $slug;
