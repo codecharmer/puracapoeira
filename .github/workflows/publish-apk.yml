@@ -1,0 +1,108 @@
+name: Publish Android APK
+
+# Manually publishes the Android APK built by EAS to the live site at
+# https://puracapoeira.com/wp-content/uploads/app/pura-capoeira.apk.
+#
+# EAS artifact links expire after ~two weeks, so the durable download the site
+# links to lives in wp-content/uploads/app/, which the theme/plugin deploys
+# never touch. Each run replaces the canonical pura-capoeira.apk and keeps a
+# versioned copy next to it.
+#
+# Run it from Actions → "Publish Android APK" with the artifact URL printed by
+# `eas build -p android --profile preview` (or `eas build:list`).
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: EAS build artifact URL of the .apk
+        required: true
+        type: string
+      version:
+        description: Version label for the archived copy (e.g. 0.1.0-7); defaults to the UTC date
+        required: false
+        type: string
+
+concurrency:
+  # Same group as the WordPress deploy so the two never run at once.
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Download, check, upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ vars.WP_DEPLOY_ENABLED == 'true' }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download the APK
+        run: curl -fSL --retry 3 -o pura-capoeira.apk "${{ inputs.apk_url }}"
+
+      - name: Sanity-check the APK
+        run: |
+          size=$(stat -c%s pura-capoeira.apk)
+          echo "size: ${size} bytes"
+          sha256sum pura-capoeira.apk
+          [ "$size" -ge 20000000 ] || { echo 'Smaller than 20 MB; not a release APK?'; exit 1; }
+          unzip -l pura-capoeira.apk | grep -q 'AndroidManifest.xml' \
+            || { echo 'No AndroidManifest.xml inside; not an APK.'; exit 1; }
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Check the target is a WordPress install
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "test -f '${{ secrets.DEPLOY_PATH }}/wp-config.php' && test -d '${{ secrets.DEPLOY_PATH }}/wp-content' \
+             || { echo 'DEPLOY_PATH does not contain a WordPress install (no wp-config.php / wp-content)'; exit 1; }"
+
+      # Apache serves .apk as application/octet-stream by default; the one-line
+      # .htaccess pins the real MIME type so Android installs it cleanly.
+      - name: Prepare uploads/app (folder and APK MIME type)
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "mkdir -p '${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app' && \
+             printf 'AddType application/vnd.android.package-archive .apk\n' \
+               > '${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app/.htaccess'"
+
+      # No --delete: older versioned APKs stay available next to the canonical file.
+      - name: Upload the canonical APK and a versioned copy
+        run: |
+          version='${{ inputs.version }}'
+          [ -n "$version" ] || version=$(date -u +%Y%m%d-%H%M)
+          cp pura-capoeira.apk "pura-capoeira-${version}.apk"
+          rsync -az \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            pura-capoeira.apk "pura-capoeira-${version}.apk" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app/"
+
+      - name: Fix ownership and permissions
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "d='${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app'; \
+             chown -R puracapoeirasite:puracapoeirasite \"\$d\" && \
+             find \"\$d\" -type d -exec chmod 755 {} \; && \
+             find \"\$d\" -type f -exec chmod 644 {} \;"
+
+      - name: Clear cPanel NGINX cache
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "if [ -x /usr/local/cpanel/scripts/ea-nginx ]; then \
+               /usr/local/cpanel/scripts/ea-nginx clear_cache puracapoeirasite && /usr/local/cpanel/scripts/ea-nginx reload; \
+             else echo 'ea-nginx not present; nothing to clear.'; fi"
+
+      - name: Verify over HTTP
+        run: |
+          curl -fsSI https://puracapoeira.com/wp-content/uploads/app/pura-capoeira.apk \
+            | sed -n '1p;/^content-length/Ip;/^content-type/Ip'
