@@ -1,0 +1,112 @@
+name: Configure app sign-in
+
+# Manual. Gives the Pura Capoeira app's backend (Supabase Auth) what member sign-in needs, taking the
+# values from this website's server so they are never typed, pasted or printed anywhere:
+#
+#   - outgoing mail: the SMTP mailbox WordPress already sends with (wp-config.php), so sign-in and
+#     password-reset emails come from the school's own address;
+#   - Sign in with Google: the website's OAuth client (id and secret), plus the app's iOS client id;
+#   - Sign in with Apple: the app's bundle id. Native sign-in needs no Apple secret.
+#
+# Unchecked, it only reports: which values exist on the server (yes/no) and the current Supabase
+# settings with secrets masked. Checked, it writes them.
+#
+# Needs one repository secret besides the deploy ones: SUPABASE_ACCESS_TOKEN, a personal access
+# token from the Supabase dashboard (Account → Access Tokens).
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Write the settings to Supabase (unchecked = report only)
+        type: boolean
+        default: false
+      ios_client_id:
+        description: Google OAuth client id of the iOS app (optional; added to the allowed client ids)
+        type: string
+        default: ''
+
+env:
+  SUPABASE_PROJECT: btykxusuwsexcijcffto
+  APP_BUNDLE_ID: com.puracapoeira.app
+  SENDER_NAME: Pura Capoeira
+
+jobs:
+  app-auth:
+    name: ${{ inputs.apply && 'Configure' || 'Report' }} app sign-in
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Read the values on the server
+        id: read
+        run: |
+          set -euo pipefail
+          SSH="ssh -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
+          scp -q -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -P "${{ secrets.SSH_PORT }}" \
+            .github/scripts/app-auth/read.php "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/pura-app-auth-read.php"
+          # Output is captured, never echoed: it holds the values (base64).
+          RAW="$($SSH "su -s /bin/bash puracapoeirasite -c \"wp --path='${{ secrets.DEPLOY_PATH }}' eval-file /tmp/pura-app-auth-read.php\" 2>/dev/null; rm -f /tmp/pura-app-auth-read.php; echo \"PURA_APP_AUTH SMTP_HOST=\$(hostname -f 2>/dev/null | base64 -w0)\"")"
+          umask 077; : > "$RUNNER_TEMP/values.env"
+          while IFS= read -r line; do
+            case "$line" in "PURA_APP_AUTH "*) ;; *) continue ;; esac
+            pair="${line#PURA_APP_AUTH }"; name="${pair%%=*}"; value="$(printf '%s' "${pair#*=}" | base64 -d)"
+            case "$name" in SMTP_PASS|GOOGLE_CLIENT_SECRET) [ -n "$value" ] && echo "::add-mask::$value" ;; esac
+            printf '%s=%s\n' "$name" "$(printf '%s' "$value" | base64 -w0)" >> "$RUNNER_TEMP/values.env"
+            if [ -n "$value" ]; then
+              case "$name" in SMTP_PASS|GOOGLE_CLIENT_SECRET) echo "  $name: present" ;; *) echo "  $name: $value" ;; esac
+            else echo "  $name: MISSING"; fi
+          done <<< "$RAW"
+
+      - name: Current Supabase settings (secrets masked)
+        run: |
+          set -euo pipefail
+          curl -fsS "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT/config/auth" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+          | jq 'with_entries(select(.key | test("^(smtp_|external_(apple|google)_|external_email_enabled|mailer_autoconfirm|mailer_otp_|rate_limit_email_sent|site_url)")))
+                | with_entries(if (.key | test("pass|secret")) then .value = (if (.value // "") == "" then "(empty)" else "***" end) else . end)'
+
+      - name: Write the settings
+        if: ${{ inputs.apply }}
+        run: |
+          set -euo pipefail
+          get() { grep "^$1=" "$RUNNER_TEMP/values.env" | head -1 | cut -d= -f2- | base64 -d; }
+          for required in SMTP_USER SMTP_PASS SMTP_HOST GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
+            [ -n "$(get "$required")" ] || { echo "::error::$required is missing on the server; nothing was written."; exit 1; }
+          done
+          IOS='${{ inputs.ios_client_id }}'
+          GOOGLE_IDS="$(get GOOGLE_CLIENT_ID)${IOS:+,$IOS}"
+          # The body is built by jq from variables, so no value appears on a command line or in the log.
+          SMTP_USER="$(get SMTP_USER)" SMTP_PASS="$(get SMTP_PASS)" SMTP_HOST="$(get SMTP_HOST)" \
+          GOOGLE_IDS="$GOOGLE_IDS" GOOGLE_SECRET="$(get GOOGLE_CLIENT_SECRET)" \
+          jq -n '{
+            smtp_host: env.SMTP_HOST, smtp_port: "465", smtp_user: env.SMTP_USER, smtp_pass: env.SMTP_PASS,
+            smtp_admin_email: env.SMTP_USER, smtp_sender_name: env.SENDER_NAME,
+            rate_limit_email_sent: 100,
+            external_google_enabled: true, external_google_client_id: env.GOOGLE_IDS, external_google_secret: env.GOOGLE_SECRET,
+            external_google_skip_nonce_check: true,
+            external_apple_enabled: true, external_apple_client_id: env.APP_BUNDLE_ID
+          }' > "$RUNNER_TEMP/body.json"
+          code="$(curl -sS -o "$RUNNER_TEMP/out.json" -w '%{http_code}' -X PATCH "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT/config/auth" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" -H 'Content-Type: application/json' --data-binary "@$RUNNER_TEMP/body.json")"
+          rm -f "$RUNNER_TEMP/body.json"
+          echo "Supabase answered HTTP $code"
+          if [ "$code" != 200 ]; then jq -r '.message // .' "$RUNNER_TEMP/out.json" | head -5; exit 1; fi
+          jq 'with_entries(select(.key | test("^(smtp_|external_(apple|google)_|rate_limit_email_sent)")))
+              | with_entries(if (.key | test("pass|secret")) then .value = (if (.value // "") == "" then "(empty)" else "***" end) else . end)' "$RUNNER_TEMP/out.json"
+
+      - name: Remove the values from the runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/values.env" "$RUNNER_TEMP/out.json" ~/.ssh/deploy_key
