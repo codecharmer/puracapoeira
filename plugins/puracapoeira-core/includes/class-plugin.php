@@ -35,6 +35,7 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( $this, 'print_front_config' ), 5 );
 
 		Auth\Member_Accounts::register_hooks();
+		Cache_Control::register();
 		Content_Migrations::register();
 
 		if ( is_admin() ) {

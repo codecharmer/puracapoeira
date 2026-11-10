@@ -43,6 +43,8 @@ jobs:
              echo '== PHP (cli)'; php -v | head -1; \
              echo '== PHP for the vhost'; /usr/local/cpanel/bin/rebuild_phpconf --current 2>/dev/null | head -20; \
              echo '== ea-nginx'; if [ -x /usr/local/cpanel/scripts/ea-nginx ]; then echo present; else echo absent; fi; \
+             echo '== ea-nginx cache settings (global, then this account)'; cat /etc/nginx/ea-nginx/cache.json 2>/dev/null; echo; cat /var/cpanel/userdata/puracapoeirasite/nginx-cache.json 2>/dev/null; echo; \
+             echo '== nginx cache directives'; grep -rhE 'proxy_cache_valid|proxy_ignore_headers|proxy_cache_key|proxy_cache_bypass|proxy_no_cache' /etc/nginx/conf.d /etc/nginx/ea-nginx 2>/dev/null | sed 's/^[[:space:]]*//' | sort | uniq -c | sort -rn | head -20; \
              echo '== vhost docroots'; grep -rh -i documentroot /var/cpanel/userdata/puracapoeirasite/ 2>/dev/null | sort -u; \
              echo '== DEPLOY_PATH contents'; ls -la '${{ secrets.DEPLOY_PATH }}' 2>&1 | head -40; \
              if [ -f '${{ secrets.DEPLOY_PATH }}/wp-config.php' ]; then echo 'WordPress: wp-config.php present'; else echo 'WordPress: not installed at DEPLOY_PATH'; fi"
