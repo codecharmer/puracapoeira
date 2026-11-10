@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
       ios_client_id:
-        description: Google OAuth client id of the iOS app (optional; added to the allowed client ids)
+        description: Google OAuth client id of the iOS app (optional; stored as an additional allowed client id)
         type: string
         default: ''
 
@@ -87,18 +87,17 @@ jobs:
             [ -n "$(get "$required")" ] || { echo "::error::$required is missing on the server; nothing was written."; exit 1; }
           done
           IOS='${{ inputs.ios_client_id }}'
-          GOOGLE_IDS="$(get GOOGLE_CLIENT_ID)${IOS:+,$IOS}"
           # The body is built by jq from variables, so no value appears on a command line or in the log.
           SMTP_USER="$(get SMTP_USER)" SMTP_PASS="$(get SMTP_PASS)" SMTP_HOST="$(get SMTP_HOST)" \
-          GOOGLE_IDS="$GOOGLE_IDS" GOOGLE_SECRET="$(get GOOGLE_CLIENT_SECRET)" \
+          GOOGLE_ID="$(get GOOGLE_CLIENT_ID)" GOOGLE_IOS_ID="$IOS" GOOGLE_SECRET="$(get GOOGLE_CLIENT_SECRET)" \
           jq -n '{
             smtp_host: env.SMTP_HOST, smtp_port: "465", smtp_user: env.SMTP_USER, smtp_pass: env.SMTP_PASS,
             smtp_admin_email: env.SMTP_USER, smtp_sender_name: env.SENDER_NAME,
             rate_limit_email_sent: 100,
-            external_google_enabled: true, external_google_client_id: env.GOOGLE_IDS, external_google_secret: env.GOOGLE_SECRET,
+            external_google_enabled: true, external_google_client_id: env.GOOGLE_ID, external_google_secret: env.GOOGLE_SECRET,
             external_google_skip_nonce_check: true,
             external_apple_enabled: true, external_apple_client_id: env.APP_BUNDLE_ID
-          }' > "$RUNNER_TEMP/body.json"
+          } + (if env.GOOGLE_IOS_ID != "" then { external_google_additional_client_ids: env.GOOGLE_IOS_ID } else {} end)' > "$RUNNER_TEMP/body.json"
           code="$(curl -sS -o "$RUNNER_TEMP/out.json" -w '%{http_code}' -X PATCH "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT/config/auth" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" -H 'Content-Type: application/json' --data-binary "@$RUNNER_TEMP/body.json")"
           rm -f "$RUNNER_TEMP/body.json"
