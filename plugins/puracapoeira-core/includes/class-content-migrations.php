@@ -22,6 +22,7 @@ final class Content_Migrations {
 		'create_fotos_page',
 		'create_app_page',
 		'add_app_nav_link',
+		'create_editar_page',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -40,6 +41,15 @@ final class Content_Migrations {
 		'excerpt' => 'Descarga la app de Pura Capoeira: avisos, eventos, sedes y galería desde tu teléfono. En App Store para iPhone y como APK directo para Android.',
 		'pattern' => 'puracapoeira/page-app',
 		'option'  => 'app_page_id',
+	);
+
+	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
+	private const EDITAR_PAGE = array(
+		'slug'    => 'editar',
+		'title'   => 'Edita tu perfil y tu sede',
+		'excerpt' => 'Página para que cada profesor de Pura Capoeira mantenga al día su perfil y los datos de su sede.',
+		'pattern' => 'puracapoeira/page-editar',
+		'option'  => 'editor_page_id',
 	);
 
 	public static function register(): void {
@@ -80,6 +90,11 @@ final class Content_Migrations {
 	/**
 	 * Publish /app/ (the app download page) from its pattern and remember its ID in settings.
 	 */
+	/** The page where each professor edits their own profile and sede. Not in the menu: it is reached from Mi cuenta. */
+	public static function create_editar_page(): bool {
+		return self::publish_page_from_pattern( self::EDITAR_PAGE );
+	}
+
 	public static function create_app_page(): bool {
 		return self::publish_page_from_pattern( self::APP_PAGE );
 	}

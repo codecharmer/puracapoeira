@@ -50,6 +50,71 @@ final class Mailer {
 	}
 
 	/**
+	 * Recipients of "a professor changed something" notices: `editor_to_emails` when set, else the contact recipients.
+	 *
+	 * @return string[]
+	 */
+	public static function editor_recipients(): array {
+		$raw  = (string) Settings::get( 'editor_to_emails', '' );
+		$list = array_values( array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', $raw ) ) ), 'is_email' ) );
+
+		return $list ? $list : self::recipients();
+	}
+
+	/**
+	 * Tell the administrator what a professor changed on their sede or profile.
+	 */
+	public static function notify_change( int $change_id ): bool {
+		$change = Data\Change_Post_Type::to_array( $change_id );
+		if ( ! $change ) {
+			return false;
+		}
+
+		$recipients = self::editor_recipients();
+		if ( ! $recipients ) {
+			self::$last_error = 'No hay destinatarios configurados.';
+			return false;
+		}
+
+		$labels  = implode( ', ', array_map( array( Editor\Change_Diff::class, 'label' ), array_keys( $change['after'] ) ) );
+		$subject = sprintf( '%s: %s — %s', 'restore' === $change['source'] ? 'Restaurado' : 'Cambio', $change['target_title'], $labels );
+		$body    = self::build_change_body( $change, home_url( '/' ), admin_url( 'post.php?action=edit&post=' . $change_id ) );
+
+		return self::send( $recipients, $subject, $body, self::headers() );
+	}
+
+	/**
+	 * Plain-text body of the change notice. Pure: no WordPress calls.
+	 *
+	 * @param array<string, mixed> $change    Change (see Change_Post_Type::to_array()).
+	 * @param string               $site_url  Site URL for the first line.
+	 * @param string               $admin_url Where the administrator can review and restore it.
+	 */
+	public static function build_change_body( array $change, string $site_url, string $admin_url ): string {
+		$restore = 'restore' === ( $change['source'] ?? '' );
+		$lines   = array(
+			( $restore ? 'Se restauraron datos en ' : 'Un profesor cambió datos en ' ) . $site_url,
+			'',
+			'Ficha:  ' . (string) ( $change['target_title'] ?? '' ),
+			'Página: ' . (string) ( $change['target_url'] ?? '' ),
+			'Quién:  ' . (string) ( $change['actor_email'] ?? '' ),
+			'Cuándo: ' . (string) ( $change['when'] ?? '' ),
+			'',
+		);
+		$lines   = array_merge(
+			$lines,
+			Editor\Change_Diff::describe(
+				is_array( $change['before'] ?? null ) ? $change['before'] : array(),
+				is_array( $change['after'] ?? null ) ? $change['after'] : array()
+			)
+		);
+		$lines[] = 'El cambio ya está publicado. Para revisarlo o restaurar los valores anteriores:';
+		$lines[] = $admin_url;
+
+		return implode( "\n", $lines ) . "\n";
+	}
+
+	/**
 	 * Tell the recipients that a colleague finished uploading photos.
 	 */
 	public static function notify_photo_batch( int $post_id ): bool {

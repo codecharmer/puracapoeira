@@ -12,6 +12,7 @@ declare( strict_types=1 );
 
 namespace Pura\Core\Rest;
 
+use Pura\Core\Auth\Editor_Access;
 use Pura\Core\Auth\Member_Accounts;
 use Pura\Core\Data\Event_Registration_Post_Type;
 use Pura\Core\Data\Event_Registration_Repository;
@@ -41,24 +42,6 @@ final class Account_Controller extends Base_Controller {
 
 	public function me( WP_REST_Request $request ): WP_REST_Response {
 		return $this->ok( $this->payload( wp_get_current_user() ), 200, array( 'Cache-Control' => 'no-store' ) );
-	}
-
-	/**
-	 * Signed-in users only; an invalid nonce never gets this far (core answers 403).
-	 *
-	 * @return callable(WP_REST_Request): (bool|WP_Error)
-	 */
-	private function logged_in_permission( string $bucket, int $limit ): callable {
-		return static function () use ( $bucket, $limit ) {
-			if ( ! is_user_logged_in() ) {
-				return new WP_Error( 'pura_login_required', 'Inicia sesión para continuar.', array( 'status' => 401 ) );
-			}
-			if ( ! Rate_Limiter::check( $bucket, 'user-' . get_current_user_id(), $limit, 600 ) ) {
-				return new WP_Error( 'pura_rate_limited', 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.', array( 'status' => 429 ) );
-			}
-
-			return true;
-		};
 	}
 
 	/**
@@ -95,6 +78,9 @@ final class Account_Controller extends Base_Controller {
 				'providers'    => Member_Accounts::providers_for_user( $user->ID ),
 			),
 			'registrations' => $registrations,
+			// True for a professor the administrator linked to a profile or a sede: the page then offers the editor.
+			'editor'        => Editor_Access::has_access( $user ),
+			'editorUrl'     => Settings::page_url( 'editor' ),
 			// wp_logout_url() returns an HTML-escaped URL (&amp;); this one travels as JSON into a href.
 			'logoutUrl'     => html_entity_decode( wp_logout_url( home_url( '/' ) ), ENT_QUOTES, 'UTF-8' ),
 			'whatsappUrl'   => Settings::whatsapp_url( 'Hola, entré a Mi cuenta en puracapoeira.com y tengo una duda sobre mi registro a un evento.' ),

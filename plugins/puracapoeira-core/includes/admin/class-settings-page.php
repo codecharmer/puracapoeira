@@ -113,6 +113,13 @@ final class Settings_Page {
 					'photo_to_emails'      => array( 'text', __( 'Avisar a', 'pura' ), __( 'Correos separados por comas. Vacío: los mismos destinatarios del formulario de contacto.', 'pura' ) ),
 				),
 			),
+			'editor'   => array(
+				'title'  => __( 'Edición por profesores', 'pura' ),
+				'fields' => array(
+					'editor_page_id'   => array( 'page', __( 'Página de edición', 'pura' ), __( 'Déjalo en "Detectar por slug" si la página se llama /editar/.', 'pura' ) ),
+					'editor_to_emails' => array( 'text', __( 'Avisar de cada cambio a', 'pura' ), __( 'Correos separados por comas. Vacío: los mismos destinatarios del formulario de contacto.', 'pura' ) ),
+				),
+			),
 		);
 
 		foreach ( $sections as $id => $section ) {
@@ -271,7 +278,7 @@ final class Settings_Page {
 				$out[ $key ] = max( 0, (int) $raw );
 			} elseif ( str_ends_with( $key, '_url' ) ) {
 				$out[ $key ] = esc_url_raw( (string) $raw );
-			} elseif ( in_array( $key, array( 'contact_to_emails', 'event_to_emails', 'photo_to_emails' ), true ) ) {
+			} elseif ( in_array( $key, array( 'contact_to_emails', 'event_to_emails', 'photo_to_emails', 'editor_to_emails' ), true ) ) {
 				$emails      = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', (string) $raw ) ) ) );
 				$out[ $key ] = implode( ', ', array_filter( $emails, 'is_email' ) );
 			} elseif ( 'contact_from_email' === $key ) {

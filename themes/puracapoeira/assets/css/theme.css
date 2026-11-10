@@ -2365,3 +2365,27 @@ html.js .event-registration[data-event-auth-state="pending"] .event-login { disp
   .photo-item__thumb { width: 56px; height: 56px; }
   .photo-item__remove { grid-column: 2; justify-self: start; }
 }
+
+/* ---------- Professors' editor (/editar/) ---------- */
+.profile-editor { display: flex; flex-direction: column; gap: 2.5rem; }
+/* Sections are switched with the hidden attribute; some carry a display rule of their own. */
+.profile-editor [hidden] { display: none !important; }
+.profile-editor [data-editor-forms] { display: flex; flex-direction: column; gap: 2.5rem; }
+.editor-card { padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-card); gap: 1.25rem; }
+.editor-card__title { margin: 0; }
+.editor-card__about { margin: 0; }
+.editor-rows__label { font-weight: 700; }
+.editor-rows__body { display: flex; flex-direction: column; gap: 0.5rem; }
+.editor-rows__row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)) 2.75rem; gap: 0.5rem; align-items: center; }
+.editor-rows__row .editor-rows__cell { min-width: 0; }
+.editor-rows__remove { width: 2.75rem; height: 2.75rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--red); font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.editor-rows__remove:hover, .editor-rows__remove:focus-visible { border-color: var(--red); outline: none; }
+.editor-rows__add { align-self: flex-start; }
+.field.has-error input, .field.has-error textarea { border-color: var(--red); }
+.account-editor { margin-right: 0.75rem; }
+@media (max-width: 640px) {
+  .editor-card { padding: 1.25rem; }
+  .editor-rows__row { grid-template-columns: 1fr 2.75rem; grid-auto-flow: row; }
+  .editor-rows__row .editor-rows__cell { grid-column: 1; }
+  .editor-rows__row .editor-rows__remove { grid-column: 2; grid-row: 1; }
+}

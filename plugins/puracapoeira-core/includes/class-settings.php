@@ -41,6 +41,10 @@ final class Settings {
 			'option' => 'photo_upload_page_id',
 			'slug'   => 'fotos',
 		),
+		'editor'  => array(
+			'option' => 'editor_page_id',
+			'slug'   => 'editar',
+		),
 	);
 
 	/**
@@ -81,6 +85,10 @@ final class Settings {
 			'photo_upload_page_id' => 0,
 			'photo_upload_key'     => '',
 			'photo_to_emails'      => '',
+
+			// Página de edición para profesores (/editar/) y a quién se avisa de cada cambio.
+			'editor_page_id'       => 0,
+			'editor_to_emails'     => '',
 
 			// Página de descarga de la app (/app/).
 			'app_page_id'          => 0,
@@ -247,6 +255,7 @@ final class Settings {
 			'restUrl'    => esc_url_raw( rest_url( 'pura/v1/' ) ),
 			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
 			'accountUrl' => self::page_url( 'account' ),
+			'editorUrl'  => self::page_url( 'editor' ),
 			'privacyUrl' => self::privacy_url(),
 			'providers'  => Auth\Providers::configured(),
 			'whatsapp'   => self::whatsapp_number(),

@@ -105,8 +105,8 @@ function pura_theme_print_meta(): void {
 add_action( 'wp_head', 'pura_theme_print_meta', 1 );
 
 /**
- * Mi cuenta is personal and empty for crawlers, and the colleagues' photo page (/fotos/) is reached
- * only through its secret link: noindex, follow.
+ * Mi cuenta and the professors' editing page (/editar/) are personal and empty for crawlers, and the
+ * colleagues' photo page (/fotos/) is reached only through its secret link: noindex, follow.
  *
  * @param array<string, bool|string> $robots Robots directives.
  * @return array<string, bool|string>
@@ -119,7 +119,7 @@ function pura_theme_noindex_account( array $robots ): array {
 	$account_id = (int) ( function_exists( 'pura_setting' ) ? pura_setting( 'account_page_id', 0 ) : 0 );
 	$photos_id  = (int) ( function_exists( 'pura_setting' ) ? pura_setting( 'photo_upload_page_id', 0 ) : 0 );
 	$slug       = (string) get_post_field( 'post_name', $id );
-	if ( ( $account_id > 0 && $id === $account_id ) || ( $photos_id > 0 && $id === $photos_id ) || in_array( $slug, array( 'cuenta', 'fotos' ), true ) ) {
+	if ( ( $account_id > 0 && $id === $account_id ) || ( $photos_id > 0 && $id === $photos_id ) || in_array( $slug, array( 'cuenta', 'fotos', 'editar' ), true ) ) {
 		$robots['noindex'] = true;
 		$robots['follow']  = true;
 		unset( $robots['max-image-preview'] );

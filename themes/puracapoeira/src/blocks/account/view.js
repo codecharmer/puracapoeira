@@ -188,6 +188,14 @@ function initAccount( root ) {
 		if ( whatsapp && data.whatsappUrl ) {
 			whatsapp.href = data.whatsappUrl;
 		}
+		// Professors linked by the administration get the door to the editing page.
+		const editor = $( '[data-account-editor]', root );
+		if ( editor ) {
+			editor.hidden = ! ( data.editor && data.editorUrl );
+			if ( data.editorUrl ) {
+				editor.href = data.editorUrl;
+			}
+		}
 		renderRows( data.registrations || [] );
 		setState( 'logged-in' );
 		translate( root );

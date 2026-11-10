@@ -83,6 +83,26 @@ abstract class Base_Controller {
 	}
 
 	/**
+	 * Signed-in users only, with a per-user rate limit. The session is the WordPress cookie and
+	 * every request carries the REST nonce: with a missing or stale nonce core treats the
+	 * request as logged out, so it stops here with a 401 (that nonce is the CSRF check).
+	 *
+	 * @return callable(WP_REST_Request): (bool|WP_Error)
+	 */
+	protected function logged_in_permission( string $bucket, int $limit, int $window = 600 ): callable {
+		return static function () use ( $bucket, $limit, $window ) {
+			if ( ! is_user_logged_in() ) {
+				return new WP_Error( 'pura_login_required', 'Inicia sesión para continuar.', array( 'status' => 401 ) );
+			}
+			if ( ! Rate_Limiter::check( $bucket, 'user-' . get_current_user_id(), $limit, $window ) ) {
+				return new WP_Error( 'pura_rate_limited', 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.', array( 'status' => 429 ) );
+			}
+
+			return true;
+		};
+	}
+
+	/**
 	 * @return callable(): bool
 	 */
 	protected function admin_permission(): callable {

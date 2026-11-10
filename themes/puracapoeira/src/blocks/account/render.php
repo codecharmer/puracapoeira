@@ -51,6 +51,7 @@ $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'account' ) );
 			<h2 class="account-portal__title display"><span class="i18n-portal-hello"><?php esc_html_e( 'Hola,', 'pura' ); ?></span> <span data-account-name></span></h2>
 			<p class="account-portal__email muted" data-account-email></p>
 			<p class="account-portal__private muted i18n-portal-private" data-account-private hidden><?php esc_html_e( 'Entraste con Apple ocultando tu correo: aquí solo aparecen los registros hechos desde esta cuenta.', 'pura' ); ?></p>
+			<a class="btn btn--primary account-editor i18n-editor-link" data-account-editor href="#" hidden><?php esc_html_e( 'Editar mi perfil y mi sede', 'pura' ); ?></a>
 			<a class="btn btn--ghost account-logout i18n-logout" data-account-logout href="#" rel="nofollow"><?php esc_html_e( 'Cerrar sesión', 'pura' ); ?></a>
 		</header>
 

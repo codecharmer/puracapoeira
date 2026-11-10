@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/profile-editor",
+	"version": "1.0.0",
+	"title": "Edición de sede y perfil (profesores)",
+	"category": "pura",
+	"icon": "edit",
+	"description": "Página donde cada profesor edita su propio perfil y su sede: contacto, horarios, precios y textos. Solo ve sus datos quien fue vinculado por la administración.",
+	"textdomain": "pura",
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": [ "pura-auth", "file:./view.js" ],
+	"render": "file:./render.php"
+}
