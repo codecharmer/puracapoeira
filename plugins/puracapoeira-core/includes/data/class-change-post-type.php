@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Pura\Core\Data;
 
 use Pura\Core\Admin\Change_Actions;
+use Pura\Core\Editor\Bio_Document;
 use Pura\Core\Editor\Change_Diff;
 use Pura\Core\Editor\Editor_Photos;
 use WP_Post;
@@ -144,7 +145,12 @@ final class Change_Post_Type {
 				echo '<td>' . self::thumbnails( $value ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				continue;
 			}
-			echo '<td style="white-space:pre-wrap">' . esc_html( Change_Diff::show( $change['before'][ $field ] ?? '' ) ) . '</td>';
+			$before = $change['before'][ $field ] ?? '';
+			if ( 'bio' === $field ) {
+				$before = Bio_Document::to_text( (string) $before );
+				$value  = Bio_Document::to_text( (string) $value );
+			}
+			echo '<td style="white-space:pre-wrap">' . esc_html( Change_Diff::show( $before ) ) . '</td>';
 			echo '<td style="white-space:pre-wrap">' . esc_html( Change_Diff::show( $value ) ) . '</td></tr>';
 		}
 		echo '</tbody></table>';

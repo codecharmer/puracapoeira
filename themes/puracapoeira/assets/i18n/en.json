@@ -212,7 +212,14 @@
 		"Alguien más guardó cambios en esta ficha. Revisa los datos actuales y vuelve a guardar.": "Someone else saved changes here. Review the current details and save again.",
 		"Revisa los enlaces: deben empezar con https:// y apuntar al sitio correcto (WhatsApp, Instagram, Facebook o YouTube).": "Check the links: they must start with https:// and point to the right site (WhatsApp, Instagram, Facebook or YouTube).",
 		"Algún texto es demasiado largo.": "One of the texts is too long.",
-		"Solo aceptamos fotos JPG, PNG o WebP.": "We only accept JPG, PNG or WebP photos."
+		"Solo aceptamos fotos JPG, PNG o WebP.": "We only accept JPG, PNG or WebP photos.",
+		"Biografía y trayectoria": "Biography and career",
+		"Lo que cambies se guarda como texto simple, y su traducción al inglés y al portugués se quita hasta que se vuelva a traducir. Lo que no toques queda exactamente igual.": "What you change is saved as plain text, and its English and Portuguese translation is removed until it is translated again. What you leave alone stays exactly as it is.",
+		"Esta parte solo la cambia la administración.": "Only the administration changes this part.",
+		"Añadir entrada": "Add entry",
+		"Añadir párrafo": "Add paragraph",
+		"Cada entrada de la línea de tiempo necesita un año y un título.": "Each timeline entry needs a year and a title.",
+		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Some parts are changed only by the administration and cannot be removed from here."
 	},
 	"shared": {
 		"bio-title": "Biography",

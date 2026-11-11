@@ -483,6 +483,242 @@ function photoSection( item, limits ) {
 	return section;
 }
 
+/**
+ * What is sent for a bio, in one shape for both the loaded copy and the form, so the two can
+ * be compared.
+ *
+ * @param {Object} bio Bio from /editor/me.
+ */
+function bioShape( bio ) {
+	return {
+		sections: ( ( bio && bio.sections ) || [] ).map( ( section ) => ( {
+			id: section.id,
+			items: section.items.map( ( item ) =>
+				item.kind === 'event'
+					? {
+							ref: item.ref,
+							year: item.year,
+							title: item.title,
+							text: item.text,
+					  }
+					: { ref: item.ref, text: item.text }
+			),
+		} ) ),
+	};
+}
+
+/**
+ * The bio of a profesor: the paragraphs of each section and the entries of the timeline.
+ * Lists and sub-headings are shown but only the administration changes them.
+ *
+ * @param {Object} bio    Bio from /editor/me.
+ * @param {Object} limits Limits from /editor/me.
+ */
+function bioEditor( bio, limits ) {
+	const max = limits.bio || {};
+	const body = el( 'div', { class: 'editor-bio__sections' } );
+	const wrap = el(
+		'div',
+		{
+			class: 'field field--full editor-bio',
+			'data-field': 'bio',
+		},
+		[
+			el( 'span', {
+				class: 'editor-rows__label',
+				'data-tv': true,
+				text: 'Biografía y trayectoria',
+			} ),
+			el( 'span', {
+				class: 'field-help',
+				'data-tv': true,
+				text: 'Lo que cambies se guarda como texto simple, y su traducción al inglés y al portugués se quita hasta que se vuelva a traducir. Lo que no toques queda exactamente igual.',
+			} ),
+			body,
+		]
+	);
+
+	const action = ( label, glyph, handler ) => {
+		const node = el( 'button', {
+			type: 'button',
+			class: 'editor-bio__action',
+			'aria-label': label,
+			text: glyph,
+		} );
+		node.addEventListener( 'click', handler );
+		return node;
+	};
+
+	const row = ( item, kind ) => {
+		const line = el( 'div', {
+			class: `editor-bio__item editor-bio__item--${ kind }`,
+			'data-item': kind,
+			'data-ref':
+				item.ref === undefined || item.ref === null ? '' : item.ref,
+		} );
+		const input = ( name, label, value, attrs = {} ) =>
+			el( attrs.rows ? 'textarea' : 'input', {
+				type: attrs.rows ? false : 'text',
+				'data-part': name,
+				'aria-label': label,
+				placeholder: label,
+				...attrs,
+			} );
+		const main = el( 'div', { class: 'editor-bio__main' } );
+		if ( kind === 'fixed' ) {
+			line.dataset.text = item.text;
+			main.appendChild(
+				el( 'p', { class: 'editor-bio__fixed', text: item.text } )
+			);
+			main.appendChild(
+				el( 'span', {
+					class: 'field-help',
+					'data-tv': true,
+					text: 'Esta parte solo la cambia la administración.',
+				} )
+			);
+		} else if ( kind === 'event' ) {
+			const year = input( 'year', 'Año', item.year, {
+				maxlength: max.year || 20,
+				class: 'editor-bio__year',
+			} );
+			const title = input( 'title', 'Título', item.title, {
+				maxlength: max.title || 120,
+			} );
+			const detail = input( 'text', 'Descripción', item.text, {
+				rows: 2,
+				maxlength: max.eventText || 600,
+			} );
+			year.value = item.year || '';
+			title.value = item.title || '';
+			detail.value = item.text || '';
+			main.appendChild(
+				el( 'div', { class: 'editor-bio__event-head' }, [
+					year,
+					title,
+				] )
+			);
+			main.appendChild( detail );
+		} else {
+			const paragraph = input( 'text', 'Párrafo', item.text, {
+				rows: 4,
+				maxlength: max.text || 1500,
+			} );
+			paragraph.value = item.text || '';
+			main.appendChild( paragraph );
+		}
+		const actions = el( 'div', { class: 'editor-bio__actions' }, [
+			action( 'Mover antes', '↑', () => {
+				if ( line.previousElementSibling ) {
+					line.parentNode.insertBefore(
+						line,
+						line.previousElementSibling
+					);
+				}
+			} ),
+			action( 'Mover después', '↓', () => {
+				if ( line.nextElementSibling ) {
+					line.parentNode.insertBefore(
+						line.nextElementSibling,
+						line
+					);
+				}
+			} ),
+			kind === 'fixed'
+				? null
+				: action( 'Quitar', '×', () => line.remove() ),
+		] );
+		line.appendChild( main );
+		line.appendChild( actions );
+		return line;
+	};
+
+	const build = ( next ) => {
+		body.textContent = '';
+		( ( next && next.sections ) || [] ).forEach( ( section ) => {
+			const timeline = section.kind === 'timeline';
+			const list = el( 'div', {
+				class: 'editor-bio__list',
+				'data-section': section.id,
+			} );
+			section.items.forEach( ( item ) =>
+				list.appendChild( row( item, item.kind ) )
+			);
+			const add = el( 'button', {
+				type: 'button',
+				class: 'btn btn--ghost editor-rows__add',
+				'data-tv': true,
+				text: timeline ? 'Añadir entrada' : 'Añadir párrafo',
+			} );
+			add.addEventListener( 'click', () => {
+				const cap = timeline ? max.events || 40 : max.items || 30;
+				if ( list.children.length >= cap ) {
+					return;
+				}
+				const line = row( {}, timeline ? 'event' : 'text' );
+				list.appendChild( line );
+				const first = line.querySelector( '[data-part]' );
+				if ( first ) {
+					first.focus();
+				}
+			} );
+			body.appendChild(
+				el( 'div', { class: 'editor-bio__section' }, [
+					el( 'h3', {
+						class: 'editor-bio__title',
+						'data-tv': true,
+						text: section.title,
+					} ),
+					list,
+					add,
+				] )
+			);
+		} );
+		translate( body );
+	};
+
+	wrap.readBio = () => ( {
+		sections: Array.from( body.querySelectorAll( '[data-section]' ) ).map(
+			( list ) => ( {
+				id: Number( list.dataset.section ),
+				items: Array.from( list.querySelectorAll( '[data-item]' ) )
+					.map( ( line ) => {
+						const part = ( name ) =>
+							clean(
+								line.querySelector( `[data-part="${ name }"]` )
+									.value,
+								false
+							);
+						const item =
+							line.dataset.ref === ''
+								? {}
+								: { ref: Number( line.dataset.ref ) };
+						if ( line.dataset.item === 'fixed' ) {
+							item.text = line.dataset.text;
+						} else if ( line.dataset.item === 'event' ) {
+							item.year = part( 'year' );
+							item.title = part( 'title' );
+							item.text = part( 'text' );
+						} else {
+							item.text = part( 'text' );
+						}
+						return item;
+					} )
+					.filter(
+						( item ) =>
+							item.ref !== undefined ||
+							[ item.year, item.title, item.text ].join( '' ) !==
+								''
+					),
+			} )
+		),
+	} );
+	wrap.setBio = build;
+
+	build( bio );
+	return wrap;
+}
+
 let uid = 0;
 
 function rowsEditor( field, rows, limits ) {
@@ -644,6 +880,11 @@ function card( item, limits ) {
 		grid.appendChild( control );
 	} );
 
+	const bio = item.bio ? bioEditor( item.bio, limits ) : null;
+	if ( bio ) {
+		grid.appendChild( bio );
+	}
+
 	const { node: result, show } = notice();
 	const save = el( 'button', {
 		type: 'submit',
@@ -732,6 +973,15 @@ function card( item, limits ) {
 				changed[ name ] = values[ name ];
 			}
 		} );
+		if ( bio ) {
+			const edits = bio.readBio();
+			if (
+				JSON.stringify( edits ) !==
+				JSON.stringify( bioShape( item.bio ) )
+			) {
+				changed.bio = edits;
+			}
+		}
 		if ( ! Object.keys( changed ).length ) {
 			show( MESSAGES.nothing, true );
 			return;
@@ -757,6 +1007,9 @@ function card( item, limits ) {
 		if ( res.ok && json.ok ) {
 			Object.assign( item, json.item );
 			fill( item.fields );
+			if ( bio ) {
+				bio.setBio( item.bio );
+			}
 			view.href = item.url;
 			show(
 				MESSAGES.saved,
@@ -771,6 +1024,10 @@ function card( item, limits ) {
 			// Someone else saved first. Keep what was typed on screen, but move to their version so the next
 			// save is compared with the current data, and say so.
 			Object.assign( item, json.current );
+			if ( bio ) {
+				// The stored bio changed, so the positions on screen no longer match it: show the current one.
+				bio.setBio( item.bio );
+			}
 			show( json.error || MESSAGES.network, false );
 			return;
 		}
@@ -779,6 +1036,12 @@ function card( item, limits ) {
 			return;
 		}
 		mark( json.fields );
+		if ( bio ) {
+			bio.classList.toggle(
+				'has-error',
+				!! ( json.fields && json.fields.bio )
+			);
+		}
 		show( json.error || MESSAGES.network, false );
 	} );
 

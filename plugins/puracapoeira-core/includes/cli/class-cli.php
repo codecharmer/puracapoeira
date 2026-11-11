@@ -29,6 +29,51 @@ final class Cli {
 	}
 
 	/**
+	 * Check that every profesor's bio survives the editor untouched: reading it and saving it
+	 * back with no edits must give exactly the stored content. A bio that fails is not offered
+	 * for editing on the editor page.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp pura editor-roundtrip
+	 *
+	 * @subcommand editor-roundtrip
+	 *
+	 * @param string[]              $args       Positional.
+	 * @param array<string, string> $assoc_args Named.
+	 */
+	public function editor_roundtrip( array $args, array $assoc_args ): void {
+		$bad = 0;
+		foreach ( \Pura\Core\Data\Profesor_Post_Type::all() as $post ) {
+			$content = (string) $post->post_content;
+			$view    = \Pura\Core\Editor\Bio_Document::read( $content );
+			if ( null === $view ) {
+				$stable = \Pura\Core\Editor\Bio_Document::is_stable( $content );
+				$bad   += $stable ? 0 : 1;
+				WP_CLI::log( sprintf( '%s  %s: %s', $stable ? 'SKIP' : 'FAIL', $post->post_title, $stable ? 'nada que editar' : 'el contenido no se conserva al guardarlo' ) );
+				continue;
+			}
+			$payload = array( 'sections' => array() );
+			$items   = 0;
+			foreach ( $view['sections'] as $section ) {
+				$payload['sections'][] = array(
+					'id'    => $section['id'],
+					'items' => $section['items'],
+				);
+				$items                += count( $section['items'] );
+			}
+			$result = \Pura\Core\Editor\Bio_Document::apply( $content, $payload );
+			$same   = $result['ok'] && $result['content'] === $content;
+			$bad   += $same ? 0 : 1;
+			WP_CLI::log( sprintf( '%s  %s: %d secciones, %d elementos%s', $same ? 'OK  ' : 'FAIL', $post->post_title, count( $view['sections'] ), $items, $same ? '' : ' (' . ( $result['error'] ?: 'el contenido cambió' ) . ')' ) );
+		}
+		if ( $bad ) {
+			WP_CLI::error( sprintf( '%d trayectorias no se conservan.', $bad ) );
+		}
+		WP_CLI::success( 'Todas las trayectorias se conservan byte por byte.' );
+	}
+
+	/**
 	 * Check configuration: permalinks, pages, content counts, menu, logo, mail recipients, SMTP.
 	 *
 	 * ## EXAMPLES

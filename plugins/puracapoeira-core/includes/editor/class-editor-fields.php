@@ -27,6 +27,9 @@ final class Editor_Fields {
 	/** Where a value is stored when it is not post meta. */
 	public const STORE_EXCERPT = '@excerpt';
 
+	/** The post's content: a profesor's bio. */
+	public const STORE_CONTENT = '@content';
+
 	/** The post's main photo (featured image). */
 	public const STORE_THUMBNAIL = '@thumbnail';
 
@@ -179,6 +182,21 @@ final class Editor_Fields {
 	}
 
 	/**
+	 * The bio. Like the photos it is not in definitions(): what the page sends is a list of
+	 * edits, which Bio_Document turns into the new content before the writer sees it.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function content_definitions( string $type ): array {
+		return self::TYPE_PROFESOR === $type ? array(
+			'bio' => array(
+				'store' => self::STORE_CONTENT,
+				'kind'  => 'bio',
+			),
+		) : array();
+	}
+
+	/**
 	 * Checks a set of submitted values. One bad field refuses the whole request: nothing is
 	 * half-saved. Returns the cleaned values, or the fields at fault with a reason code.
 	 *
@@ -230,6 +248,12 @@ final class Editor_Fields {
 		}
 		if ( in_array( 'bad_link', $reasons, true ) ) {
 			return 'Revisa los enlaces: deben empezar con https:// y apuntar al sitio correcto (WhatsApp, Instagram, Facebook o YouTube).';
+		}
+		if ( in_array( 'event_incomplete', $reasons, true ) ) {
+			return 'Cada entrada de la línea de tiempo necesita un año y un título.';
+		}
+		if ( in_array( 'fixed_missing', $reasons, true ) ) {
+			return 'Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.';
 		}
 		if ( in_array( 'too_many_rows', $reasons, true ) ) {
 			return 'Hay demasiadas filas: el máximo es ' . self::MAX_ROWS . '.';

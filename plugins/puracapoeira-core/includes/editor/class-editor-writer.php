@@ -41,8 +41,8 @@ final class Editor_Writer {
 	public static function apply( WP_Post $post, array $values, int $actor_id, string $actor_email, string $source = 'editor', int $restores = 0 ): array {
 		$type        = Editor_Document::type_of( $post );
 		$photos      = Editor_Fields::photo_definitions( $type );
-		$definitions = Editor_Fields::definitions( $type ) + $photos;
-		$current     = Editor_Document::values( $post ) + Editor_Photos::values( $post );
+		$definitions = Editor_Fields::definitions( $type ) + $photos + Editor_Fields::content_definitions( $type );
+		$current     = Editor_Document::values( $post ) + Editor_Photos::values( $post ) + array( 'bio' => (string) $post->post_content );
 		$changed     = array_values( array_intersect( Change_Diff::changed( $current, $values ), array_keys( $definitions ) ) );
 
 		if ( ! $changed ) {
@@ -63,6 +63,8 @@ final class Editor_Writer {
 
 			if ( Editor_Fields::STORE_EXCERPT === $definition['store'] ) {
 				$update['post_excerpt'] = (string) $values[ $name ];
+			} elseif ( Editor_Fields::STORE_CONTENT === $definition['store'] ) {
+				$update['post_content'] = (string) $values[ $name ];
 			} elseif ( Editor_Fields::STORE_THUMBNAIL === $definition['store'] ) {
 				if ( (int) $values[ $name ] > 0 ) {
 					set_post_thumbnail( $post->ID, (int) $values[ $name ] );
@@ -76,7 +78,7 @@ final class Editor_Writer {
 			}
 		}
 
-		self::forget_translations( $post, $changed );
+		self::forget_translations( $post, $changed, isset( $after['bio'] ) ? array_diff( Bio_Document::translation_keys( (string) $before['bio'] ), Bio_Document::translation_keys( (string) $after['bio'] ) ) : array() );
 		update_post_meta( $post->ID, Editor_Document::META_REVISION, 1 + (int) get_post_meta( $post->ID, Editor_Document::META_REVISION, true ) );
 		self::touch( $update );
 
@@ -116,9 +118,10 @@ final class Editor_Writer {
 	 * Spanish text until someone translates it.
 	 *
 	 * @param string[] $changed Changed field names.
+	 * @param string[] $gone    Translation keys of bio blocks that were changed or removed.
 	 */
-	private static function forget_translations( WP_Post $post, array $changed ): void {
-		$keys = array_values( array_intersect_key( self::TRANSLATED, array_flip( $changed ) ) );
+	private static function forget_translations( WP_Post $post, array $changed, array $gone = array() ): void {
+		$keys = array_merge( array_values( array_intersect_key( self::TRANSLATED, array_flip( $changed ) ) ), array_values( $gone ) );
 		if ( ! $keys ) {
 			return;
 		}

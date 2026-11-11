@@ -71,13 +71,17 @@ final class Change_Actions {
 		$fields = array_intersect_key( $change['before'], Editor_Fields::definitions( $type ) );
 		$check  = Editor_Fields::validate( $type, $fields );
 		$photos = Editor_Photos::restorable( $target, $change['before'] );
+		if ( Editor_Fields::content_definitions( $type ) && is_string( $change['before']['bio'] ?? null ) ) {
+			// The bio is put back exactly as it was stored.
+			$photos['bio'] = $change['before']['bio'];
+		}
 		if ( ! $check['ok'] || ! ( $check['values'] || $photos ) ) {
 			return $failed;
 		}
 		$fields += $photos;
 
 		// Were these fields changed again after the change being undone? Then that later work is replaced too.
-		$drifted = Change_Diff::changed( Editor_Document::values( $target ) + Editor_Photos::values( $target ), array_intersect_key( $change['after'], $fields ) );
+		$drifted = Change_Diff::changed( Editor_Document::values( $target ) + Editor_Photos::values( $target ) + array( 'bio' => (string) $target->post_content ), array_intersect_key( $change['after'], $fields ) );
 		$result  = Editor_Writer::apply( $target, $check['values'] + $photos, (int) $user->ID, strtolower( (string) $user->user_email ), 'restore', $change_id );
 		$message = $result['changed']
 			/* translators: %s: sede or profesor title. */

@@ -80,7 +80,13 @@ final class Mailer {
 		$subject          = sprintf( '%s: %s — %s', 'restore' === $change['source'] ? 'Restaurado' : 'Cambio', $change['target_title'], $labels );
 		$change['before'] = Editor\Editor_Photos::readable( $change['before'] );
 		$change['after']  = Editor\Editor_Photos::readable( $change['after'] );
-		$body             = self::build_change_body( $change, home_url( '/' ), admin_url( 'post.php?action=edit&post=' . $change_id ) );
+		if ( isset( $change['after']['bio'] ) ) {
+			// Only the lines of the bio that differ, as text.
+			$bio                     = Editor\Bio_Document::changed_text( (string) ( $change['before']['bio'] ?? '' ), (string) $change['after']['bio'] );
+			$change['before']['bio'] = $bio['before'];
+			$change['after']['bio']  = $bio['after'];
+		}
+		$body = self::build_change_body( $change, home_url( '/' ), admin_url( 'post.php?action=edit&post=' . $change_id ) );
 
 		return self::send( $recipients, $subject, $body, self::headers() );
 	}

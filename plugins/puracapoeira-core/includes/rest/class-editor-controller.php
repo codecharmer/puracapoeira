@@ -25,6 +25,7 @@ use Pura\Core\Auth\Editor_Access;
 use Pura\Core\Data\Photo_Batch_Repository;
 use Pura\Core\Data\Profesor_Post_Type;
 use Pura\Core\Data\Sede_Post_Type;
+use Pura\Core\Editor\Bio_Document;
 use Pura\Core\Editor\Editor_Document;
 use Pura\Core\Editor\Editor_Fields;
 use Pura\Core\Editor\Editor_Photos;
@@ -106,6 +107,14 @@ final class Editor_Controller extends Base_Controller {
 					'rows'     => Editor_Fields::MAX_ROWS,
 					'cell'     => Editor_Fields::MAX_CELL,
 					'gallery'  => Editor_Photos::MAX_GALLERY,
+					'bio'      => array(
+						'items'     => Bio_Document::MAX_ITEMS,
+						'text'      => Bio_Document::MAX_TEXT,
+						'events'    => Bio_Document::MAX_EVENTS,
+						'year'      => Bio_Document::MAX_YEAR,
+						'title'     => Bio_Document::MAX_TITLE,
+						'eventText' => Bio_Document::MAX_EVENT_TEXT,
+					),
 					'maxBytes' => Photo_Batch_Repository::max_bytes(),
 				),
 			),
@@ -132,6 +141,24 @@ final class Editor_Controller extends Base_Controller {
 			return $this->conflict( $post );
 		}
 
+		// The bio arrives as a list of edits; it becomes the new content here, or refuses the whole save.
+		$bio = null;
+		if ( array_key_exists( 'bio', $fields ) && Editor_Fields::content_definitions( Editor_Document::type_of( $post ) ) ) {
+			$built = Bio_Document::apply( (string) $post->post_content, $fields['bio'] );
+			if ( ! $built['ok'] ) {
+				return $this->error(
+					Editor_Fields::message( array( 'bio' => $built['error'] ) ),
+					400,
+					array(
+						'code'   => 'invalid',
+						'fields' => array( 'bio' => $built['error'] ),
+					)
+				);
+			}
+			$bio = $built['content'];
+			unset( $fields['bio'] );
+		}
+
 		$check = Editor_Fields::validate( Editor_Document::type_of( $post ), $fields );
 		if ( ! $check['ok'] ) {
 			return $this->error(
@@ -144,7 +171,7 @@ final class Editor_Controller extends Base_Controller {
 			);
 		}
 
-		return $this->applied( $post, $check['values'] );
+		return $this->applied( $post, null === $bio ? $check['values'] : $check['values'] + array( 'bio' => $bio ) );
 	}
 
 	/** Replaces the main photo of a sede or the portrait of a profesor with an uploaded file. */

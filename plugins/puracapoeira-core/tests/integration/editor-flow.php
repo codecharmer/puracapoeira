@@ -17,6 +17,7 @@ use Pura\Core\Data\Change_Post_Type;
 use Pura\Core\Data\I18n_Meta;
 use Pura\Core\Data\Profesor_Post_Type;
 use Pura\Core\Data\Sede_Post_Type;
+use Pura\Core\Editor\Bio_Document;
 use Pura\Core\Editor\Editor_Photos;
 use Pura\Core\Editor\Editor_Writer;
 
@@ -228,6 +229,113 @@ $check( '  the stale translation of the changed text is dropped, others are kept
 $check( '  the bio is untouched, byte for byte', get_post( $profesor->ID )->post_content === $bio_before, true );
 list( $status ) = $call( $prof, 'PATCH', '/pura/v1/editor/profesor/' . $profesor->ID, $patch( $profesor->ID, array( 'rank' => 'Mestre' ) ) );
 $check( 'a professor cannot change their own rank', array( $status, get_post_meta( $profesor->ID, 'pura_rank', true ) === 'Mestre' ), array( 400, false ) );
+
+// ---------- bio and timeline ----------
+$with      = static function ( string $needle ) use ( $profes ): WP_Post {
+	foreach ( $profes as $candidate ) {
+		if ( false !== strpos( $candidate->post_content, $needle ) ) {
+			return get_post( $candidate->ID );
+		}
+	}
+	WP_CLI::error( "no profesor with $needle" );
+};
+$plain_bio = get_post( $profesor->ID );
+$originals = array();
+$bio_patch = static function ( WP_Post $target, array $sections ) use ( $call, $prof, $patch ) {
+	return $call( $prof, 'PATCH', '/pura/v1/editor/profesor/' . $target->ID, $patch( $target->ID, array( 'bio' => array( 'sections' => $sections ) ) ) );
+};
+$keep      = static fn ( array $section ): array => array(
+	'id'    => $section['id'],
+	'items' => $section['items'],
+);
+
+$originals[ $plain_bio->ID ] = $plain_bio->post_content;
+update_post_meta( $plain_bio->ID, I18n_Meta::META_KEY, wp_slash( wp_json_encode( array( 'en' => array( 'bio-1' => 'Kept', 'bio-2' => 'Stale' ) ) ) ) );
+$view = Bio_Document::read( $plain_bio->post_content );
+list( , $data ) = $call( $prof, 'GET', '/pura/v1/editor/me' );
+$check( 'the editor offers the bio in sections of paragraphs', array( $data['profesor']['bio']['sections'][0]['kind'] ?? '', count( $data['profesor']['bio']['sections'] ?? array() ) === count( $view['sections'] ), $data['limits']['bio']['text'] ?? 0 ), array( 'text', true, Bio_Document::MAX_TEXT ) );
+
+list( $status, $data ) = $bio_patch( $plain_bio, array_map( $keep, $view['sections'] ) );
+$check( 'saving a bio with no edits changes nothing', array( $status, $data['changed'] ?? null, get_post( $plain_bio->ID )->post_content === $originals[ $plain_bio->ID ] ), array( 200, array(), true ) );
+
+$first             = $view['sections'][0];
+$items             = $first['items'];
+$items[1]['text']  = 'Segundo párrafo reescrito <script>alert(1)</script> con <b>marcas</b> & símbolos.';
+$items[]           = array( 'text' => 'Un párrafo nuevo al final.' );
+$mails             = array();
+list( $status, $data ) = $bio_patch( $plain_bio, array( array( 'id' => $first['id'], 'items' => $items ) ) );
+$bio_change        = (int) get_posts( array( 'post_type' => Change_Post_Type::POST_TYPE, 'post_status' => 'private', 'numberposts' => 1, 'fields' => 'ids' ) )[0];
+$saved             = get_post( $plain_bio->ID )->post_content;
+preg_match( '#<!-- wp:paragraph \{"className":"i18n-bio-1"\} -->.*?<!-- /wp:paragraph -->#s', $originals[ $plain_bio->ID ], $kept );
+$check( 'a professor rewrites one paragraph and adds another', array( $status, $data['changed'] ?? null ), array( 200, array( 'bio' ) ) );
+$check( '  the untouched paragraph is stored byte for byte', false !== strpos( $saved, $kept[0] ), true );
+$check( '  new text is stored as plain text, never as markup', array( false !== strpos( $saved, '<p>Segundo párrafo reescrito con marcas &amp; símbolos.</p>' ), false !== strpos( $saved, '<p>Un párrafo nuevo al final.</p>' ), false === strpos( $saved, '<script' ) ), array( true, true, true ) );
+$check( '  the content is still clean block content', array( Bio_Document::is_stable( $saved ), count( parse_blocks( $saved ) ) === count( parse_blocks( $originals[ $plain_bio->ID ] ) ) ), array( true, true ) );
+$check( '  only the rewritten paragraph loses its translation', I18n_Meta::decode( (string) get_post_meta( $plain_bio->ID, I18n_Meta::META_KEY, true ) ), array( 'en' => array( 'bio-1' => 'Kept' ) ) );
+$check( '  the notice shows only the lines that changed', array( count( $mails ), false !== strpos( (string) ( $mails[0]['message'] ?? '' ), 'Un párrafo nuevo al final.' ), false === strpos( (string) ( $mails[0]['message'] ?? '' ), Bio_Document::read( $originals[ $plain_bio->ID ] )['sections'][0]['items'][0]['text'] ) ), array( 1, true, true ) );
+
+list( $status, $data ) = $bio_patch( $plain_bio, array( array( 'id' => 999, 'items' => array() ) ) );
+$check( 'a section that does not exist is refused', $status, 400 );
+list( $status ) = $bio_patch( $plain_bio, array( array( 'id' => $first['id'], 'items' => array( array( 'text' => str_repeat( 'a', Bio_Document::MAX_TEXT + 1 ) ) ) ) ) );
+$check( 'a paragraph that is too long is refused', $status, 400 );
+list( $status ) = $call( $prof, 'PATCH', $sede_path, $patch( $sede->ID, array( 'bio' => array( 'sections' => array() ) ) ) );
+$check( 'a sede has no bio to edit', $status, 400 );
+
+$result = Change_Actions::restore( $bio_change, get_user_by( 'id', $admin ) );
+$check( 'the administrator restores the bio exactly as it was', array( $result['restored'], get_post( $plain_bio->ID )->post_content === $originals[ $plain_bio->ID ] ), array( array( 'bio' ), true ) );
+
+$listed = $with( '<!-- wp:list -->' );
+$originals[ $listed->ID ] = $listed->post_content;
+Editor_Access::set_emails( $listed->ID, array( 'prof@editor.test' ) );
+$view   = Bio_Document::read( $listed->post_content );
+$fixed  = null;
+foreach ( $view['sections'] as $section ) {
+	if ( in_array( 'fixed', array_column( $section['items'], 'kind' ), true ) ) {
+		$fixed = $section;
+	}
+}
+list( $status, $data ) = $bio_patch( $listed, array( array( 'id' => $fixed['id'], 'items' => array_values( array_filter( $fixed['items'], static fn ( array $item ): bool => 'fixed' !== $item['kind'] ) ) ) ) );
+$check( 'lists and sub-headings cannot be removed from the editor', array( $status, $data['fields']['bio'] ?? '', get_post( $listed->ID )->post_content === $originals[ $listed->ID ] ), array( 400, 'fixed_missing', true ) );
+$fixed_at                      = array_search( 'fixed', array_column( $fixed['items'], 'kind' ), true );
+$tampered                      = array_values( $fixed['items'] );
+$tampered[ $fixed_at ]['text'] = 'Intento de cambiar una lista';
+list( $status, $data ) = $bio_patch( $listed, array( array( 'id' => $fixed['id'], 'items' => $tampered ) ) );
+$check( '  nor rewritten: the stored list stays as it is', array( $status, $data['changed'] ?? null, get_post( $listed->ID )->post_content === $originals[ $listed->ID ] ), array( 200, array(), true ) );
+Editor_Access::set_emails( $listed->ID, array() );
+
+$timed = $with( '<!-- wp:pura/timeline -->' );
+$originals[ $timed->ID ] = $timed->post_content;
+Editor_Access::set_emails( $timed->ID, array( 'prof@editor.test' ) );
+$view   = Bio_Document::read( $timed->post_content );
+$line   = array_values( array_filter( $view['sections'], static fn ( array $section ): bool => 'timeline' === $section['kind'] ) )[0];
+$events = $line['items'];
+$total  = count( $events );
+$events[1]['title'] = 'Título corregido';
+array_pop( $events );
+$events[] = array( 'year' => '2026', 'title' => 'Nueva etapa', 'text' => 'Texto de la nueva etapa.' );
+list( $status, $data ) = $bio_patch( $timed, array( array( 'id' => $line['id'], 'items' => $events ) ) );
+$saved  = get_post( $timed->ID )->post_content;
+$after  = array_values( array_filter( Bio_Document::read( $saved )['sections'], static fn ( array $section ): bool => 'timeline' === $section['kind'] ) )[0]['items'];
+preg_match( '#<!-- wp:pura/timeline-item \{"i18nKey":"tl-1"\} -->.*?<!-- /wp:pura/timeline-item -->#s', $originals[ $timed->ID ], $kept );
+$check( 'a professor corrects, removes and adds timeline entries', array( $status, count( $after ), $after[1]['title'], $after[ $total - 1 ]['year'], $after[ $total - 1 ]['title'] ), array( 200, $total, 'Título corregido', '2026', 'Nueva etapa' ) );
+$check( '  untouched entries are stored byte for byte; new ones in the markup the block saves', array( false !== strpos( $saved, $kept[0] ), false !== strpos( $saved, '<li class="wp-block-pura-timeline-item timeline-item"><span class="timeline-item__year">2026</span><div class="timeline-item__card"><h4>Nueva etapa</h4><p>Texto de la nueva etapa.</p></div></li>' ), Bio_Document::is_stable( $saved ) ), array( true, true, true ) );
+$events = Bio_Document::read( $saved )['sections'];
+$line   = array_values( array_filter( $events, static fn ( array $section ): bool => 'timeline' === $section['kind'] ) )[0];
+$bad    = $line['items'];
+$bad[]  = array( 'year' => '', 'title' => 'Sin año', 'text' => '' );
+list( $status, $data ) = $bio_patch( $timed, array( array( 'id' => $line['id'], 'items' => $bad ) ) );
+$check( 'a timeline entry needs a year and a title', array( $status, $data['fields']['bio'] ?? '' ), array( 400, 'event_incomplete' ) );
+list( $status ) = $bio_patch( get_post( $timed->ID ), array( array( 'id' => $line['id'], 'items' => array( array( 'ref' => 0, 'year' => 'x', 'title' => 'y', 'text' => '' ), array( 'ref' => 0, 'year' => 'x', 'title' => 'y', 'text' => '' ) ) ) ) );
+$check( 'the same entry cannot be sent twice', $status, 400 );
+Editor_Access::set_emails( $timed->ID, array() );
+
+foreach ( $originals as $id => $content ) {
+	kses_remove_filters();
+	wp_update_post( wp_slash( array( 'ID' => $id, 'post_content' => $content ) ) );
+	kses_init();
+}
+$check( 'every bio is back as it was', array_map( static fn ( int $id ): bool => get_post( $id )->post_content === $originals[ $id ], array_keys( $originals ) ), array_fill( 0, count( $originals ), true ) );
+$last = Change_Post_Type::to_array( (int) $last['id'] );
 
 // ---------- restore ----------
 $mails  = array();

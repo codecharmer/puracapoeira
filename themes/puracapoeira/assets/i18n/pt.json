@@ -210,7 +210,14 @@
 		"Alguien más guardó cambios en esta ficha. Revisa los datos actuales y vuelve a guardar.": "Outra pessoa salvou alterações aqui. Revise os dados atuais e salve de novo.",
 		"Revisa los enlaces: deben empezar con https:// y apuntar al sitio correcto (WhatsApp, Instagram, Facebook o YouTube).": "Revise os links: devem começar com https:// e apontar para o site certo (WhatsApp, Instagram, Facebook ou YouTube).",
 		"Algún texto es demasiado largo.": "Algum texto é longo demais.",
-		"Solo aceptamos fotos JPG, PNG o WebP.": "Só aceitamos fotos JPG, PNG ou WebP."
+		"Solo aceptamos fotos JPG, PNG o WebP.": "Só aceitamos fotos JPG, PNG ou WebP.",
+		"Biografía y trayectoria": "Biografia e trajetória",
+		"Lo que cambies se guarda como texto simple, y su traducción al inglés y al portugués se quita hasta que se vuelva a traducir. Lo que no toques queda exactamente igual.": "O que você alterar é salvo como texto simples, e a tradução para inglês e português é removida até ser traduzida de novo. O que você não tocar fica exatamente igual.",
+		"Esta parte solo la cambia la administración.": "Só a administração altera esta parte.",
+		"Añadir entrada": "Adicionar entrada",
+		"Añadir párrafo": "Adicionar parágrafo",
+		"Cada entrada de la línea de tiempo necesita un año y un título.": "Cada entrada da linha do tempo precisa de um ano e um título.",
+		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Há partes que só a administração altera e não podem ser removidas daqui."
 	},
 	"shared": {
 		"bio-title": "Biografia",

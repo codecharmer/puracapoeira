@@ -112,6 +112,7 @@ final class Editor_Document {
 				'url' => (string) wp_get_attachment_image_url( $image_id, 'medium_large' ),
 			) : null,
 			'gallery'  => Editor_Fields::TYPE_SEDE === $type ? Editor_Photos::gallery( $post->ID ) : null,
+			'bio'      => Editor_Fields::TYPE_PROFESOR === $type ? Bio_Document::read( (string) $post->post_content ) : null,
 		);
 	}
 }
