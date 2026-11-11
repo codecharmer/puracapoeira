@@ -15,21 +15,29 @@ if ( pura_theme_plugin_notice( 'Pura\Core\Data\Sede_Post_Type' ) ) {
 $pura_layout = 'links' === ( $attributes['layout'] ?? 'cards' ) ? 'links' : 'cards';
 $pura_limit  = max( 0, (int) ( $attributes['limit'] ?? 0 ) );
 $pura_sedes  = \Pura\Core\Data\Sede_Post_Type::all( $pura_limit > 0 ? $pura_limit : -1 );
+// Sedes of the same city are listed together, each under its own name.
+$pura_groups = \Pura\Core\Data\City_Groups::group( array_map( array( \Pura\Core\Data\Sede_Post_Type::class, 'get_data' ), $pura_sedes ) );
 
 if ( 'links' === $pura_layout ) :
 	?>
 	<ul <?php echo get_block_wrapper_attributes( array( 'class' => 'footer-sedes' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 		<?php
-		foreach ( $pura_sedes as $pura_post ) :
-			$pura_s    = \Pura\Core\Data\Sede_Post_Type::get_data( $pura_post );
-			$pura_city = ( '' === $pura_s['city'] || false !== stripos( $pura_s['city'], 'por confirmar' ) || $pura_s['city'] === $pura_s['country'] ) ? '' : $pura_s['city'];
-			?>
-			<li><a href="<?php echo esc_url( $pura_s['url'] ); ?>">
-			<?php
-			if ( '' !== $pura_city ) :
+		foreach ( $pura_groups as $pura_group ) :
+			foreach ( $pura_group['sedes'] as $pura_s ) :
+				$pura_city = ( '' === $pura_s['city'] || false !== stripos( $pura_s['city'], 'por confirmar' ) || $pura_s['city'] === $pura_s['country'] ) ? '' : $pura_s['city'];
+				if ( $pura_group['shared'] ) {
+					$pura_city = $pura_s['name'];
+				}
 				?>
-				<span data-tv><?php echo esc_html( $pura_city ); ?></span> · <?php endif; ?><span data-tv><?php echo esc_html( $pura_s['country'] ); ?></span></a></li>
-		<?php endforeach; ?>
+				<li><a href="<?php echo esc_url( $pura_s['url'] ); ?>">
+				<?php
+				if ( '' !== $pura_city ) :
+					?>
+					<span data-tv><?php echo esc_html( $pura_city ); ?></span> · <?php endif; ?><span data-tv><?php echo esc_html( $pura_s['country'] ); ?></span></a></li>
+				<?php
+			endforeach;
+		endforeach;
+		?>
 	</ul>
 	<?php
 	return;
@@ -40,9 +48,14 @@ endif;
 		<p class="fallback" data-i18n="common.fallbackSedes"><?php esc_html_e( 'No fue posible cargar las sedes.', 'pura' ); ?></p>
 	<?php endif; ?>
 	<?php
-	foreach ( $pura_sedes as $pura_post ) :
-		$pura_s = \Pura\Core\Data\Sede_Post_Type::get_data( $pura_post );
-		?>
+	foreach ( $pura_groups as $pura_group ) :
+		if ( $pura_group['shared'] ) :
+			?>
+			<h3 class="sede-grid__city"><span data-tv><?php echo esc_html( $pura_group['city'] ); ?></span> <span class="sede-grid__count"><?php echo esc_html( (string) count( $pura_group['sedes'] ) ); ?> <span data-i18n="common.locationsInCity"><?php esc_html_e( 'sedes', 'pura' ); ?></span></span></h3>
+			<?php
+		endif;
+		foreach ( $pura_group['sedes'] as $pura_s ) :
+			?>
 		<a class="sede-card" href="<?php echo esc_url( $pura_s['url'] ); ?>" data-sede-slug="<?php echo esc_attr( $pura_s['slug'] ); ?>">
 			<div class="sede-card__img">
 				<?php
@@ -50,7 +63,7 @@ endif;
 					(int) $pura_s['image_id'],
 					'large',
 					array(
-						'alt'          => 'Pura Capoeira ' . $pura_s['city'],
+						'alt'          => 'Pura Capoeira ' . ( $pura_group['shared'] ? $pura_s['name'] : $pura_s['city'] ),
 						'data-tv-attr' => 'alt',
 					)
 				);
@@ -58,11 +71,14 @@ endif;
 			</div>
 			<div class="sede-card__body">
 				<span class="sede-card__country"><span data-tv><?php echo esc_html( $pura_s['region'] ); ?></span> · <span data-tv><?php echo esc_html( $pura_s['country'] ); ?></span></span>
-				<h3 class="sede-card__city" data-tv><?php echo esc_html( $pura_s['city'] ); ?></h3>
+				<h3 class="sede-card__city" data-tv><?php echo esc_html( $pura_group['shared'] ? $pura_s['name'] : $pura_s['city'] ); ?></h3>
 				<p class="sede-card__responsible" data-tv><?php echo esc_html( $pura_s['responsible'] ); ?></p>
 				<p class="sede-card__blurb" data-tv><?php echo esc_html( $pura_s['blurb'] ); ?></p>
 				<span class="sede-card__link" data-i18n="common.seeLocation"><?php esc_html_e( 'Ver sede', 'pura' ); ?></span>
 			</div>
 		</a>
-	<?php endforeach; ?>
+			<?php
+		endforeach;
+	endforeach;
+	?>
 </div>

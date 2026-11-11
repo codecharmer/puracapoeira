@@ -22,6 +22,8 @@ if ( ! $pura_post ) {
 }
 
 $pura_s    = \Pura\Core\Data\Sede_Post_Type::get_data( $pura_post );
+$pura_team = array_map( array( \Pura\Core\Data\Profesor_Post_Type::class, 'get_data' ), \Pura\Core\Data\Profesor_Post_Type::for_sede( $pura_post->ID ) );
+$pura_near = class_exists( 'Pura\Core\Data\City_Groups' ) ? \Pura\Core\Data\City_Groups::sisters( $pura_s, array_map( array( \Pura\Core\Data\Sede_Post_Type::class, 'get_data' ), \Pura\Core\Data\Sede_Post_Type::all() ) ) : array();
 $pura_gal  = class_exists( 'Pura\Core\Editor\Editor_Photos' ) ? \Pura\Core\Editor\Editor_Photos::gallery( $pura_post->ID ) : array();
 $pura_part = 'hero' === ( $attributes['part'] ?? 'body' ) ? 'hero' : 'body';
 
@@ -91,6 +93,26 @@ endif;
 				<?php endif; ?>
 			</ul>
 		</div>
+		<?php if ( $pura_team ) : ?>
+			<div class="info-block">
+				<h3 data-i18n="common.professors"><?php esc_html_e( 'Profesores', 'pura' ); ?></h3>
+				<ul>
+					<?php foreach ( $pura_team as $pura_p ) : ?>
+						<li><strong><a href="<?php echo esc_url( $pura_p['url'] ); ?>"><?php echo esc_html( $pura_p['name'] ); ?></a></strong><span data-tv><?php echo esc_html( $pura_p['rank'] ); ?></span></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
+		<?php if ( $pura_near ) : ?>
+			<div class="info-block">
+				<h3><span data-i18n="common.otherLocationsIn"><?php esc_html_e( 'Otras sedes en', 'pura' ); ?></span> <span data-tv><?php echo esc_html( $pura_s['city'] ); ?></span></h3>
+				<ul>
+					<?php foreach ( $pura_near as $pura_o ) : ?>
+						<li><strong><a href="<?php echo esc_url( $pura_o['url'] ); ?>" data-tv><?php echo esc_html( $pura_o['name'] ); ?></a></strong><span data-tv><?php echo esc_html( $pura_o['responsible'] ); ?></span></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
 		<div class="btn-row sede-detail__actions">
 			<?php if ( '' !== $pura_s['whatsapp'] ) : ?>
 				<a class="btn btn--primary" href="<?php echo esc_url( $pura_s['whatsapp'] ); ?>" target="_blank" rel="noopener noreferrer" data-i18n="common.contactWhatsApp"><?php esc_html_e( 'Contactar por WhatsApp', 'pura' ); ?></a>

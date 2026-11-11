@@ -174,6 +174,20 @@ final class Profesor_Post_Type {
 	}
 
 	/**
+	 * Published teachers who belong to a sede, in display order.
+	 *
+	 * @return \WP_Post[]
+	 */
+	public static function for_sede( int $sede_id ): array {
+		return array_values(
+			array_filter(
+				self::all(),
+				static fn ( \WP_Post $post ): bool => $sede_id > 0 && (int) get_post_meta( $post->ID, self::META_SEDE_ID, true ) === $sede_id
+			)
+		);
+	}
+
+	/**
 	 * Normalised view of a teacher for templates and blocks.
 	 *
 	 * @return array<string, mixed>

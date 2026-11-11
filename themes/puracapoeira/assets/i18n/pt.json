@@ -58,7 +58,10 @@
 		"whatsapp": "WhatsApp",
 		"writeUs": "Escreva para nos",
 		"youtube": "YouTube",
-		"photos": "Fotos"
+		"photos": "Fotos",
+		"locationsInCity": "sedes",
+		"professors": "Professores",
+		"otherLocationsIn": "Outras sedes em"
 	},
 	"values": {
 		"$1,150 MXN al mes": "$1.150 MXN por mes",
