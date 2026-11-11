@@ -76,11 +76,84 @@ final class Mailer {
 			return false;
 		}
 
-		$labels  = implode( ', ', array_map( array( Editor\Change_Diff::class, 'label' ), array_keys( $change['after'] ) ) );
-		$subject = sprintf( '%s: %s — %s', 'restore' === $change['source'] ? 'Restaurado' : 'Cambio', $change['target_title'], $labels );
-		$body    = self::build_change_body( $change, home_url( '/' ), admin_url( 'post.php?action=edit&post=' . $change_id ) );
+		$labels           = implode( ', ', array_map( array( Editor\Change_Diff::class, 'label' ), array_keys( $change['after'] ) ) );
+		$subject          = sprintf( '%s: %s — %s', 'restore' === $change['source'] ? 'Restaurado' : 'Cambio', $change['target_title'], $labels );
+		$change['before'] = Editor\Editor_Photos::readable( $change['before'] );
+		$change['after']  = Editor\Editor_Photos::readable( $change['after'] );
+		$body             = self::build_change_body( $change, home_url( '/' ), admin_url( 'post.php?action=edit&post=' . $change_id ) );
 
 		return self::send( $recipients, $subject, $body, self::headers() );
+	}
+
+	/**
+	 * One notice for the photos a professor changed in the last few minutes on one sede or profile.
+	 *
+	 * @param int[] $change_ids Recorded changes covered by this notice.
+	 */
+	public static function notify_photo_changes( int $post_id, array $change_ids ): bool {
+		$recipients = self::editor_recipients();
+		if ( ! $recipients ) {
+			self::$last_error = 'No hay destinatarios configurados.';
+			return false;
+		}
+
+		$actors = array();
+		foreach ( $change_ids as $change_id ) {
+			$change = Data\Change_Post_Type::to_array( (int) $change_id );
+			if ( $change && '' !== $change['actor_email'] ) {
+				$actors[ $change['actor_email'] ] = true;
+			}
+		}
+		$photos  = Editor\Editor_Photos::readable( Editor\Editor_Photos::values( get_post( $post_id ) ) );
+		$title   = (string) get_the_title( $post_id );
+		$summary = array(
+			'title'   => $title,
+			'url'     => (string) get_permalink( $post_id ),
+			'actors'  => array_keys( $actors ),
+			'changes' => count( $change_ids ),
+			'image'   => (string) ( $photos['image'] ?? '' ),
+			'gallery' => isset( $photos['gallery'] ) ? (array) $photos['gallery'] : null,
+		);
+
+		return self::send(
+			$recipients,
+			sprintf( 'Fotos: %s', $title ),
+			self::build_photo_changes_body( $summary, home_url( '/' ), admin_url( 'edit.php?post_type=' . Data\Change_Post_Type::POST_TYPE ) ),
+			self::headers()
+		);
+	}
+
+	/**
+	 * Plain-text body of the joint photo notice. Pure: no WordPress calls.
+	 *
+	 * @param array<string, mixed> $summary   Keys: title, url, actors, changes, image, gallery (null when the post has none).
+	 * @param string               $site_url  Site URL for the first line.
+	 * @param string               $admin_url The list of changes, where each one can be restored.
+	 */
+	public static function build_photo_changes_body( array $summary, string $site_url, string $admin_url ): string {
+		$lines = array(
+			'Un profesor cambió fotos en ' . $site_url,
+			'',
+			'Ficha:   ' . (string) ( $summary['title'] ?? '' ),
+			'Página:  ' . (string) ( $summary['url'] ?? '' ),
+			'Quién:   ' . implode( ', ', (array) ( $summary['actors'] ?? array() ) ),
+			'Cambios: ' . (int) ( $summary['changes'] ?? 0 ),
+			'',
+			'Foto principal ahora:',
+			'  ' . ( '' !== (string) ( $summary['image'] ?? '' ) ? (string) $summary['image'] : '(sin foto)' ),
+			'',
+		);
+		if ( is_array( $summary['gallery'] ?? null ) ) {
+			$lines[] = sprintf( 'Galería ahora (%d):', count( $summary['gallery'] ) );
+			foreach ( $summary['gallery'] ? $summary['gallery'] : array( '(vacía)' ) as $photo ) {
+				$lines[] = '  ' . (string) $photo;
+			}
+			$lines[] = '';
+		}
+		$lines[] = 'Las fotos ya están publicadas. Cada cambio, con su antes y después, se puede revisar y restaurar aquí:';
+		$lines[] = $admin_url;
+
+		return implode( "\n", $lines ) . "\n";
 	}
 
 	/**

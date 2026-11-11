@@ -1,8 +1,11 @@
 /**
  * The professors' editor: discovers the session, loads what the signed-in person may edit
  * (/pura/v1/editor/me) and saves one card at a time, sending only the fields that changed
- * together with the version the card was loaded with.
+ * together with the version the card was loaded with. Photos are saved as soon as they are
+ * chosen, each through its own request.
  */
+
+import { prepare } from '../../shared/prepare-photo';
 
 const $ = ( sel, ctx = document ) => ctx.querySelector( sel );
 
@@ -102,6 +105,18 @@ const MESSAGES = {
 	nothing: 'No hay cambios que guardar.',
 	network: 'No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.',
 	session: 'Tu sesión terminó. Vuelve a entrar para guardar.',
+	photoSaved: 'Foto guardada. El sitio y la app la muestran en un minuto.',
+	gallerySaved: 'Galería actualizada.',
+	photoUnreadable:
+		'No pudimos leer esa foto. Prueba con una en formato JPG o PNG.',
+	photoTooBig: 'Esa foto es demasiado grande.',
+};
+
+const DEFAULT_LIMITS = {
+	rows: 12,
+	cell: 120,
+	gallery: 12,
+	maxBytes: 15 * 1024 * 1024,
 };
 
 function el( tag, attrs = {}, children = [] ) {
@@ -153,6 +168,319 @@ async function api( path, options ) {
 		out = await window.puraAuth.request( path, options );
 	}
 	return out;
+}
+
+/**
+ * Uploads one file to an editor route, with the same nonce handling as api().
+ *
+ * @param {string} path Route under pura/v1.
+ * @param {File}   file Photo, already prepared.
+ */
+async function sendFile( path, file ) {
+	const base = ( window.puraConfig || {} ).restUrl || '/wp-json/pura/v1/';
+	const attempt = async () => {
+		const token = await window.puraAuth.nonce();
+		if ( ! token ) {
+			return { res: { ok: false, status: 401 }, json: {} };
+		}
+		const body = new window.FormData();
+		body.append( 'file', file, file.name );
+		const res = await window.fetch( base.replace( /\/?$/, '/' ) + path, {
+			method: 'POST',
+			credentials: 'same-origin',
+			cache: 'no-store',
+			headers: { Accept: 'application/json', 'X-WP-Nonce': token },
+			body,
+		} );
+		let json = {};
+		try {
+			json = await res.json();
+		} catch ( _err ) {
+			json = {};
+		}
+		return { res, json };
+	};
+	let out = await attempt();
+	if (
+		out.res.status === 403 &&
+		out.json.code === 'rest_cookie_invalid_nonce'
+	) {
+		await window.puraAuth.refreshNonce();
+		out = await attempt();
+	}
+	return out;
+}
+
+/**
+ * A status line and the function that fills it.
+ */
+function notice() {
+	const node = el( 'div', {
+		class: 'inscription-result',
+		role: 'status',
+		'aria-live': 'polite',
+		hidden: true,
+	} );
+	const show = ( message, ok, link ) => {
+		node.hidden = false;
+		node.textContent = '';
+		node.appendChild( el( 'span', { 'data-tv': true, text: message } ) );
+		if ( link ) {
+			node.appendChild( document.createTextNode( ' ' ) );
+			node.appendChild(
+				el( 'a', {
+					href: link,
+					target: '_blank',
+					rel: 'noopener',
+					'data-tv': true,
+					text: 'Ver ahora',
+				} )
+			);
+		}
+		node.classList.toggle( 'is-success', !! ok );
+		node.classList.toggle( 'is-error', ! ok );
+		translate( node );
+	};
+	return { node, show };
+}
+
+/**
+ * The photos of a card: the main photo (or portrait) and, for a sede, its gallery. Every
+ * action is saved at once and updates `item` with the server's answer.
+ *
+ * @param {Object} item   Item from /editor/me.
+ * @param {Object} limits Limits from /editor/me.
+ */
+function photoSection( item, limits ) {
+	const isSede = item.type === 'sede';
+	const status = notice();
+	const button = ( label ) =>
+		el( 'button', {
+			type: 'button',
+			class: 'btn btn--ghost',
+			'data-tv': true,
+			text: label,
+		} );
+	const picker = ( multiple ) =>
+		el( 'input', {
+			type: 'file',
+			accept: 'image/*',
+			multiple,
+			hidden: true,
+			tabindex: '-1',
+		} );
+
+	const preview = el( 'img', { class: 'editor-photo__img', alt: '' } );
+	const empty = el( 'span', {
+		class: 'editor-photo__empty',
+		'data-tv': true,
+		text: 'Sin foto',
+	} );
+	const mainInput = picker( false );
+	const mainButton = button( isSede ? 'Cambiar foto' : 'Cambiar retrato' );
+	const grid = el( 'div', { class: 'editor-gallery__grid' } );
+	const count = el( 'span', { class: 'muted editor-gallery__count' } );
+	const addInput = picker( true );
+	const addButton = button( 'Añadir fotos' );
+
+	const section = el( 'div', { class: 'editor-photos' }, [
+		el( 'div', { class: 'editor-photo' }, [
+			el( 'div', { class: 'editor-photo__frame' }, [ preview, empty ] ),
+			el( 'div', { class: 'editor-photo__side' }, [
+				el( 'span', {
+					class: 'editor-rows__label',
+					'data-tv': true,
+					text: isSede ? 'Foto principal de la sede' : 'Tu retrato',
+				} ),
+				el( 'span', {
+					class: 'field-help',
+					'data-tv': true,
+					text: 'Se guarda al elegirla. La foto anterior se conserva 30 días por si hay que volver a ella.',
+				} ),
+				mainButton,
+				mainInput,
+			] ),
+		] ),
+		isSede
+			? el( 'div', { class: 'editor-gallery' }, [
+					el( 'div', { class: 'editor-gallery__head' }, [
+						el( 'span', {
+							class: 'editor-rows__label',
+							'data-tv': true,
+							text: 'Galería de la sede',
+						} ),
+						count,
+					] ),
+					grid,
+					addButton,
+					addInput,
+			  ] )
+			: null,
+		status.node,
+	] );
+
+	let busy = false;
+	let render = () => {};
+	const setBusy = ( state ) => {
+		busy = state;
+		section.classList.toggle( 'is-busy', state );
+		if ( state ) {
+			section.querySelectorAll( 'button' ).forEach( ( node ) => {
+				node.disabled = true;
+			} );
+		} else {
+			mainButton.disabled = false;
+			addButton.disabled = false;
+			render();
+		}
+	};
+
+	const order = async ( ids ) => {
+		setBusy( true );
+		let out;
+		try {
+			out = await api( `editor/sede/${ item.id }/gallery`, {
+				method: 'PUT',
+				body: { base_modified: item.modified, ids },
+			} );
+		} catch ( _err ) {
+			out = null;
+		}
+		if ( out && out.res.ok && out.json.ok ) {
+			Object.assign( item, out.json.item );
+			status.show( MESSAGES.gallerySaved, true );
+		} else if ( out && out.res.status === 409 && out.json.current ) {
+			Object.assign( item, out.json.current );
+			status.show( out.json.error || MESSAGES.network, false );
+		} else if ( out && out.res.status === 401 ) {
+			status.show( MESSAGES.session, false );
+		} else {
+			status.show( ( out && out.json.error ) || MESSAGES.network, false );
+		}
+		setBusy( false );
+	};
+
+	const tile = ( photo, index, all ) => {
+		const ids = all.map( ( entry ) => entry.id );
+		const move = ( to ) => {
+			const next = ids.slice();
+			next.splice( to, 0, next.splice( index, 1 )[ 0 ] );
+			order( next );
+		};
+		const small = ( label, glyph, handler, disabled ) => {
+			const node = el( 'button', {
+				type: 'button',
+				class: 'editor-gallery__action',
+				'aria-label': label,
+				text: glyph,
+				disabled,
+			} );
+			node.addEventListener( 'click', handler );
+			return node;
+		};
+		return el( 'figure', { class: 'editor-gallery__item' }, [
+			el( 'img', { src: photo.thumb || photo.url, alt: '' } ),
+			el( 'figcaption', { class: 'editor-gallery__actions' }, [
+				small(
+					'Mover antes',
+					'←',
+					() => move( index - 1 ),
+					index === 0
+				),
+				small(
+					'Mover después',
+					'→',
+					() => move( index + 1 ),
+					index === all.length - 1
+				),
+				small( 'Quitar de la galería', '×', () =>
+					order( ids.filter( ( id ) => id !== photo.id ) )
+				),
+			] ),
+		] );
+	};
+
+	render = () => {
+		preview.hidden = ! item.image;
+		empty.hidden = !! item.image;
+		if ( item.image ) {
+			preview.src = item.image.url;
+		}
+		if ( ! isSede ) {
+			return;
+		}
+		const photos = item.gallery || [];
+		grid.textContent = '';
+		photos.forEach( ( photo, index ) =>
+			grid.appendChild( tile( photo, index, photos ) )
+		);
+		count.textContent = `${ photos.length } / ${ limits.gallery }`;
+		addButton.hidden = photos.length >= limits.gallery;
+	};
+
+	const send = async ( path, files, room ) => {
+		setBusy( true );
+		for ( const original of Array.from( files ).slice( 0, room ) ) {
+			let file;
+			try {
+				file = await prepare( original, limits.maxBytes, true );
+			} catch ( err ) {
+				status.show(
+					err && err.message === 'too-big'
+						? MESSAGES.photoTooBig
+						: MESSAGES.photoUnreadable,
+					false
+				);
+				break;
+			}
+			let out;
+			try {
+				out = await sendFile( path, file );
+			} catch ( _err ) {
+				out = null;
+			}
+			if ( out && out.res.ok && out.json.ok ) {
+				Object.assign( item, out.json.item );
+				status.show( MESSAGES.photoSaved, true );
+				continue;
+			}
+			let message = ( out && out.json.error ) || MESSAGES.network;
+			if ( out && out.res.status === 401 ) {
+				message = MESSAGES.session;
+			}
+			status.show( message, false );
+			break;
+		}
+		setBusy( false );
+	};
+
+	const choose = ( input, path, room ) => {
+		const files = input.files;
+		if ( files && files.length && ! busy ) {
+			send( path(), files, room() ).then( () => {
+				input.value = '';
+			} );
+		}
+	};
+	mainButton.addEventListener( 'click', () => mainInput.click() );
+	mainInput.addEventListener( 'change', () =>
+		choose(
+			mainInput,
+			() => `editor/${ item.type }/${ item.id }/photo`,
+			() => 1
+		)
+	);
+	addButton.addEventListener( 'click', () => addInput.click() );
+	addInput.addEventListener( 'change', () =>
+		choose(
+			addInput,
+			() => `editor/sede/${ item.id }/gallery`,
+			() => limits.gallery - ( item.gallery || [] ).length
+		)
+	);
+
+	render();
+	return section;
 }
 
 let uid = 0;
@@ -316,12 +644,7 @@ function card( item, limits ) {
 		grid.appendChild( control );
 	} );
 
-	const result = el( 'div', {
-		class: 'inscription-result',
-		role: 'status',
-		'aria-live': 'polite',
-		hidden: true,
-	} );
+	const { node: result, show } = notice();
 	const save = el( 'button', {
 		type: 'submit',
 		class: 'btn btn--primary',
@@ -356,32 +679,12 @@ function card( item, limits ) {
 			about
 				? el( 'p', { class: 'muted editor-card__about', text: about } )
 				: null,
+			photoSection( item, limits ),
 			grid,
 			result,
 			el( 'div', { class: 'btn-row' }, [ save, view ] ),
 		]
 	);
-
-	const show = ( message, ok, link ) => {
-		result.hidden = false;
-		result.textContent = '';
-		result.appendChild( el( 'span', { 'data-tv': true, text: message } ) );
-		if ( link ) {
-			result.appendChild( document.createTextNode( ' ' ) );
-			result.appendChild(
-				el( 'a', {
-					href: link,
-					target: '_blank',
-					rel: 'noopener',
-					'data-tv': true,
-					text: 'Ver ahora',
-				} )
-			);
-		}
-		result.classList.toggle( 'is-success', !! ok );
-		result.classList.toggle( 'is-error', ! ok );
-		translate( result );
-	};
 
 	const read = () => {
 		const values = {};
@@ -527,7 +830,7 @@ async function init( root ) {
 		return;
 	}
 
-	const limits = data.limits || { rows: 12, cell: 120 };
+	const limits = { ...DEFAULT_LIMITS, ...( data.limits || {} ) };
 	items.forEach( ( item ) =>
 		parts.editor.appendChild( card( item, limits ) )
 	);

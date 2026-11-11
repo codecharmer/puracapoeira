@@ -33,14 +33,16 @@ final class Editor_Writer {
 	 * Applies checked values to a post. Fields equal to the current value are ignored; when
 	 * nothing differs nothing is written, recorded or mailed.
 	 *
-	 * @param array<string, mixed> $values Checked values (Editor_Fields::validate()).
+	 * @param array<string, mixed> $values Checked values (Editor_Fields::validate()); photo fields
+	 *                                     (`image`, `gallery`) come from the photo routes or a restore.
 	 * @param string               $source 'editor' or 'restore'.
 	 * @return array{changed: string[], change_id: int}
 	 */
 	public static function apply( WP_Post $post, array $values, int $actor_id, string $actor_email, string $source = 'editor', int $restores = 0 ): array {
 		$type        = Editor_Document::type_of( $post );
-		$definitions = Editor_Fields::definitions( $type );
-		$current     = Editor_Document::values( $post );
+		$photos      = Editor_Fields::photo_definitions( $type );
+		$definitions = Editor_Fields::definitions( $type ) + $photos;
+		$current     = Editor_Document::values( $post ) + Editor_Photos::values( $post );
 		$changed     = array_values( array_intersect( Change_Diff::changed( $current, $values ), array_keys( $definitions ) ) );
 
 		if ( ! $changed ) {
@@ -61,6 +63,12 @@ final class Editor_Writer {
 
 			if ( Editor_Fields::STORE_EXCERPT === $definition['store'] ) {
 				$update['post_excerpt'] = (string) $values[ $name ];
+			} elseif ( Editor_Fields::STORE_THUMBNAIL === $definition['store'] ) {
+				if ( (int) $values[ $name ] > 0 ) {
+					set_post_thumbnail( $post->ID, (int) $values[ $name ] );
+				} else {
+					delete_post_thumbnail( $post->ID );
+				}
 			} elseif ( '' === $values[ $name ] || array() === $values[ $name ] ) {
 				delete_post_meta( $post->ID, (string) $definition['store'] );
 			} else {
@@ -72,8 +80,15 @@ final class Editor_Writer {
 		update_post_meta( $post->ID, Editor_Document::META_REVISION, 1 + (int) get_post_meta( $post->ID, Editor_Document::META_REVISION, true ) );
 		self::touch( $update );
 
+		Editor_Photos::track( array_intersect_key( $before, $photos ), array_intersect_key( $after, $photos ) );
+
 		$change_id = Change_Post_Type::record( $post, $before, $after, $actor_id, $actor_email, $source, $restores );
-		Mailer::notify_change( $change_id );
+		// A professor adding ten photos is one piece of news, not ten: photo-only changes wait for a joint notice.
+		if ( 'editor' === $source && ! array_diff( $changed, array_keys( $photos ) ) ) {
+			Editor_Photos::queue_notice( $post->ID, $change_id );
+		} else {
+			Mailer::notify_change( $change_id );
+		}
 
 		return array(
 			'changed'   => $changed,

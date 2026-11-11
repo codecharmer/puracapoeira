@@ -37,6 +37,7 @@ final class Plugin {
 		Auth\Member_Accounts::register_hooks();
 		Cache_Control::register();
 		Content_Migrations::register();
+		Editor\Editor_Photos::register();
 
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();

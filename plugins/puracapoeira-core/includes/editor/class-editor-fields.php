@@ -27,6 +27,9 @@ final class Editor_Fields {
 	/** Where a value is stored when it is not post meta. */
 	public const STORE_EXCERPT = '@excerpt';
 
+	/** The post's main photo (featured image). */
+	public const STORE_THUMBNAIL = '@thumbnail';
+
 	public const MAX_ROWS = 12;
 	public const MAX_CELL = 120;
 
@@ -148,6 +151,31 @@ final class Editor_Fields {
 		}
 
 		return array();
+	}
+
+	/**
+	 * Photo fields. They are not in definitions() on purpose: a text save can never point a
+	 * post at an arbitrary photo. They change only through the upload and gallery routes, and
+	 * through a restore.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function photo_definitions( string $type ): array {
+		$fields = array();
+		if ( in_array( $type, array( self::TYPE_SEDE, self::TYPE_PROFESOR ), true ) ) {
+			$fields['image'] = array(
+				'store' => self::STORE_THUMBNAIL,
+				'kind'  => 'photo',
+			);
+		}
+		if ( self::TYPE_SEDE === $type ) {
+			$fields['gallery'] = array(
+				'store' => Editor_Photos::META_GALLERY,
+				'kind'  => 'photos',
+			);
+		}
+
+		return $fields;
 	}
 
 	/**

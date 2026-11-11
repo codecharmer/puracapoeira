@@ -17,6 +17,8 @@ use Pura\Core\Data\Change_Post_Type;
 use Pura\Core\Data\I18n_Meta;
 use Pura\Core\Data\Profesor_Post_Type;
 use Pura\Core\Data\Sede_Post_Type;
+use Pura\Core\Editor\Editor_Photos;
+use Pura\Core\Editor\Editor_Writer;
 
 if ( 'local' !== wp_get_environment_type() ) {
 	WP_CLI::error( 'This check only runs on a local environment.' );
@@ -232,6 +234,101 @@ $mails  = array();
 $result = Change_Actions::restore( $last['id'], get_user_by( 'id', $admin ) );
 $check( 'the administrator restores the first change', array( $result['restored'], get_post_meta( $sede->ID, 'pura_address', true ), ( (array) get_post_meta( $sede->ID, 'pura_pricing', true ) )[0]['value'] ?? '' ), array( array( 'address', 'pricing' ), 'Calle Uno 1', '$500' ) );
 $check( '  which is itself recorded and mailed', array( Change_Post_Type::to_array( (int) get_posts( array( 'post_type' => Change_Post_Type::POST_TYPE, 'post_status' => 'private', 'numberposts' => 1, 'fields' => 'ids' ) )[0] )['source'], count( $mails ) ), array( 'restore', 1 ) );
+
+// ---------- photos ----------
+// A real upload needs a real HTTP request (see tests/integration/editor-upload.sh); here the photos are made
+// on disk and go through the same writer and the same gallery route.
+require_once ABSPATH . 'wp-admin/includes/image.php';
+$made  = array();
+$photo = static function ( WP_Post $for, string $name ) use ( &$made ): int {
+	$dir  = wp_upload_dir();
+	$file = trailingslashit( $dir['path'] ) . wp_unique_filename( $dir['path'], $name . '.jpg' );
+	imagejpeg( imagecreatetruecolor( 64, 48 ), $file );
+	$id = (int) wp_insert_attachment(
+		array(
+			'post_mime_type' => 'image/jpeg',
+			'post_title'     => $name,
+			'post_status'    => 'inherit',
+		),
+		$file,
+		$for->ID
+	);
+	wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
+	Editor_Photos::adopt( $id, $for );
+	$made[] = $id;
+	return $id;
+};
+$as_prof = static fn ( array $values ): array => Editor_Writer::apply( get_post( $sede->ID ), $values, $prof, 'prof@editor.test' );
+$put     = static fn ( int $user, array $ids, ?string $base = null ) => $call( $user, 'PUT', $sede_path . '/gallery', array( 'base_modified' => $base ?? \Pura\Core\Editor\Editor_Document::version( get_post( $sede->ID ) ), 'ids' => $ids ) );
+
+delete_post_meta( $sede->ID, Editor_Photos::META_GALLERY );
+delete_post_meta( $sede->ID, Editor_Photos::META_PENDING );
+wp_clear_scheduled_hook( Editor_Photos::HOOK_DIGEST, array( $sede->ID ) );
+$original = (int) get_post_thumbnail_id( $sede->ID );
+$mails    = array();
+
+$main        = $photo( $sede, 'pura-test-main' );
+$main_change = $as_prof( array( 'image' => $main ) );
+$check( 'a new main photo is shown and recorded', array( $main_change['changed'], (int) get_post_thumbnail_id( $sede->ID ), Change_Post_Type::to_array( $main_change['change_id'] )['before']['image'] ), array( array( 'image' ), $main, $original ) );
+$check( '  it is no longer marked as unlinked; the old one is, but only as unlinked', array( metadata_exists( 'post', $main, Editor_Photos::META_UNLINKED ), $original ? metadata_exists( 'post', $original, Editor_Photos::META_UNLINKED ) : true, $original ? metadata_exists( 'post', $original, Editor_Photos::META_OWNER ) : false ), array( false, true, false ) );
+$check( '  no email yet: photo changes wait for one joint notice', array( count( $mails ), (bool) wp_next_scheduled( Editor_Photos::HOOK_DIGEST, array( $sede->ID ) ) ), array( 0, true ) );
+
+$g1 = $photo( $sede, 'pura-test-g1' );
+$g2 = $photo( $sede, 'pura-test-g2' );
+$g3 = $photo( $sede, 'pura-test-g3' );
+$as_prof( array( 'gallery' => array( $g1 ) ) );
+$as_prof( array( 'gallery' => array( $g1, $g2 ) ) );
+$filled = $as_prof( array( 'gallery' => array( $g1, $g2, $g3 ) ) );
+$check( 'photos are added to the gallery in order', Editor_Photos::gallery_ids( $sede->ID ), array( $g1, $g2, $g3 ) );
+
+list( $status, $data ) = $put( $prof, array( $g3, $g1 ) );
+$order_change          = (int) get_posts( array( 'post_type' => Change_Post_Type::POST_TYPE, 'post_status' => 'private', 'numberposts' => 1, 'fields' => 'ids' ) )[0];
+$check( 'the professor reorders the gallery and removes a photo', array( $status, array_column( $data['item']['gallery'] ?? array(), 'id' ), Editor_Photos::gallery_ids( $sede->ID ) ), array( 200, array( $g3, $g1 ), array( $g3, $g1 ) ) );
+$check( '  the removed photo is kept, marked as unlinked', array( 'attachment' === get_post_type( $g2 ), metadata_exists( 'post', $g2, Editor_Photos::META_UNLINKED ) ), array( true, true ) );
+
+$foreign       = $photo( $sede_b, 'pura-test-foreign' );
+list( $status ) = $put( $prof, array( $g3, $foreign ) );
+$check( 'a gallery order cannot bring in a photo from elsewhere', array( $status, Editor_Photos::gallery_ids( $sede->ID ) ), array( 400, array( $g3, $g1 ) ) );
+list( $status ) = $put( $prof, array( (string) $g1, (string) $g3 ) );
+$check( 'nor take ids that are not whole numbers', $status, 400 );
+list( $status, $data ) = $put( $prof, array( $g1, $g3 ), 'stale#0' );
+$check( 'an order sent from an older copy is refused', array( $status, $data['code'] ?? '' ), array( 409, 'conflict' ) );
+list( $status ) = $put( $other, array( $g1 ) );
+$check( 'another member cannot touch the gallery', array( $status, Editor_Photos::gallery_ids( $sede->ID ) ), array( 404, array( $g3, $g1 ) ) );
+list( $status, $data ) = $call( $prof, 'PATCH', $sede_path, $patch( $sede->ID, array( 'image' => $foreign ) ) );
+$check( 'a text save cannot set the main photo', array( $status, (int) get_post_thumbnail_id( $sede->ID ) ), array( 400, $main ) );
+list( $status ) = $call( $prof, 'POST', $sede_path . '/photo' );
+$check( 'the photo route refuses a request with no file', $status, 400 );
+
+list( , $data ) = $call( 0, 'GET', '/wp/v2/pura_sede/' . $sede->ID );
+$check( 'the public sede data carries the gallery, read-only', array( array_column( $data['gallery'] ?? array(), 'id' ), '' !== ( $data['gallery'][0]['url'] ?? '' ), isset( $data['meta'][ Editor_Photos::META_GALLERY ] ) ), array( array( $g3, $g1 ), true, false ) );
+list( , $data ) = $call( $prof, 'GET', '/pura/v1/editor/me' );
+$check( 'the editor lists the gallery, the main photo and the limits', array( array_column( $data['sedes'][0]['gallery'] ?? array(), 'id' ), $data['sedes'][0]['image']['id'] ?? 0, $data['limits']['gallery'] ?? 0, $data['profesor']['gallery'] ?? 'none' ), array( array( $g3, $g1 ), $main, 12, 'none' ) );
+
+$sent = Editor_Photos::send_digest( $sede->ID );
+$check( 'the joint notice is one email for all of it', array( $sent, count( $mails ), 0 === strpos( (string) ( $mails[0]['subject'] ?? '' ), 'Fotos:' ), false !== strpos( (string) ( $mails[0]['message'] ?? '' ), 'Galería ahora (2)' ), get_post_meta( $sede->ID, Editor_Photos::META_PENDING, false ) ), array( true, 1, true, true, array() ) );
+
+$old = time() - 31 * DAY_IN_SECONDS;
+update_post_meta( $g2, Editor_Photos::META_UNLINKED, $old );
+update_post_meta( $g1, Editor_Photos::META_UNLINKED, $old );
+if ( $original ) {
+	update_post_meta( $original, Editor_Photos::META_UNLINKED, $old );
+}
+$purged = Editor_Photos::purge();
+$check( 'after 30 days only the unlinked photo uploaded here is deleted', array( $purged >= 1, get_post( $g2 ), 'attachment' === get_post_type( $g1 ), metadata_exists( 'post', $g1, Editor_Photos::META_UNLINKED ), $original ? 'attachment' === get_post_type( $original ) : true ), array( true, null, true, false, true ) );
+
+$mails  = array();
+$result = Change_Actions::restore( $main_change['change_id'], get_user_by( 'id', $admin ) );
+$check( 'the administrator restores the previous main photo', array( $result['restored'], (int) get_post_thumbnail_id( $sede->ID ), $original ? metadata_exists( 'post', $original, Editor_Photos::META_UNLINKED ) : false, count( $mails ) ), array( array( 'image' ), $original, false, 1 ) );
+$result = Change_Actions::restore( $order_change, get_user_by( 'id', $admin ) );
+$check( 'restoring an older gallery leaves out the photo that no longer exists', array( $result['restored'], Editor_Photos::gallery_ids( $sede->ID ) ), array( array( 'gallery' ), array( $g1, $g3 ) ) );
+
+delete_post_meta( $sede->ID, Editor_Photos::META_GALLERY );
+delete_post_meta( $sede->ID, Editor_Photos::META_PENDING );
+wp_clear_scheduled_hook( Editor_Photos::HOOK_DIGEST, array( $sede->ID ) );
+foreach ( $made as $id ) {
+	wp_delete_attachment( $id, true );
+}
 
 // ---------- states ----------
 wp_update_post( array( 'ID' => $sede->ID, 'post_status' => 'draft' ) );

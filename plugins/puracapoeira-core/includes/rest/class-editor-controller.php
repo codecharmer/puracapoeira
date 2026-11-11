@@ -4,6 +4,9 @@
  *
  * GET   pura/v1/editor/me                  what the signed-in person may edit
  * PATCH pura/v1/editor/{sede|profesor}/{id} change some fields of one of those
+ * POST  pura/v1/editor/{sede|profesor}/{id}/photo  replace the main photo (multipart `file`)
+ * POST  pura/v1/editor/sede/{id}/gallery   add a photo to the gallery (multipart `file`)
+ * PUT   pura/v1/editor/sede/{id}/gallery   reorder the gallery or remove photos from it
  *
  * Every route needs a signed-in member and the REST nonce. Which post may be touched is
  * decided per request by Editor_Access (the member's verified email is on that post); which
@@ -19,10 +22,12 @@ declare( strict_types=1 );
 namespace Pura\Core\Rest;
 
 use Pura\Core\Auth\Editor_Access;
+use Pura\Core\Data\Photo_Batch_Repository;
 use Pura\Core\Data\Profesor_Post_Type;
 use Pura\Core\Data\Sede_Post_Type;
 use Pura\Core\Editor\Editor_Document;
 use Pura\Core\Editor\Editor_Fields;
+use Pura\Core\Editor\Editor_Photos;
 use Pura\Core\Editor\Editor_Writer;
 use WP_Post;
 use WP_REST_Request;
@@ -61,6 +66,33 @@ final class Editor_Controller extends Base_Controller {
 				'permission_callback' => $this->logged_in_permission( 'editor-write', 60 ),
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/editor/(?P<type>sede|profesor)/(?P<id>\d+)/photo',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'set_photo' ),
+				'permission_callback' => $this->logged_in_permission( 'editor-upload', 40 ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/editor/sede/(?P<id>\d+)/gallery',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'add_to_gallery' ),
+					'permission_callback' => $this->logged_in_permission( 'editor-upload', 40 ),
+				),
+				array(
+					'methods'             => 'PUT',
+					'callback'            => array( $this, 'order_gallery' ),
+					'permission_callback' => $this->logged_in_permission( 'editor-write', 60 ),
+				),
+			)
+		);
 	}
 
 	public function me(): WP_REST_Response {
@@ -71,8 +103,10 @@ final class Editor_Controller extends Base_Controller {
 				'profesor' => $posts['profesor'] ? Editor_Document::for_post( $posts['profesor'] ) : null,
 				'sedes'    => array_map( array( Editor_Document::class, 'for_post' ), $posts['sedes'] ),
 				'limits'   => array(
-					'rows' => Editor_Fields::MAX_ROWS,
-					'cell' => Editor_Fields::MAX_CELL,
+					'rows'     => Editor_Fields::MAX_ROWS,
+					'cell'     => Editor_Fields::MAX_CELL,
+					'gallery'  => Editor_Photos::MAX_GALLERY,
+					'maxBytes' => Photo_Batch_Repository::max_bytes(),
 				),
 			),
 			200,
@@ -83,7 +117,7 @@ final class Editor_Controller extends Base_Controller {
 	public function update( WP_REST_Request $request ): WP_REST_Response {
 		$post = $this->editable_post( (string) $request['type'], (int) $request['id'] );
 		if ( ! $post ) {
-			return $this->error( 'No encontramos esa ficha.', 404, array( 'code' => 'not_found' ) );
+			return $this->not_found();
 		}
 
 		$body   = $request->get_json_params();
@@ -95,16 +129,7 @@ final class Editor_Controller extends Base_Controller {
 
 		// Someone else (or another tab) saved since this copy was loaded: saving now would undo their change.
 		if ( ! hash_equals( Editor_Document::version( $post ), $base ) ) {
-			return new WP_REST_Response(
-				array(
-					'ok'      => false,
-					'error'   => 'Alguien más guardó cambios en esta ficha. Revisa los datos actuales y vuelve a guardar.',
-					'code'    => 'conflict',
-					'current' => Editor_Document::for_post( $post ),
-				),
-				409,
-				self::NO_STORE
-			);
+			return $this->conflict( $post );
 		}
 
 		$check = Editor_Fields::validate( Editor_Document::type_of( $post ), $fields );
@@ -119,8 +144,87 @@ final class Editor_Controller extends Base_Controller {
 			);
 		}
 
+		return $this->applied( $post, $check['values'] );
+	}
+
+	/** Replaces the main photo of a sede or the portrait of a profesor with an uploaded file. */
+	public function set_photo( WP_REST_Request $request ): WP_REST_Response {
+		$post = $this->editable_post( (string) $request['type'], (int) $request['id'] );
+		if ( ! $post ) {
+			return $this->not_found();
+		}
+		$id = $this->stored_upload( $request, $post, Editor_Fields::TYPE_SEDE === $request['type'] ? 'Foto principal' : 'Retrato' );
+
+		return $id instanceof WP_REST_Response ? $id : $this->applied( $post, array( 'image' => $id ), 201 );
+	}
+
+	/** Adds an uploaded file at the end of a sede's gallery. */
+	public function add_to_gallery( WP_REST_Request $request ): WP_REST_Response {
+		$post = $this->editable_post( Editor_Fields::TYPE_SEDE, (int) $request['id'] );
+		if ( ! $post ) {
+			return $this->not_found();
+		}
+		if ( count( Editor_Photos::gallery_ids( $post->ID ) ) >= Editor_Photos::MAX_GALLERY ) {
+			return $this->error( sprintf( 'La galería ya tiene %d fotos, que es el máximo. Quita una para añadir otra.', Editor_Photos::MAX_GALLERY ), 400, array( 'code' => 'gallery_full' ) );
+		}
+		$id = $this->stored_upload( $request, $post, 'Galería' );
+		if ( $id instanceof WP_REST_Response ) {
+			return $id;
+		}
+
+		// Read again: another photo may have been added while this one was uploading.
+		return $this->applied( $post, array( 'gallery' => array_merge( Editor_Photos::gallery_ids( $post->ID ), array( $id ) ) ), 201 );
+	}
+
+	/** New order of a sede's gallery; photos left out are removed from it. */
+	public function order_gallery( WP_REST_Request $request ): WP_REST_Response {
+		$post = $this->editable_post( Editor_Fields::TYPE_SEDE, (int) $request['id'] );
+		if ( ! $post ) {
+			return $this->not_found();
+		}
+		$body = $request->get_json_params();
+		$base = is_array( $body ) && isset( $body['base_modified'] ) && is_string( $body['base_modified'] ) ? $body['base_modified'] : '';
+		$ids  = is_array( $body ) ? ( $body['ids'] ?? null ) : null;
+		if ( '' === $base || ! is_array( $ids ) ) {
+			return $this->error( 'Faltan datos para guardar.', 400, array( 'code' => 'bad_request' ) );
+		}
+		if ( ! hash_equals( Editor_Document::version( $post ), $base ) ) {
+			return $this->conflict( $post );
+		}
+		if ( ! Editor_Photos::is_valid_order( Editor_Photos::gallery_ids( $post->ID ), $ids ) ) {
+			return $this->error( 'Esa lista de fotos no corresponde a la galería actual.', 400, array( 'code' => 'invalid' ) );
+		}
+
+		return $this->applied( $post, array( 'gallery' => $ids ) );
+	}
+
+	/**
+	 * Checks and stores the request's `file` for a post.
+	 *
+	 * @return int|WP_REST_Response Attachment id, or the refusal to send back.
+	 */
+	private function stored_upload( WP_REST_Request $request, WP_Post $post, string $label ) {
+		$files = $request->get_file_params();
+		$error = Editor_Photos::upload_error( $files['file'] ?? null );
+		if ( null !== $error ) {
+			return $this->error( $error, 400, array( 'code' => 'bad_photo' ) );
+		}
+		$id = Editor_Photos::store( $post, 'file', $label );
+		if ( is_wp_error( $id ) ) {
+			return $this->error( 'No se pudo guardar la foto (' . $id->get_error_message() . ').', 400, array( 'code' => 'bad_photo' ) );
+		}
+
+		return $id;
+	}
+
+	/**
+	 * Applies values through the writer and answers with the post as it now is.
+	 *
+	 * @param array<string, mixed> $values Checked values.
+	 */
+	private function applied( WP_Post $post, array $values, int $status = 200 ): WP_REST_Response {
 		$user   = wp_get_current_user();
-		$result = Editor_Writer::apply( $post, $check['values'], (int) $user->ID, Editor_Access::actor_label( $user ) );
+		$result = Editor_Writer::apply( $post, $values, (int) $user->ID, Editor_Access::actor_label( $user ) );
 		$fresh  = get_post( $post->ID );
 
 		return $this->ok(
@@ -128,7 +232,24 @@ final class Editor_Controller extends Base_Controller {
 				'changed' => $result['changed'],
 				'item'    => Editor_Document::for_post( $fresh instanceof WP_Post ? $fresh : $post ),
 			),
-			200,
+			$status,
+			self::NO_STORE
+		);
+	}
+
+	private function not_found(): WP_REST_Response {
+		return $this->error( 'No encontramos esa ficha.', 404, array( 'code' => 'not_found' ) );
+	}
+
+	private function conflict( WP_Post $post ): WP_REST_Response {
+		return new WP_REST_Response(
+			array(
+				'ok'      => false,
+				'error'   => 'Alguien más guardó cambios en esta ficha. Revisa los datos actuales y vuelve a guardar.',
+				'code'    => 'conflict',
+				'current' => Editor_Document::for_post( $post ),
+			),
+			409,
 			self::NO_STORE
 		);
 	}

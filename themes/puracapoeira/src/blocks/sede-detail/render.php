@@ -22,6 +22,7 @@ if ( ! $pura_post ) {
 }
 
 $pura_s    = \Pura\Core\Data\Sede_Post_Type::get_data( $pura_post );
+$pura_gal  = class_exists( 'Pura\Core\Editor\Editor_Photos' ) ? \Pura\Core\Editor\Editor_Photos::gallery( $pura_post->ID ) : array();
 $pura_part = 'hero' === ( $attributes['part'] ?? 'body' ) ? 'hero' : 'body';
 
 if ( 'hero' === $pura_part ) :
@@ -102,4 +103,25 @@ endif;
 			<a class="btn btn--ghost" href="<?php echo esc_url( home_url( '/sedes/' ) ); ?>" data-i18n="common.backToLocations"><?php esc_html_e( 'Volver a sedes', 'pura' ); ?></a>
 		</div>
 	</div>
+	<?php if ( $pura_gal ) : ?>
+		<div class="sede-gallery">
+			<h3 data-i18n="common.photos"><?php esc_html_e( 'Fotos', 'pura' ); ?></h3>
+			<div class="sede-gallery__grid">
+				<?php foreach ( $pura_gal as $pura_photo ) : ?>
+					<a href="<?php echo esc_url( $pura_photo['url'] ); ?>" target="_blank" rel="noopener">
+						<?php
+						echo pura_theme_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by the helper.
+							(int) $pura_photo['id'],
+							'medium_large',
+							array(
+								'alt'          => $pura_s['name'],
+								'data-tv-attr' => 'alt',
+							)
+						);
+						?>
+					</a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	<?php endif; ?>
 </div>

@@ -14,6 +14,7 @@ use Pura\Core\Data\Change_Post_Type;
 use Pura\Core\Editor\Change_Diff;
 use Pura\Core\Editor\Editor_Document;
 use Pura\Core\Editor\Editor_Fields;
+use Pura\Core\Editor\Editor_Photos;
 use Pura\Core\Editor\Editor_Writer;
 use WP_Post;
 
@@ -69,13 +70,15 @@ final class Change_Actions {
 		$type   = Editor_Document::type_of( $target );
 		$fields = array_intersect_key( $change['before'], Editor_Fields::definitions( $type ) );
 		$check  = Editor_Fields::validate( $type, $fields );
-		if ( ! $check['ok'] || ! $check['values'] ) {
+		$photos = Editor_Photos::restorable( $target, $change['before'] );
+		if ( ! $check['ok'] || ! ( $check['values'] || $photos ) ) {
 			return $failed;
 		}
+		$fields += $photos;
 
 		// Were these fields changed again after the change being undone? Then that later work is replaced too.
-		$drifted = Change_Diff::changed( Editor_Document::values( $target ), array_intersect_key( $change['after'], $fields ) );
-		$result  = Editor_Writer::apply( $target, $check['values'], (int) $user->ID, strtolower( (string) $user->user_email ), 'restore', $change_id );
+		$drifted = Change_Diff::changed( Editor_Document::values( $target ) + Editor_Photos::values( $target ), array_intersect_key( $change['after'], $fields ) );
+		$result  = Editor_Writer::apply( $target, $check['values'] + $photos, (int) $user->ID, strtolower( (string) $user->user_email ), 'restore', $change_id );
 		$message = $result['changed']
 			/* translators: %s: sede or profesor title. */
 			? sprintf( __( 'Se restauraron los valores anteriores de «%s».', 'pura' ), (string) get_the_title( $target ) )

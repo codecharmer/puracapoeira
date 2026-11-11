@@ -12,6 +12,7 @@ namespace Pura\Core\Data;
 
 use Pura\Core\Admin\Change_Actions;
 use Pura\Core\Editor\Change_Diff;
+use Pura\Core\Editor\Editor_Photos;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -138,6 +139,11 @@ final class Change_Post_Type {
 		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Dato', 'pura' ) . '</th><th>' . esc_html__( 'Antes', 'pura' ) . '</th><th>' . esc_html__( 'Ahora', 'pura' ) . '</th></tr></thead><tbody>';
 		foreach ( $change['after'] as $field => $value ) {
 			echo '<tr><td>' . esc_html( Change_Diff::label( (string) $field ) ) . '</td>';
+			if ( in_array( $field, array( 'image', 'gallery' ), true ) ) {
+				echo '<td>' . self::thumbnails( $change['before'][ $field ] ?? array() ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from wp_get_attachment_image().
+				echo '<td>' . self::thumbnails( $value ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				continue;
+			}
 			echo '<td style="white-space:pre-wrap">' . esc_html( Change_Diff::show( $change['before'][ $field ] ?? '' ) ) . '</td>';
 			echo '<td style="white-space:pre-wrap">' . esc_html( Change_Diff::show( $value ) ) . '</td></tr>';
 		}
@@ -147,6 +153,21 @@ final class Change_Post_Type {
 			echo '<p><a class="button" href="' . esc_url( Change_Actions::restore_url( $post->ID ) ) . '">' . esc_html__( 'Restaurar los valores de «Antes»', 'pura' ) . '</a> ';
 			echo '<a class="button-link" href="' . esc_url( $change['target_url'] ) . '" target="_blank" rel="noopener">' . esc_html__( 'Ver la página', 'pura' ) . '</a></p>';
 		}
+	}
+
+	/**
+	 * Small pictures for a photo value of a change (one id or a list of ids).
+	 *
+	 * @param mixed $value Recorded value.
+	 */
+	private static function thumbnails( $value ): string {
+		$html = '';
+		foreach ( Editor_Photos::clean_ids( (array) $value ) as $id ) {
+			$image = wp_get_attachment_image( $id, array( 80, 80 ), false, array( 'style' => 'margin:0 4px 4px 0;object-fit:cover;width:80px;height:80px' ) );
+			$html .= '' !== $image ? $image : '<em>' . esc_html__( '(foto borrada)', 'pura' ) . '</em> ';
+		}
+
+		return '' !== $html ? $html : esc_html__( '(sin foto)', 'pura' );
 	}
 
 	/**

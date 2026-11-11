@@ -111,6 +111,7 @@ final class Editor_Document {
 				'id'  => $image_id,
 				'url' => (string) wp_get_attachment_image_url( $image_id, 'medium_large' ),
 			) : null,
+			'gallery'  => Editor_Fields::TYPE_SEDE === $type ? Editor_Photos::gallery( $post->ID ) : null,
 		);
 	}
 }

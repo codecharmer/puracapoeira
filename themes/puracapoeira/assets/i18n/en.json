@@ -57,7 +57,8 @@
 		"website": "Website",
 		"whatsapp": "WhatsApp",
 		"writeUs": "Write to us",
-		"youtube": "YouTube"
+		"youtube": "YouTube",
+		"photos": "Photos"
 	},
 	"values": {
 		"$1,150 MXN al mes": "$1,150 MXN per month",
@@ -163,7 +164,52 @@
 		"Treino físico y técnico": "Physical and technical training",
 		"Ver perfil": "View profile",
 		"WhatsApp": "WhatsApp",
-		"YouTube": "YouTube"
+		"YouTube": "YouTube",
+		"Sede": "Location",
+		"Tu perfil": "Your profile",
+		"Guardar cambios": "Save changes",
+		"Ver la página": "View the page",
+		"Ver ahora": "View now",
+		"Añadir fila": "Add row",
+		"Horarios": "Schedule",
+		"Precios": "Prices",
+		"Resumen de la sede": "Location summary",
+		"Resumen": "Summary",
+		"Presentación": "Introduction",
+		"Pie de tu foto": "Caption of your photo",
+		"Dirección": "Address",
+		"Responsable": "Person in charge",
+		"WhatsApp: número como se muestra": "WhatsApp: number as displayed",
+		"WhatsApp: enlace": "WhatsApp: link",
+		"Instagram: usuario": "Instagram: username",
+		"Instagram: enlace": "Instagram: link",
+		"Facebook: enlace o nombre de la página": "Facebook: link or page name",
+		"Facebook: enlace": "Facebook: link",
+		"YouTube: enlace": "YouTube: link",
+		"Aparece en la tarjeta de la sede.": "Shown on the location's card.",
+		"Aparece en tu tarjeta en la lista de profesores.": "Shown on your card in the list of professors.",
+		"El texto bajo tu nombre en tu página.": "The text under your name on your page.",
+		"Debe empezar con https://wa.me/ seguido del número con clave de país.": "It must start with https://wa.me/ followed by the number with country code.",
+		"Guardado. El sitio y la app muestran el cambio en un minuto.": "Saved. The website and the app show the change within a minute.",
+		"No hay cambios que guardar.": "There are no changes to save.",
+		"No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.": "It could not be saved. Check your connection and try again.",
+		"Tu sesión terminó. Vuelve a entrar para guardar.": "Your session ended. Sign in again to save.",
+		"Foto guardada. El sitio y la app la muestran en un minuto.": "Photo saved. The website and the app show it within a minute.",
+		"Galería actualizada.": "Gallery updated.",
+		"No pudimos leer esa foto. Prueba con una en formato JPG o PNG.": "We could not read that photo. Try one in JPG or PNG format.",
+		"Esa foto es demasiado grande.": "That photo is too large.",
+		"Sin foto": "No photo",
+		"Cambiar foto": "Change photo",
+		"Cambiar retrato": "Change portrait",
+		"Añadir fotos": "Add photos",
+		"Foto principal de la sede": "Main photo of the location",
+		"Tu retrato": "Your portrait",
+		"Galería de la sede": "Location gallery",
+		"Se guarda al elegirla. La foto anterior se conserva 30 días por si hay que volver a ella.": "It is saved as soon as you choose it. The previous photo is kept for 30 days in case it is needed again.",
+		"Alguien más guardó cambios en esta ficha. Revisa los datos actuales y vuelve a guardar.": "Someone else saved changes here. Review the current details and save again.",
+		"Revisa los enlaces: deben empezar con https:// y apuntar al sitio correcto (WhatsApp, Instagram, Facebook o YouTube).": "Check the links: they must start with https:// and point to the right site (WhatsApp, Instagram, Facebook or YouTube).",
+		"Algún texto es demasiado largo.": "One of the texts is too long.",
+		"Solo aceptamos fotos JPG, PNG o WebP.": "We only accept JPG, PNG or WebP photos."
 	},
 	"shared": {
 		"bio-title": "Biography",
@@ -237,7 +283,8 @@
 			"portal-hello": "Hello,",
 			"portal-private": "You signed in with Apple hiding your email, so only registrations made from this account appear here.",
 			"see-events": "See events",
-			"whatsapp": "Write on WhatsApp"
+			"whatsapp": "Write on WhatsApp",
+			"editor-link": "Edit my profile and my location"
 		},
 		"eventos": {
 			"hero-eyebrow": "Rodas · Batizados · Gatherings",
@@ -377,6 +424,17 @@
 			"hero-title": {
 				"html": "Pura Capoeira<br>locations"
 			}
+		},
+		"editar": {
+			"hero-eyebrow": "Professors",
+			"hero-title": "Edit your profile and your location",
+			"hero-lead": "Keep your schedule, prices and contact details up to date. What you save here shows on the website and in the app.",
+			"loading": "Checking your session…",
+			"editor-login": "Sign in with the Google or Apple account of the email you gave the administration to edit your profile and your location.",
+			"login-unavailable": "Sign-in is not set up yet.",
+			"editor-no-access": "Your account is not linked to a profile or a location yet.",
+			"editor-no-access-help": "Ask the administration to add the email you signed in with. If you signed in with Apple hiding your email, sign in with Google or share your email with Apple.",
+			"editor-account": "My account"
 		}
 	}
 }

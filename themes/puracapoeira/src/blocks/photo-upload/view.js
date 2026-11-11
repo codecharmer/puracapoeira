@@ -4,11 +4,11 @@
  * /pura/v1/photos/batches/{id}/files with per-file progress and one automatic retry.
  */
 
+import { prepare } from '../../shared/prepare-photo';
+
 const $ = ( sel, ctx = document ) => ctx.querySelector( sel );
 
 const KEY_PARAM_DEFAULT = 'clave';
-const MAX_SIDE = 2400; // px — plenty for the web, a fraction of a phone's original.
-const JPEG_QUALITY = 0.86;
 
 function restUrl( path ) {
 	const base =
@@ -125,95 +125,6 @@ function upload( path, formData, onProgress ) {
 		xhr.addEventListener( 'error', () => reject( new Error( 'network' ) ) );
 		xhr.addEventListener( 'abort', () => reject( new Error( 'abort' ) ) );
 		xhr.send( formData );
-	} );
-}
-
-/**
- * Decode an image file honouring its EXIF orientation. Resolves to something drawImage accepts,
- * or rejects when the browser cannot decode it (HEIC outside Safari, for instance).
- *
- * @param {File} file Image.
- * @return {Promise<ImageBitmap|HTMLImageElement>} Decoded image.
- */
-async function decode( file ) {
-	if ( typeof window.createImageBitmap === 'function' ) {
-		try {
-			return await window.createImageBitmap( file, {
-				imageOrientation: 'from-image',
-			} );
-		} catch ( _err ) {
-			// fall through to <img>, which applies orientation in every modern browser
-		}
-	}
-	return new Promise( ( resolve, reject ) => {
-		const url = URL.createObjectURL( file );
-		const img = new window.Image();
-		img.onload = () => {
-			URL.revokeObjectURL( url );
-			resolve( img );
-		};
-		img.onerror = () => {
-			URL.revokeObjectURL( url );
-			reject( new Error( 'decode' ) );
-		};
-		img.src = url;
-	} );
-}
-
-/**
- * The file to upload: the original when it is small enough, otherwise a JPEG no larger than
- * MAX_SIDE on its longest side. Throws when the file cannot be decoded and is over the limit.
- *
- * @param {File}   file     Original.
- * @param {number} maxBytes Server limit.
- * @return {Promise<File>} File to send.
- */
-async function prepare( file, maxBytes ) {
-	let image;
-	try {
-		image = await decode( file );
-	} catch ( _err ) {
-		if ( file.size <= maxBytes ) {
-			return file;
-		}
-		throw new Error( 'too-big' );
-	}
-
-	const width = image.naturalWidth || image.width;
-	const height = image.naturalHeight || image.height;
-	const longest = Math.max( width, height );
-	const needsResize = longest > MAX_SIDE || file.size > maxBytes;
-	if ( ! needsResize ) {
-		return file;
-	}
-
-	const scale = Math.min( 1, MAX_SIDE / longest );
-	const canvas = document.createElement( 'canvas' );
-	canvas.width = Math.round( width * scale );
-	canvas.height = Math.round( height * scale );
-	canvas
-		.getContext( '2d' )
-		.drawImage( image, 0, 0, canvas.width, canvas.height );
-	if ( typeof image.close === 'function' ) {
-		image.close();
-	}
-
-	const blob = await new Promise( ( resolve ) =>
-		canvas.toBlob( resolve, 'image/jpeg', JPEG_QUALITY )
-	);
-	if ( ! blob ) {
-		if ( file.size <= maxBytes ) {
-			return file;
-		}
-		throw new Error( 'too-big' );
-	}
-	if ( blob.size > maxBytes ) {
-		throw new Error( 'too-big' );
-	}
-	const name = file.name.replace( /\.[^.]+$/, '' ) + '.jpg';
-	return new File( [ blob ], name, {
-		type: 'image/jpeg',
-		lastModified: file.lastModified,
 	} );
 }
 
