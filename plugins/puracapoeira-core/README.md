@@ -54,12 +54,13 @@ vinculado a esa cuenta (`_pura_user_id`).
   `wp-admin` (se le redirige a Mi cuenta). Usuario `capoeirista-<hex>`, contraseña aleatoria.
 - Identidades en meta de usuario `_pura_identity_{google|apple}` (= `sub`); correo verificado por el
   proveedor en `_pura_verified_email`; `_pura_apple_private_email` si usó "Ocultar mi correo".
-- Un correo afirmado por el proveedor solo se adjunta a una cuenta cuyo único rol sea Capoeirista:
-  nunca abre una cuenta del equipo (`auth_error=admin_account`).
+- Un correo verificado solo se adjunta a una cuenta cuyo único rol sea Capoeirista: nunca abre una
+  cuenta del equipo. Quien entra con el correo de una cuenta del equipo recibe su propia cuenta de
+  Capoeirista (sin correo de WordPress, reconocida por `_pura_verified_email`), para poder editar su
+  sede o su perfil como cualquier profesor.
 - Entrada con código por correo, para quien no tiene Google ni Apple: `POST /pura/v1/auth/email-code/start`
   envía 6 dígitos (10 minutos, un solo uso, 5 intentos; 5 correos por hora a una dirección) y
-  `…/verify` abre la sesión. El correo queda como `_pura_verified_email`, con las mismas reglas: un
-  correo del equipo recibe un aviso en lugar de un código y nunca abre esa cuenta.
+  `…/verify` abre la sesión. El correo queda como `_pura_verified_email`, con las mismas reglas.
 - Registros a eventos: al iniciar sesión se marcan con `_pura_user_id` los registros hechos con el
   correo verificado (`claim`); Mi cuenta lista los propios y los que coinciden por correo. Los correos
   relay de Apple no se emparejan: solo ven lo registrado desde la cuenta.

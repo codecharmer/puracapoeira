@@ -117,18 +117,11 @@ final class Member_Accounts {
 	 * @return WP_User|WP_Error
 	 */
 	public static function find_or_create_user( array $identity, string $provider ) {
-		$email    = $identity['email_verified'] && is_email( $identity['email'] ) ? strtolower( $identity['email'] ) : '';
-		$user     = self::find_user_by_identity( $provider, $identity['sub'] );
-		$existing = null;
+		$email = $identity['email_verified'] && is_email( $identity['email'] ) ? strtolower( $identity['email'] ) : '';
+		$user  = self::find_user_by_identity( $provider, $identity['sub'] );
 
 		if ( ! $user && '' !== $email ) {
-			$existing = get_user_by( 'email', $email );
-			if ( $existing instanceof WP_User ) {
-				if ( ! self::can_attach_identity( $existing ) ) {
-					return new WP_Error( 'admin_account', 'Esta cuenta pertenece al equipo de Pura Capoeira; entra por el acceso de administración.' );
-				}
-				$user = $existing;
-			}
+			$user = self::member_for_email( $email );
 		}
 
 		if ( ! $user ) {
@@ -182,12 +175,8 @@ final class Member_Accounts {
 			return new WP_Error( 'email', 'El correo no es válido.' );
 		}
 
-		$user = get_user_by( 'email', $email );
-		if ( $user instanceof WP_User ) {
-			if ( ! self::can_attach_identity( $user ) ) {
-				return new WP_Error( 'admin_account', 'Esta cuenta pertenece al equipo de Pura Capoeira; entra por el acceso de administración.' );
-			}
-		} else {
+		$user = self::member_for_email( $email );
+		if ( ! $user ) {
 			$user = self::create_user(
 				array(
 					'sub'          => '',
@@ -209,16 +198,41 @@ final class Member_Accounts {
 		return $user;
 	}
 
-	/** True when the address belongs to an account that may not sign in as a member (staff). */
-	public static function is_staff_email( string $email ): bool {
-		$user = get_user_by( 'email', strtolower( trim( $email ) ) );
+	/**
+	 * The member account of a verified address, or null when there is none yet.
+	 *
+	 * A staff account is never returned: a person of the team who signs in here with their staff
+	 * address gets a member account of their own, found again by its verified email (its own
+	 * WordPress email stays empty, since the staff account holds the address). They can then be
+	 * linked to a sede or a profile like any professor, and the staff session is never opened.
+	 */
+	public static function member_for_email( string $email ): ?WP_User {
+		$existing = get_user_by( 'email', $email );
+		if ( $existing instanceof WP_User && self::can_attach_identity( $existing ) ) {
+			return $existing;
+		}
 
-		return $user instanceof WP_User && ! self::can_attach_identity( $user );
+		$users = get_users(
+			array(
+				'role'        => self::ROLE,
+				'meta_key'    => self::META_VERIFIED_EMAIL, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- single lookup at login.
+				'meta_value'  => $email, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'number'      => 5,
+				'count_total' => false,
+			)
+		);
+		foreach ( $users as $user ) {
+			if ( self::can_attach_identity( $user ) ) {
+				return $user;
+			}
+		}
+
+		return null;
 	}
 
 	/**
-	 * A provider-asserted email may only attach to an account whose sole role is Capoeirista: it
-	 * must never open a staff account.
+	 * A verified email may only attach to an account whose sole role is Capoeirista: it must never
+	 * open a staff account.
 	 */
 	public static function can_attach_identity( WP_User $user ): bool {
 		return array( self::ROLE ) === array_values( (array) $user->roles );
@@ -363,7 +377,8 @@ final class Member_Accounts {
 			array(
 				'user_login'   => $login,
 				'user_pass'    => wp_generate_password( 32, true, true ),
-				'user_email'   => $email,
+				// Empty when another account (a staff one) already holds the address.
+				'user_email'   => '' !== $email && email_exists( $email ) ? '' : $email,
 				'display_name' => (string) $display,
 				'first_name'   => $identity['first_name'],
 				'last_name'    => $identity['last_name'],

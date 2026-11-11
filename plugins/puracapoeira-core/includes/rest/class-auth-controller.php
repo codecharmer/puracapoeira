@@ -140,8 +140,7 @@ final class Auth_Controller extends Base_Controller {
 	}
 
 	/**
-	 * Send a code. The answer is the same whether or not the address has an account, and for a
-	 * staff address too (which gets a notice by email instead of a code).
+	 * Send a code. The answer is the same whether or not the address has an account.
 	 */
 	public function email_start( WP_REST_Request $request ): WP_REST_Response {
 		$email = Editor_Access::normalize_email( (string) $request->get_param( 'email' ) );
@@ -156,10 +155,9 @@ final class Auth_Controller extends Base_Controller {
 		$account_url = Settings::page_url( 'account' );
 		$redirect_to = wp_validate_redirect( (string) $request->get_param( 'redirect_to' ), $account_url );
 		$lang        = (string) $request->get_param( 'lang' );
-		$staff       = Member_Accounts::is_staff_email( $email );
-		$issued      = Email_Code::issue( $email, $redirect_to, ! $staff );
+		$issued      = Email_Code::issue( $email, $redirect_to );
 
-		$sent = $staff ? Mailer::send_staff_login_notice( $email ) : Mailer::send_login_code( $email, $issued['code'], in_array( $lang, array( 'es', 'en', 'pt' ), true ) ? $lang : 'es' );
+		$sent = Mailer::send_login_code( $email, $issued['code'], in_array( $lang, array( 'es', 'en', 'pt' ), true ) ? $lang : 'es' );
 		if ( ! $sent ) {
 			return $this->error( 'No pudimos enviar el correo. Intenta de nuevo en unos minutos.', 502, array( 'code' => 'mail' ) );
 		}

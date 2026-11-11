@@ -73,7 +73,8 @@ final class Account_Controller extends Base_Controller {
 				'displayName'  => $user->display_name,
 				'firstName'    => (string) get_user_meta( $user->ID, 'first_name', true ),
 				'lastName'     => (string) get_user_meta( $user->ID, 'last_name', true ),
-				'email'        => $user->user_email,
+				// A member account of someone on the team has no WordPress email of its own.
+				'email'        => '' !== (string) $user->user_email ? $user->user_email : Member_Accounts::verified_email_for_user( $user ),
 				'privateEmail' => (bool) get_user_meta( $user->ID, Member_Accounts::META_PRIVATE_EMAIL, true ),
 				'providers'    => Member_Accounts::providers_for_user( $user->ID ),
 			),

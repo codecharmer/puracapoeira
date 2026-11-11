@@ -313,27 +313,6 @@ final class Mailer {
 	}
 
 	/**
-	 * Answer a sign-in request for a staff address: those accounts do not sign in with a code.
-	 * Sent instead of a code, so the page never tells a stranger which addresses are staff.
-	 */
-	public static function send_staff_login_notice( string $email ): bool {
-		$body = implode(
-			"\n",
-			array(
-				'Alguien pidió un código para entrar en ' . home_url( '/' ) . ' con este correo.',
-				'',
-				'Este correo pertenece a una cuenta del equipo de Pura Capoeira, que no entra con código.',
-				'Entra por el acceso de administración: ' . wp_login_url(),
-				'',
-				'Para editar una sede o un perfil como profesor, usa otro correo y pide a la administración que lo vincule.',
-				'Si no fuiste tú, ignora este correo.',
-			)
-		) . "\n";
-
-		return self::send( array( $email ), 'Pura Capoeira: este correo entra por el acceso de administración', $body, self::headers() );
-	}
-
-	/**
 	 * Send a validated contact message (see Contact_Message::from_array()) to the recipients.
 	 *
 	 * @param array<string, string> $data nombre, ciudad, telefono, email, mensaje.
