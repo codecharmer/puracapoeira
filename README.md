@@ -56,7 +56,8 @@ profesor es el contenido de su entrada (bloques, con el bloque *Línea de tiempo
 
 ## Cuentas (Mi cuenta)
 
-Las personas pueden entrar con **Google o Apple** (`/cuenta/`) para ver sus registros a eventos y
+Las personas pueden entrar con **Google, Apple o un código de 6 dígitos enviado a su correo**
+(`/cuenta/` y `/editar/`) para ver sus registros a eventos y
 llenar el formulario de registro más rápido. Las cuentas son usuarios de WordPress con el rol
 *Capoeirista* (sin acceso al admin); los secretos de los proveedores viven en `wp-config.php`
 (`PURA_GOOGLE_CLIENT_SECRET`, `PURA_APPLE_PRIVATE_KEY`) y el resto en **Pura Capoeira → Ajustes →

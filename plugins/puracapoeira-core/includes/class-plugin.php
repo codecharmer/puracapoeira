@@ -100,7 +100,8 @@ final class Plugin {
 			'pura-auth',
 			PURA_CORE_URL . 'assets/js/pura-auth.js',
 			array( 'pura-core-config' ),
-			PURA_CORE_VERSION,
+			// The file's own date, so a change reaches browsers that cached the old script.
+			PURA_CORE_VERSION . '-' . (string) filemtime( PURA_CORE_DIR . 'assets/js/pura-auth.js' ),
 			array( 'in_footer' => true )
 		);
 	}

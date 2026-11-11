@@ -171,6 +171,52 @@ final class Member_Accounts {
 	}
 
 	/**
+	 * Resolve an address the person proved they own (a code sent by email) to a WordPress user,
+	 * creating one when needed. Same rules as a provider sign-in: it never opens a staff account.
+	 *
+	 * @return WP_User|WP_Error
+	 */
+	public static function find_or_create_user_by_email( string $email ) {
+		$email = strtolower( trim( $email ) );
+		if ( ! is_email( $email ) ) {
+			return new WP_Error( 'email', 'El correo no es válido.' );
+		}
+
+		$user = get_user_by( 'email', $email );
+		if ( $user instanceof WP_User ) {
+			if ( ! self::can_attach_identity( $user ) ) {
+				return new WP_Error( 'admin_account', 'Esta cuenta pertenece al equipo de Pura Capoeira; entra por el acceso de administración.' );
+			}
+		} else {
+			$user = self::create_user(
+				array(
+					'sub'          => '',
+					'email'        => $email,
+					'first_name'   => '',
+					'last_name'    => '',
+					'display_name' => '',
+				),
+				$email
+			);
+			if ( is_wp_error( $user ) ) {
+				return $user;
+			}
+		}
+
+		update_user_meta( $user->ID, self::META_VERIFIED_EMAIL, $email );
+		self::claim_registrations( $user );
+
+		return $user;
+	}
+
+	/** True when the address belongs to an account that may not sign in as a member (staff). */
+	public static function is_staff_email( string $email ): bool {
+		$user = get_user_by( 'email', strtolower( trim( $email ) ) );
+
+		return $user instanceof WP_User && ! self::can_attach_identity( $user );
+	}
+
+	/**
 	 * A provider-asserted email may only attach to an account whose sole role is Capoeirista: it
 	 * must never open a staff account.
 	 */

@@ -219,7 +219,23 @@
 		"Añadir entrada": "Add entry",
 		"Añadir párrafo": "Add paragraph",
 		"Cada entrada de la línea de tiempo necesita un año y un título.": "Each timeline entry needs a year and a title.",
-		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Some parts are changed only by the administration and cannot be removed from here."
+		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Some parts are changed only by the administration and cannot be removed from here.",
+		"O entra con tu correo": "Or sign in with your email",
+		"Correo electrónico": "Email",
+		"Enviar código": "Send code",
+		"Te enviamos un código de 6 dígitos a": "We sent a 6-digit code to",
+		"Vale 10 minutos. Si no llega, revisa el correo no deseado.": "It is valid for 10 minutes. If it does not arrive, check your spam folder.",
+		"Código": "Code",
+		"Entrar": "Sign in",
+		"Usar otro correo": "Use another email",
+		"El código tiene 6 dígitos.": "The code has 6 digits.",
+		"Escribe un correo válido.": "Enter a valid email.",
+		"Ya enviamos varios códigos a ese correo. Espera una hora o revisa tu bandeja y el correo no deseado.": "We already sent several codes to that email. Wait an hour, or check your inbox and spam folder.",
+		"No pudimos enviar el correo. Intenta de nuevo en unos minutos.": "We could not send the email. Try again in a few minutes.",
+		"El código no es correcto. Revisa el correo y vuelve a escribirlo.": "The code is not correct. Check the email and type it again.",
+		"El código ya no sirve. Pide uno nuevo.": "That code no longer works. Ask for a new one.",
+		"Demasiadas solicitudes. Intenta de nuevo en unos minutos.": "Too many requests. Try again in a few minutes.",
+		"No se pudo conectar. Revisa tu conexión e intenta de nuevo.": "Could not connect. Check your connection and try again."
 	},
 	"shared": {
 		"bio-title": "Biography",
@@ -440,10 +456,10 @@
 			"hero-title": "Edit your profile and your location",
 			"hero-lead": "Keep your schedule, prices and contact details up to date. What you save here shows on the website and in the app.",
 			"loading": "Checking your session…",
-			"editor-login": "Sign in with the Google or Apple account of the email you gave the administration to edit your profile and your location.",
+			"editor-login": "Sign in with the email you gave the administration to edit your profile and your location: with your Google or Apple account, or with a code we send to that email.",
 			"login-unavailable": "Sign-in is not set up yet.",
 			"editor-no-access": "Your account is not linked to a profile or a location yet.",
-			"editor-no-access-help": "Ask the administration to add the email you signed in with. If you signed in with Apple hiding your email, sign in with Google or share your email with Apple.",
+			"editor-no-access-help": "Ask the administration to add the email you signed in with. If you signed in with Apple hiding your email, sign in with Google or with a code sent to your email.",
 			"editor-account": "My account"
 		}
 	}

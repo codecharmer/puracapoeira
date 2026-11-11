@@ -66,6 +66,140 @@
 		return { res, json };
 	}
 
+	/**
+	 * POST without a session: the sign-in routes are public.
+	 */
+	async function publicPost( path, body ) {
+		try {
+			const res = await fetch( restUrl( path ), {
+				method: 'POST',
+				credentials: 'same-origin',
+				cache: 'no-store',
+				headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+				body: JSON.stringify( body ),
+			} );
+			let json = {};
+			try {
+				json = await res.json();
+			} catch ( _err ) {
+				json = {};
+			}
+			return { res, json };
+		} catch ( _err ) {
+			return { res: { ok: false, status: 0 }, json: { ok: false, error: 'No se pudo conectar. Revisa tu conexión e intenta de nuevo.' } };
+		}
+	}
+
+	/**
+	 * Sign in with a code sent by email: `[data-email-login]` holds two forms, one for the address
+	 * and one for the code (markup from pura_theme_email_login_form()).
+	 */
+	function initEmailLogin( root ) {
+		const emailForm = root.querySelector( '[data-email-step="email"]' );
+		const codeForm = root.querySelector( '[data-email-step="code"]' );
+		const status = root.querySelector( '[data-email-status]' );
+		const shown = root.querySelector( '[data-email-shown]' );
+		if ( ! emailForm || ! codeForm ) {
+			return;
+		}
+		let ticket = '';
+
+		const say = ( message ) => {
+			if ( ! status ) {
+				return;
+			}
+			status.hidden = ! message;
+			status.textContent = message || '';
+			status.setAttribute( 'data-tv', '' );
+			const i18n = window.puraI18n;
+			if ( message && i18n && i18n.loaded && typeof i18n.apply === 'function' ) {
+				i18n.apply( root );
+			}
+		};
+		const busy = ( form, on ) => {
+			form.querySelectorAll( 'button' ).forEach( ( button ) => {
+				button.disabled = on;
+			} );
+		};
+		const step = ( name ) => {
+			emailForm.hidden = name !== 'email';
+			codeForm.hidden = name !== 'code';
+		};
+		const target = () =>
+			new URLSearchParams( window.location.search ).get( 'redirect_to' ) || root.dataset.redirect || '';
+
+		emailForm.addEventListener( 'submit', async ( event ) => {
+			event.preventDefault();
+			const email = emailForm.elements.email.value.trim();
+			if ( ! email ) {
+				emailForm.elements.email.focus();
+				return;
+			}
+			say( '' );
+			busy( emailForm, true );
+			const { res, json } = await publicPost( 'auth/email-code/start', {
+				email,
+				redirect_to: target(),
+				lang: ( window.puraI18n && window.puraI18n.lang ) || 'es',
+			} );
+			busy( emailForm, false );
+			if ( ! res.ok || ! json.ok || ! json.ticket ) {
+				say( json.error || 'No pudimos enviar el correo. Intenta de nuevo en unos minutos.' );
+				return;
+			}
+			ticket = json.ticket;
+			if ( shown ) {
+				shown.textContent = email;
+			}
+			codeForm.elements.code.value = '';
+			step( 'code' );
+			codeForm.elements.code.focus();
+		} );
+
+		codeForm.addEventListener( 'submit', async ( event ) => {
+			event.preventDefault();
+			const code = codeForm.elements.code.value.replace( /\D+/g, '' );
+			if ( code.length !== 6 ) {
+				say( 'El código tiene 6 dígitos.' );
+				codeForm.elements.code.focus();
+				return;
+			}
+			say( '' );
+			busy( codeForm, true );
+			const { res, json } = await publicPost( 'auth/email-code/verify', { ticket, code } );
+			if ( res.ok && json.ok ) {
+				// Signed in: the cookie is set. Load the destination fresh so it sees the session.
+				const to = json.redirectTo || window.location.href;
+				if ( to.split( '#' )[ 0 ] === window.location.href.split( '#' )[ 0 ] ) {
+					window.location.reload();
+				} else {
+					window.location.assign( to );
+				}
+				return;
+			}
+			busy( codeForm, false );
+			if ( json.code === 'wrong' ) {
+				say( json.error );
+				codeForm.elements.code.select();
+				return;
+			}
+			// Expired, used up or refused: start over with a new code.
+			ticket = '';
+			step( 'email' );
+			say( json.error || 'El código ya no sirve. Pide uno nuevo.' );
+		} );
+
+		const back = root.querySelector( '[data-email-back]' );
+		if ( back ) {
+			back.addEventListener( 'click', () => {
+				ticket = '';
+				say( '' );
+				step( 'email' );
+				emailForm.elements.email.focus();
+			} );
+		}
+	}
+
 	window.puraAuth = {
 		nonce,
 		refreshNonce,
@@ -73,4 +207,6 @@
 		me: () => request( 'account/me' ),
 		isLoggedIn: () => nonce().then( ( token ) => !! token ),
 	};
+
+	document.querySelectorAll( '[data-email-login]' ).forEach( initEmailLogin );
 } )();

@@ -37,9 +37,10 @@ $pura_wrapper = get_block_wrapper_attributes( array( 'class' => 'account' ) );
 					<?php echo pura_theme_provider_form( $pura_provider, $pura_account_url, 'data-account-redirect' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside the helper. ?>
 				<?php endforeach; ?>
 			</div>
-		<?php else : ?>
+		<?php elseif ( ! pura_theme_email_login_available() ) : ?>
 			<p class="pura-notice i18n-login-unavailable"><?php esc_html_e( 'El inicio de sesión aún no está configurado. Escríbenos por WhatsApp si necesitas ayuda con tu registro.', 'pura' ); ?></p>
 		<?php endif; ?>
+		<?php echo pura_theme_email_login_form( $pura_account_url, ! $pura_providers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside the helper. ?>
 		<p class="account-login__legal muted">
 			<span class="i18n-login-legal"><?php esc_html_e( 'Solo recibimos tu nombre y correo del proveedor. Consulta el', 'pura' ); ?></span>
 			<a class="i18n-login-legal-link" href="<?php echo esc_url( $pura_privacy_url ); ?>"><?php esc_html_e( 'Aviso de privacidad', 'pura' ); ?></a>.

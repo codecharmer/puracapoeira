@@ -24,21 +24,22 @@ $pura_wrapper     = get_block_wrapper_attributes( array( 'class' => 'profile-edi
 	<p class="muted i18n-loading" data-editor-loading><?php esc_html_e( 'Comprobando tu sesión…', 'pura' ); ?></p>
 
 	<section class="account-login" data-editor-logged-out hidden>
-		<p class="lead i18n-editor-login"><?php esc_html_e( 'Entra con la cuenta de Google o Apple del correo que diste a la administración para editar tu perfil y tu sede.', 'pura' ); ?></p>
+		<p class="lead i18n-editor-login"><?php esc_html_e( 'Entra con el correo que diste a la administración para editar tu perfil y tu sede: con tu cuenta de Google o Apple, o con un código que te enviamos a ese correo.', 'pura' ); ?></p>
 		<?php if ( $pura_providers ) : ?>
 			<div class="account-login__providers">
 				<?php foreach ( $pura_providers as $pura_provider ) : ?>
 					<?php echo pura_theme_provider_form( $pura_provider, $pura_editor_url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside the helper. ?>
 				<?php endforeach; ?>
 			</div>
-		<?php else : ?>
+		<?php elseif ( ! pura_theme_email_login_available() ) : ?>
 			<p class="pura-notice i18n-login-unavailable"><?php esc_html_e( 'El inicio de sesión aún no está configurado.', 'pura' ); ?></p>
 		<?php endif; ?>
+		<?php echo pura_theme_email_login_form( $pura_editor_url, ! $pura_providers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside the helper. ?>
 	</section>
 
 	<section data-editor-no-access hidden>
 		<p class="lead i18n-editor-no-access"><?php esc_html_e( 'Tu cuenta todavía no está vinculada a un perfil o a una sede.', 'pura' ); ?></p>
-		<p class="muted i18n-editor-no-access-help"><?php esc_html_e( 'Pide a la administración que agregue el correo con el que entraste. Si entraste con Apple ocultando tu correo, entra con Google o comparte tu correo con Apple.', 'pura' ); ?></p>
+		<p class="muted i18n-editor-no-access-help"><?php esc_html_e( 'Pide a la administración que agregue el correo con el que entraste. Si entraste con Apple ocultando tu correo, entra con Google o con un código enviado a tu correo.', 'pura' ); ?></p>
 		<p class="muted" data-editor-email></p>
 		<div class="btn-row">
 			<a class="btn btn--outline i18n-editor-account" href="<?php echo esc_url( $pura_account_url ); ?>"><?php esc_html_e( 'Mi cuenta', 'pura' ); ?></a>

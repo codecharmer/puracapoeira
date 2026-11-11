@@ -2190,6 +2190,15 @@ html.js .account[data-account-state="pending"] [data-account-logged-out] { displ
 .account-login .lead { margin: 0; max-width: 62ch; }
 .account-login__providers { display: flex; flex-wrap: wrap; gap: 0.85rem; }
 .account-login__form { margin: 0; }
+/* Sign in with a code sent by email: the address first, then the code. */
+.account-login__email { display: grid; gap: 1rem; max-width: 26rem; }
+.account-login__email [hidden] { display: none !important; }
+.account-login__or { margin: 0; font-weight: 600; }
+.account-login__email-form { display: grid; gap: 1rem; margin: 0; justify-items: start; }
+.account-login__email-form .field { width: 100%; }
+.account-login__email-form input[name="code"] { font-size: 1.4rem; letter-spacing: 0.3em; font-variant-numeric: tabular-nums; }
+.account-login__sent { margin: 0; overflow-wrap: anywhere; }
+.account-login__status { margin: 0; color: var(--red); }
 .account-login__legal { margin: 0; font-size: 0.9rem; max-width: 62ch; }
 .account-login__legal a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
 
@@ -2284,6 +2293,8 @@ html.js .event-registration[data-event-auth-state="pending"] .event-login { disp
   .account-login__providers { flex-direction: column; }
   .account-login__form,
   .account-login__providers .btn--provider { width: 100%; }
+  .account-login__email { max-width: none; }
+  .account-login__email-form > .btn { width: 100%; }
   .account-actions .btn { width: 100%; }
 }
 

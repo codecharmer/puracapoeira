@@ -72,6 +72,64 @@ if ( ! function_exists( 'pura_theme_current_post' ) ) {
 	}
 }
 
+if ( ! function_exists( 'pura_theme_email_login_available' ) ) {
+	/**
+	 * True when the plugin can sign people in with a code sent by email.
+	 */
+	function pura_theme_email_login_available(): bool {
+		return class_exists( 'Pura\Core\Auth\Email_Code' );
+	}
+}
+
+if ( ! function_exists( 'pura_theme_email_login_form' ) ) {
+	/**
+	 * Sign in with a six-digit code sent by email, for people without a Google or Apple account:
+	 * one form for the address, one for the code. Driven by pura-auth.js; prints no user data.
+	 *
+	 * @param string $redirect_to Where to land after signing in.
+	 * @param bool   $alone       True when it is the only way to sign in (no "or" heading).
+	 */
+	function pura_theme_email_login_form( string $redirect_to, bool $alone = false ): string {
+		if ( ! pura_theme_email_login_available() ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<div class="account-login__email" data-email-login data-redirect="<?php echo esc_url( $redirect_to ); ?>">
+			<?php if ( ! $alone ) : ?>
+				<p class="account-login__or" data-tv><?php esc_html_e( 'O entra con tu correo', 'pura' ); ?></p>
+			<?php endif; ?>
+			<form class="account-login__email-form" data-email-step="email" novalidate>
+				<label class="field">
+					<span data-tv><?php esc_html_e( 'Correo electrónico', 'pura' ); ?></span>
+					<input type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required />
+				</label>
+				<button type="submit" class="btn btn--primary" data-tv><?php esc_html_e( 'Enviar código', 'pura' ); ?></button>
+			</form>
+			<form class="account-login__email-form" data-email-step="code" novalidate hidden>
+				<p class="account-login__sent">
+					<span data-tv><?php esc_html_e( 'Te enviamos un código de 6 dígitos a', 'pura' ); ?></span>
+					<strong data-email-shown></strong>.
+					<span data-tv><?php esc_html_e( 'Vale 10 minutos. Si no llega, revisa el correo no deseado.', 'pura' ); ?></span>
+				</p>
+				<label class="field">
+					<span data-tv><?php esc_html_e( 'Código', 'pura' ); ?></span>
+					<input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="12" required />
+				</label>
+				<div class="btn-row">
+					<button type="submit" class="btn btn--primary" data-tv><?php esc_html_e( 'Entrar', 'pura' ); ?></button>
+					<button type="button" class="btn btn--ghost" data-email-back data-tv><?php esc_html_e( 'Usar otro correo', 'pura' ); ?></button>
+				</div>
+			</form>
+			<p class="account-login__status" data-email-status role="status" aria-live="polite" hidden></p>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+}
+
 if ( ! function_exists( 'pura_theme_provider_form' ) ) {
 	/**
 	 * One "Continuar con Google/Apple" button: a tiny POST form to /pura/v1/auth/{provider}/start

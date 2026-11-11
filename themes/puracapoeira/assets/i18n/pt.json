@@ -217,7 +217,23 @@
 		"Añadir entrada": "Adicionar entrada",
 		"Añadir párrafo": "Adicionar parágrafo",
 		"Cada entrada de la línea de tiempo necesita un año y un título.": "Cada entrada da linha do tempo precisa de um ano e um título.",
-		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Há partes que só a administração altera e não podem ser removidas daqui."
+		"Hay partes de la trayectoria que solo cambia la administración y no se pueden quitar desde aquí.": "Há partes que só a administração altera e não podem ser removidas daqui.",
+		"O entra con tu correo": "Ou entre com seu e-mail",
+		"Correo electrónico": "E-mail",
+		"Enviar código": "Enviar código",
+		"Te enviamos un código de 6 dígitos a": "Enviamos um código de 6 dígitos para",
+		"Vale 10 minutos. Si no llega, revisa el correo no deseado.": "Vale por 10 minutos. Se não chegar, veja a caixa de spam.",
+		"Código": "Código",
+		"Entrar": "Entrar",
+		"Usar otro correo": "Usar outro e-mail",
+		"El código tiene 6 dígitos.": "O código tem 6 dígitos.",
+		"Escribe un correo válido.": "Digite um e-mail válido.",
+		"Ya enviamos varios códigos a ese correo. Espera una hora o revisa tu bandeja y el correo no deseado.": "Já enviamos vários códigos para esse e-mail. Espere uma hora ou veja sua caixa de entrada e o spam.",
+		"No pudimos enviar el correo. Intenta de nuevo en unos minutos.": "Não conseguimos enviar o e-mail. Tente de novo em alguns minutos.",
+		"El código no es correcto. Revisa el correo y vuelve a escribirlo.": "O código não está correto. Veja o e-mail e digite de novo.",
+		"El código ya no sirve. Pide uno nuevo.": "Esse código não vale mais. Peça um novo.",
+		"Demasiadas solicitudes. Intenta de nuevo en unos minutos.": "Muitas solicitações. Tente de novo em alguns minutos.",
+		"No se pudo conectar. Revisa tu conexión e intenta de nuevo.": "Não foi possível conectar. Verifique sua conexão e tente de novo."
 	},
 	"shared": {
 		"bio-title": "Biografia",
@@ -438,10 +454,10 @@
 			"hero-title": "Edite seu perfil e sua sede",
 			"hero-lead": "Mantenha em dia seus horários, preços e dados de contato. O que você salvar aqui aparece no site e no app.",
 			"loading": "Verificando sua sessão…",
-			"editor-login": "Entre com a conta Google ou Apple do e-mail que você deu à administração para editar seu perfil e sua sede.",
+			"editor-login": "Entre com o e-mail que você deu à administração para editar seu perfil e sua sede: com sua conta Google ou Apple, ou com um código que enviamos para esse e-mail.",
 			"login-unavailable": "O login ainda não está configurado.",
 			"editor-no-access": "Sua conta ainda não está vinculada a um perfil ou a uma sede.",
-			"editor-no-access-help": "Peça à administração para adicionar o e-mail com que você entrou. Se entrou com a Apple ocultando seu e-mail, entre com o Google ou compartilhe seu e-mail com a Apple.",
+			"editor-no-access-help": "Peça à administração para adicionar o e-mail com que você entrou. Se entrou com a Apple ocultando seu e-mail, entre com o Google ou com um código enviado para o seu e-mail.",
 			"editor-account": "Minha conta"
 		}
 	}

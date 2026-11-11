@@ -258,6 +258,82 @@ final class Mailer {
 	}
 
 	/**
+	 * Send the six-digit sign-in code to the person who asked for it.
+	 *
+	 * @param string $lang es, en or pt.
+	 */
+	public static function send_login_code( string $email, string $code, string $lang = 'es' ): bool {
+		$mail = self::build_login_code_mail( $code, $lang, home_url( '/' ), (int) ( Auth\Email_Code::TTL / 60 ) );
+
+		return self::send( array( $email ), $mail['subject'], $mail['body'], self::headers() );
+	}
+
+	/**
+	 * Subject and plain-text body of the sign-in code mail. Pure: no WordPress calls.
+	 *
+	 * @return array{subject:string,body:string}
+	 */
+	public static function build_login_code_mail( string $code, string $lang, string $site_url, int $minutes ): array {
+		$texts = array(
+			'es' => array(
+				'%s es tu código de Pura Capoeira',
+				'Tu código para entrar en %s',
+				'Vale %d minutos y solo se puede usar una vez.',
+				'Si no lo pediste, ignora este correo: nadie entra sin el código.',
+			),
+			'en' => array(
+				'%s is your Pura Capoeira code',
+				'Your code to sign in to %s',
+				'It is valid for %d minutes and can be used only once.',
+				'If you did not ask for it, ignore this email: nobody can sign in without the code.',
+			),
+			'pt' => array(
+				'%s é o seu código da Pura Capoeira',
+				'Seu código para entrar em %s',
+				'Vale por %d minutos e só pode ser usado uma vez.',
+				'Se você não pediu, ignore este e-mail: ninguém entra sem o código.',
+			),
+		);
+		$text  = $texts[ $lang ] ?? $texts['es'];
+
+		return array(
+			'subject' => sprintf( $text[0], $code ),
+			'body'    => implode(
+				"\n",
+				array(
+					sprintf( $text[1], $site_url ),
+					'',
+					'    ' . $code,
+					'',
+					sprintf( $text[2], $minutes ),
+					$text[3],
+				)
+			) . "\n",
+		);
+	}
+
+	/**
+	 * Answer a sign-in request for a staff address: those accounts do not sign in with a code.
+	 * Sent instead of a code, so the page never tells a stranger which addresses are staff.
+	 */
+	public static function send_staff_login_notice( string $email ): bool {
+		$body = implode(
+			"\n",
+			array(
+				'Alguien pidió un código para entrar en ' . home_url( '/' ) . ' con este correo.',
+				'',
+				'Este correo pertenece a una cuenta del equipo de Pura Capoeira, que no entra con código.',
+				'Entra por el acceso de administración: ' . wp_login_url(),
+				'',
+				'Para editar una sede o un perfil como profesor, usa otro correo y pide a la administración que lo vincule.',
+				'Si no fuiste tú, ignora este correo.',
+			)
+		) . "\n";
+
+		return self::send( array( $email ), 'Pura Capoeira: este correo entra por el acceso de administración', $body, self::headers() );
+	}
+
+	/**
 	 * Send a validated contact message (see Contact_Message::from_array()) to the recipients.
 	 *
 	 * @param array<string, string> $data nombre, ciudad, telefono, email, mensaje.
