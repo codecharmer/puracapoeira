@@ -23,6 +23,7 @@ final class Content_Migrations {
 		'create_app_page',
 		'add_app_nav_link',
 		'create_editar_page',
+		'refresh_privacy_page_member_accounts',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -97,6 +98,14 @@ final class Content_Migrations {
 
 	public static function create_app_page(): bool {
 		return self::publish_page_from_pattern( self::APP_PAGE );
+	}
+
+	/**
+	 * /privacidad/ holds a copy of its pattern from the day it was imported. This puts the current
+	 * text there: member accounts and avisos by sede (app version 0.2.0).
+	 */
+	public static function refresh_privacy_page_member_accounts(): bool {
+		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Cuenta de miembro' );
 	}
 
 	/**
@@ -184,5 +193,46 @@ final class Content_Migrations {
 		Settings::update( array( $page['option'] => (int) $post_id ) );
 
 		return true;
+	}
+
+	/**
+	 * Replace a page's content with its pattern as the pattern is now. The text it replaces stays
+	 * in the page's revisions.
+	 *
+	 * @param string $slug    Page slug.
+	 * @param string $pattern Pattern slug.
+	 * @param string $marker  Words that only the new text has. While the pattern does not show
+	 *                        them an earlier copy of the file is being read, and the change waits.
+	 */
+	private static function refresh_page_from_pattern( string $slug, string $pattern, string $marker ): bool {
+		$page = get_page_by_path( $slug );
+		if ( ! $page ) {
+			// Nothing to refresh: the importer builds the page from the pattern as it is now.
+			return true;
+		}
+
+		$registered = \WP_Block_Patterns_Registry::get_instance()->get_registered( $pattern );
+		if ( ! $registered ) {
+			// Pattern cache not refreshed yet; try again on the next request.
+			return false;
+		}
+
+		$blocks  = parse_blocks( (string) $registered['content'] );
+		$blocks  = function_exists( 'resolve_pattern_blocks' ) ? resolve_pattern_blocks( $blocks ) : $blocks;
+		$content = serialize_blocks( $blocks );
+		if ( false === strpos( $content, $marker ) ) {
+			return false;
+		}
+
+		// wp_update_post() takes slashed data.
+		$result = wp_update_post(
+			array(
+				'ID'           => $page->ID,
+				'post_content' => wp_slash( $content ),
+			),
+			true
+		);
+
+		return ! is_wp_error( $result ) && 0 !== $result;
 	}
 }

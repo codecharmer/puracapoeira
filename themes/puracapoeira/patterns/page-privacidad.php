@@ -17,7 +17,7 @@
 	<!-- wp:group {"className":"container","layout":{"type":"default"}} -->
 	<div class="wp-block-group container">
 		<!-- wp:paragraph {"className":"eyebrow"} -->
-		<p class="eyebrow">Última actualización: 12 de octubre de 2026</p>
+		<p class="eyebrow">Última actualización: 19 de noviembre de 2026</p>
 		<!-- /wp:paragraph -->
 
 		<!-- wp:heading {"level":1,"className":"display"} -->
@@ -56,7 +56,10 @@
 					<li><em>Registro a eventos.</em> Cuando te registras a un evento desde la app, enviamos al sitio web de Pura Capoeira los datos que escribes en el formulario: nombre y apellidos, apelido, correo electrónico, teléfono, fecha de nacimiento, ciudad, grupo y profesor, graduación, años de práctica, días de asistencia, talla de playera, comentarios, contacto de emergencia y, si lo adjuntas, la imagen o PDF de tu comprobante de pago. Si eres menor de edad, también el nombre y teléfono de tu madre, padre o tutor. Los usamos para organizar el evento y contactarte sobre él. La app guarda además una copia de tu registro (sin el comprobante) para que el personal de la escuela pueda consultarla.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
-					<li><em>Avisos (notificaciones).</em> Si activas las notificaciones, guardamos un identificador técnico de tu dispositivo (token de notificaciones) para enviarte avisos de la escuela. No está vinculado a tu nombre. Puedes desactivarlas en los ajustes del teléfono.</li>
+					<li><em>Cuenta de miembro.</em> Desde la versión 0.2.0 la app se usa con una cuenta; en la versión anterior la cuenta es opcional. Guardamos tu correo y lo que escribes en tu perfil: tu apelido, tu fecha de nacimiento y, si los das, tu nombre completo, tu teléfono, tu sexo, tu corda y tu sede. Guardamos también si tu membresía del mes está pagada (lo registra tu sede; la app no cobra). Si entras con Apple o Google recibimos de ellos tu correo y un identificador; de Google, además, tu nombre y la dirección de tu foto de perfil; de Apple, la autorización que nos permite revocar ese acceso cuando eliminas tu cuenta. Tu apelido, tu corda y tu sede los ven los profesores y la administración de la escuela. Tu nombre completo y tu contacto solo los ven la administración de tu sede y la de la escuela. Al iniciar sesión, el identificador de notificaciones de tu teléfono queda vinculado a tu cuenta. Las cuentas propias son a partir de los 13 años y usamos tu fecha de nacimiento para comprobarlo. Puedes exportar tus datos y eliminar tu cuenta en la app (Más → Mi cuenta → Mis datos): se borran tus datos personales y los registros de pago de la escuela se conservan sin tu nombre.</li>
+					<!-- /wp:list-item -->
+					<!-- wp:list-item -->
+					<li><em>Avisos (notificaciones).</em> Si activas las notificaciones, guardamos un identificador técnico de tu dispositivo (token de notificaciones) para enviarte avisos de la escuela. Si eliges tu sede en la app, guardamos esa sede junto al identificador para enviarte los avisos de tu sede. Sin una sesión iniciada, ninguno de los dos está vinculado a tu nombre. Puedes desactivarlas en los ajustes del teléfono.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
 					<li><em>Personal de la escuela.</em> Los profesores y administradores inician sesión con su correo electrónico. Guardamos ese correo y su rol.</li>
@@ -76,11 +79,11 @@
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>Cuánto tiempo.</strong> Los registros a eventos, hasta un año después del evento. Los tokens de notificaciones, mientras la app esté instalada con notificaciones activas. Las cuentas de personal, mientras la persona forme parte del personal.</p>
+				<p><strong>Cuánto tiempo.</strong> Los registros a eventos, hasta un año después del evento. Los tokens de notificaciones, mientras la app esté instalada con notificaciones activas. Las cuentas, hasta que las elimines. Los roles del personal, mientras la persona forme parte del personal.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>Tus derechos.</strong> Puedes pedir acceso, corrección o eliminación de tus datos escribiendo a <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. El personal puede eliminar su cuenta desde la app (Más → Administración → Eliminar mi cuenta). Según tu país aplican la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (México), la Lei Geral de Proteção de Dados (Brasil) y las leyes estatales de privacidad de Estados Unidos.</p>
+				<p><strong>Tus derechos.</strong> Puedes pedir acceso, corrección o eliminación de tus datos escribiendo a <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. También puedes exportar tus datos y eliminar tu cuenta desde la app (Más → Mi cuenta → Mis datos). Según tu país aplican la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (México), la Lei Geral de Proteção de Dados (Brasil) y las leyes estatales de privacidad de Estados Unidos.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
@@ -121,7 +124,10 @@
 					<li><em>Event registration.</em> When you register for an event in the app, the form data is sent to the Pura Capoeira website: first and last name, apelido, email, phone, date of birth, city, group and teacher, grade, years of practice, days attending, T-shirt size, comments, emergency contact and, if you attach it, the image or PDF of your payment receipt. For minors, the parent's or guardian's name and phone as well. We use it to organize the event and contact you about it. The app also keeps a copy of your registration (without the receipt) so school staff can review it.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
-					<li><em>Announcements (notifications).</em> If you turn on notifications, we store a technical device identifier (push token) to send you school announcements. It is not linked to your name. You can turn notifications off in the phone settings.</li>
+					<li><em>Member account.</em> From version 0.2.0 the app is used with an account; in the earlier version the account is optional. We store your email and what you enter in your profile: your apelido, your date of birth and, if you give them, your full name, phone, sex, corda and location. We also store whether your month's membership is paid (recorded by your location; the app does not charge). If you sign in with Apple or Google we receive your email and an identifier from them; from Google, also your name and the address of your profile picture; from Apple, the authorization that lets us revoke that access when you delete your account. Your apelido, corda and location are seen by the school's instructors and administration. Your full name and contact details are seen only by your location's administration and the school's. When you sign in, your phone's push identifier is linked to your account. Own accounts start at age 13, and we use your date of birth to check it. You can export your data and delete your account in the app (More → My account → My data): your personal data is erased and the school's payment records are kept without your name.</li>
+					<!-- /wp:list-item -->
+					<!-- wp:list-item -->
+					<li><em>Announcements (notifications).</em> If you turn on notifications, we store a technical device identifier (push token) to send you school announcements. If you choose your location in the app, we store that location with the identifier to send you your location's announcements. While you are not signed in, neither is linked to your name. You can turn notifications off in the phone settings.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
 					<li><em>School staff.</em> Professors and administrators sign in with their email. We store that email and their role.</li>
@@ -141,11 +147,11 @@
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>For how long.</strong> Event registrations up to one year after the event; push tokens while the app is installed with notifications on; staff accounts while the person is on staff.</p>
+				<p><strong>For how long.</strong> Event registrations up to one year after the event; push tokens while the app is installed with notifications on; accounts until you delete them; staff roles while the person is on staff.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>Your rights.</strong> Ask for access, correction or deletion at <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. Staff can delete their account in the app (More → Administration → Delete my account). Depending on your country, Mexico's LFPDPPP, Brazil's LGPD and US state privacy laws apply.</p>
+				<p><strong>Your rights.</strong> Ask for access, correction or deletion at <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. You can also export your data and delete your account in the app (More → My account → My data). Depending on your country, Mexico's LFPDPPP, Brazil's LGPD and US state privacy laws apply.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
@@ -186,7 +192,10 @@
 					<li><em>Inscrição em eventos.</em> Ao se inscrever em um evento pelo app, os dados do formulário são enviados ao site da Pura Capoeira: nome e sobrenome, apelido, e-mail, telefone, data de nascimento, cidade, grupo e professor, graduação, anos de prática, dias de participação, tamanho da camiseta, comentários, contato de emergência e, se anexado, a imagem ou PDF do comprovante de pagamento. Para menores de idade, também o nome e telefone do responsável. Usamos para organizar o evento e entrar em contato. O app também guarda uma cópia da inscrição (sem o comprovante) para a equipe da escola consultar.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
-					<li><em>Avisos (notificações).</em> Se você ativar as notificações, guardamos um identificador técnico do dispositivo (token) para enviar avisos da escola. Não está ligado ao seu nome. Você pode desativar nas configurações do telefone.</li>
+					<li><em>Conta de membro.</em> A partir da versão 0.2.0 o app é usado com uma conta; na versão anterior a conta é opcional. Guardamos seu e-mail e o que você escreve no seu perfil: seu apelido, sua data de nascimento e, se informar, seu nome completo, telefone, sexo, corda e núcleo. Guardamos também se a mensalidade do mês está paga (registrada pelo seu núcleo; o app não cobra). Se entrar com Apple ou Google, recebemos deles seu e-mail e um identificador; do Google, também seu nome e o endereço da sua foto de perfil; da Apple, a autorização que nos permite revogar esse acesso quando você exclui sua conta. Seu apelido, sua corda e seu núcleo são vistos pelos professores e pela administração da escola. Seu nome completo e contato são vistos apenas pela administração do seu núcleo e da escola. Ao entrar, o identificador de notificações do seu telefone fica vinculado à sua conta. Contas próprias a partir dos 13 anos; usamos sua data de nascimento para verificar. Você pode exportar seus dados e excluir sua conta no app (Mais → Minha conta → Meus dados): seus dados pessoais são apagados e os registros de pagamento da escola ficam sem o seu nome.</li>
+					<!-- /wp:list-item -->
+					<!-- wp:list-item -->
+					<li><em>Avisos (notificações).</em> Se você ativar as notificações, guardamos um identificador técnico do dispositivo (token) para enviar avisos da escola. Se você escolher seu núcleo no app, guardamos esse núcleo junto ao identificador para enviar os avisos do seu núcleo. Enquanto você não entrar com uma conta, nenhum dos dois está ligado ao seu nome. Você pode desativar nas configurações do telefone.</li>
 					<!-- /wp:list-item -->
 					<!-- wp:list-item -->
 					<li><em>Equipe da escola.</em> Professores e administradores entram com o e-mail. Guardamos esse e-mail e a função.</li>
@@ -206,11 +215,11 @@
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>Por quanto tempo.</strong> Inscrições, até um ano após o evento; tokens, enquanto o app estiver instalado com notificações ativas; contas da equipe, enquanto a pessoa fizer parte da equipe.</p>
+				<p><strong>Por quanto tempo.</strong> Inscrições, até um ano após o evento; tokens, enquanto o app estiver instalado com notificações ativas; contas, até você excluí-las; funções da equipe, enquanto a pessoa fizer parte da equipe.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
-				<p><strong>Seus direitos.</strong> Peça acesso, correção ou exclusão em <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. A equipe pode excluir a conta no app (Mais → Administração → Excluir minha conta). Conforme o país, aplicam-se a LGPD (Brasil), a LFPDPPP (México) e as leis estaduais de privacidade dos EUA.</p>
+				<p><strong>Seus direitos.</strong> Peça acesso, correção ou exclusão em <a href="https://puracapoeira.com/contacto/">https://puracapoeira.com/contacto/</a>. Você também pode exportar seus dados e excluir sua conta no app (Mais → Minha conta → Meus dados). Conforme o país, aplicam-se a LGPD (Brasil), a LFPDPPP (México) e as leis estaduais de privacidade dos EUA.</p>
 				<!-- /wp:paragraph -->
 
 				<!-- wp:paragraph -->
