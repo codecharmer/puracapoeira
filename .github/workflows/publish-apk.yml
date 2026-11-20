@@ -8,6 +8,11 @@ name: Publish Android APK
 # never touch. Each run replaces the canonical pura-capoeira.apk and keeps a
 # versioned copy next to it.
 #
+# Nothing is uploaded before "Check Android APK" (check-apk.yml) has installed
+# the file on Android emulators, opened the app and installed it as an update
+# over the file the site offers. The file that is uploaded is the one that was
+# checked, not a second download.
+#
 # Run it from Actions → "Publish Android APK" with the artifact URL printed by
 # `eas build -p android --profile preview` (or `eas build:list`).
 on:
@@ -22,23 +27,35 @@ on:
         required: false
         type: string
 
-concurrency:
-  # Same group as the WordPress deploy so the two never run at once.
-  group: production-deploy
-  cancel-in-progress: false
-
 jobs:
+  check:
+    name: Check
+    uses: ./.github/workflows/check-apk.yml
+    with:
+      apk_url: ${{ inputs.apk_url }}
+
   publish:
-    name: Download, check, upload
+    name: Upload
+    needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: ${{ vars.WP_DEPLOY_ENABLED == 'true' }}
+    concurrency:
+      # Same group as the WordPress deploy so the two never run at once. On the job, not the
+      # workflow, so the check does not hold up a deploy.
+      group: production-deploy
+      cancel-in-progress: false
     permissions:
       contents: read
 
     steps:
-      - name: Download the APK
-        run: curl -fSL --retry 3 -o pura-capoeira.apk "${{ inputs.apk_url }}"
+      - name: Get the APK that passed the check
+        uses: actions/download-artifact@v4
+        with:
+          name: apk
+
+      - name: Give it the published name
+        run: mv app.apk pura-capoeira.apk
 
       - name: Sanity-check the APK
         run: |
