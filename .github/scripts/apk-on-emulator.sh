@@ -41,7 +41,7 @@ boot() {
 	mkdir -p "$ANDROID_AVD_HOME"
 	echo no | "$avdmanager" create avd --force --name check --package "$IMAGE" --device pixel_6 > /dev/null
 	# Room for two installs of a 120 MB app.
-	printf 'disk.dataPartition.size=6G\nhw.ramSize=3072\n' >> "$ANDROID_AVD_HOME/check.avd/config.ini"
+	printf 'disk.dataPartition.size=6G\nhw.ramSize=4096\nhw.cpu.ncore=4\n' >> "$ANDROID_AVD_HOME/check.avd/config.ini"
 
 	nohup "$ANDROID_HOME/emulator/emulator" -avd check -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim \
 		> "$OUT/emulator.txt" 2>&1 &
@@ -61,6 +61,14 @@ boot() {
 		fi
 	done
 	adb shell input keyevent 82 > /dev/null 2>&1 || true
+	# A slow emulator shows "Pixel Launcher isn't responding" over whatever is open. The system closes
+	# such an app quietly instead; an app of ours that stops responding is found in the log (see stuck).
+	adb shell settings put global hide_error_dialogs 1 > /dev/null 2>&1 || true
+	for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+		adb shell settings put global "$scale" 0 > /dev/null 2>&1 || true
+	done
+	# The first minute after the start is the busiest; let it pass before anything is measured.
+	sleep 45
 	echo "Up after ${waited}s: Android $(prop ro.build.version.release), API $(prop ro.build.version.sdk), $(prop ro.product.cpu.abilist)"
 }
 
@@ -84,13 +92,21 @@ crashed() {
 	grep -qE "Process: $PKG|>>> $PKG <<<" <<< "$log"
 }
 
+stuck() {
+	local log
+	log=$(adb logcat -d -s ActivityManager:E 2> /dev/null || true)
+	grep -q "ANR in $PKG" <<< "$log"
+}
+
 # Prints the text the app shows. Fails when the screen could not be read.
 screen_texts() {
 	adb shell rm -f /sdcard/window.xml > /dev/null 2>&1 || true
+	rm -f "$OUT/wait-button.txt"
 	adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || return 1
 	adb exec-out cat /sdcard/window.xml > "$OUT/window.xml" 2> /dev/null || return 1
 	[ -s "$OUT/window.xml" ] || return 1
-	python3 - "$OUT/window.xml" "$PKG" << 'PY'
+	python3 - "$OUT/window.xml" "$PKG" "$OUT/wait-button.txt" << 'PY'
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -99,13 +115,19 @@ try:
 except ET.ParseError:
     sys.exit(1)
 seen = []
+wait_button = ''
 for node in root.iter('node'):
     if node.get('package') != sys.argv[2]:
+        if node.get('package') == 'android' and node.get('text') == 'Wait':
+            left, top, right, bottom = map(int, re.findall(r'\d+', node.get('bounds') or '0 0 0 0'))
+            wait_button = '%d %d' % ((left + right) // 2, (top + bottom) // 2)
         continue
     for key in ('text', 'content-desc'):
         value = ' '.join((node.get(key) or '').split())
         if value and value not in seen:
             seen.append(value)
+with open(sys.argv[3], 'w') as out:
+    out.write(wait_button)
 print('\n'.join(seen))
 PY
 }
@@ -113,14 +135,14 @@ PY
 # open_app <label>: opens the app and waits for its first screen. Fails when the app crashed, is not
 # on screen, or shows no text (an app stuck on its splash screen shows none).
 open_app() {
-	local label=$1 texts="" tries=0 focus pid
+	local label=$1 texts="" tries=0 focus pid x y
 
 	adb logcat -c > /dev/null 2>&1 || true
 	adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || true
 	while [ "$tries" -lt 30 ]; do
 		sleep 5
 		tries=$((tries + 1))
-		if crashed; then
+		if crashed || stuck; then
 			break
 		fi
 		if texts=$(screen_texts) && [ -n "$texts" ]; then
@@ -129,6 +151,11 @@ open_app() {
 		# A system question in front of the app (for example "Allow notifications?"): answer no, look again.
 		if grep -q 'permissioncontroller' "$OUT/window.xml" 2> /dev/null; then
 			adb shell input keyevent 4 > /dev/null 2>&1 || true
+		fi
+		# Another app's "isn't responding" window in front of ours: choose "Wait", look again.
+		if [ -s "$OUT/wait-button.txt" ]; then
+			read -r x y < "$OUT/wait-button.txt" || true
+			adb shell input tap "$x" "$y" > /dev/null 2>&1 || true
 		fi
 	done
 
@@ -141,6 +168,10 @@ open_app() {
 	if crashed; then
 		adb logcat -d -b crash 2> /dev/null | tail -60 || true
 		echo "::error::$label: the app crashed"
+		return 1
+	fi
+	if stuck; then
+		echo "::error::$label: the app stopped responding"
 		return 1
 	fi
 	pid=$(adb shell pidof "$PKG" 2> /dev/null | tr -d '\r' || true)
