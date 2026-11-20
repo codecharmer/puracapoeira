@@ -6,7 +6,14 @@ name: Publish Android APK
 # EAS artifact links expire after ~two weeks, so the durable download the site
 # links to lives in wp-content/uploads/app/, which the theme/plugin deploys
 # never touch. Each run replaces the canonical pura-capoeira.apk and keeps a
-# versioned copy next to it.
+# copy next to it whose name carries the version and the build number
+# (pura-capoeira-0.2.0-8.apk).
+#
+# The address of the download never changes, but a browser saves the file under
+# that versioned name, because the folder's .htaccess sends the name along with
+# the canonical file. On a phone that still has an older download, the names
+# show which file is which. Version and build number are read from the APK
+# itself, not typed by whoever starts the run.
 #
 # Nothing is uploaded before "Check Android APK" (check-apk.yml) has installed
 # the file on Android emulators, opened the app and installed it as an update
@@ -21,10 +28,6 @@ on:
       apk_url:
         description: EAS build artifact URL of the .apk
         required: true
-        type: string
-      version:
-        description: Version label for the archived copy (e.g. 0.1.0-7); defaults to the UTC date
-        required: false
         type: string
 
 jobs:
@@ -47,6 +50,11 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: read
+    env:
+      DOWNLOAD_URL: https://puracapoeira.com/wp-content/uploads/app/pura-capoeira.apk
+      # What the check read in the file.
+      VERSION_NAME: ${{ needs.check.outputs.version_name }}
+      VERSION_CODE: ${{ needs.check.outputs.version_code }}
 
     steps:
       - name: Get the APK that passed the check
@@ -66,6 +74,19 @@ jobs:
           unzip -l pura-capoeira.apk | grep -q 'AndroidManifest.xml' \
             || { echo 'No AndroidManifest.xml inside; not an APK.'; exit 1; }
 
+      # From the file, not from whoever starts the run, so the name cannot say another version
+      # than the file has.
+      - name: Work out the versioned name
+        run: |
+          export LC_ALL=C
+          echo "The file is version ${VERSION_NAME:-(none)}, build ${VERSION_CODE:-(none)}."
+          if ! [[ "$VERSION_NAME" =~ ^[0-9A-Za-z][0-9A-Za-z._-]*$ && "$VERSION_CODE" =~ ^[0-9]+$ ]]; then
+            echo "::error::The version in the file cannot be used in a file name. Nothing was uploaded."
+            exit 1
+          fi
+          echo "VERSIONED=pura-capoeira-${VERSION_NAME}-${VERSION_CODE}.apk" >> "$GITHUB_ENV"
+          echo "Versioned name: pura-capoeira-${VERSION_NAME}-${VERSION_CODE}.apk"
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -82,7 +103,8 @@ jobs:
              || { echo 'DEPLOY_PATH does not contain a WordPress install (no wp-config.php / wp-content)'; exit 1; }"
 
       # Apache serves .apk as application/octet-stream by default; the one-line
-      # .htaccess pins the real MIME type so Android installs it cleanly.
+      # .htaccess pins the real MIME type so Android installs it cleanly. The name
+      # of the download is added further down, once the new file is in place.
       - name: Prepare uploads/app (folder and APK MIME type)
         run: |
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
@@ -94,13 +116,33 @@ jobs:
       # No --delete: older versioned APKs stay available next to the canonical file.
       - name: Upload the canonical APK and a versioned copy
         run: |
-          version='${{ inputs.version }}'
-          [ -n "$version" ] || version=$(date -u +%Y%m%d-%H%M)
-          cp pura-capoeira.apk "pura-capoeira-${version}.apk"
+          cp pura-capoeira.apk "$VERSIONED"
           rsync -az \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
-            pura-capoeira.apk "pura-capoeira-${version}.apk" \
+            pura-capoeira.apk "$VERSIONED" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app/"
+
+      # Content-Disposition makes a browser save the canonical file under the versioned name.
+      # Only that file gets it: the versioned copies already carry their own names.
+      - name: Write the .htaccess that names the download
+        run: |
+          cat > htaccess <<EOF
+          AddType application/vnd.android.package-archive .apk
+          <IfModule mod_headers.c>
+            <Files "pura-capoeira.apk">
+              Header set Content-Disposition "attachment; filename=\"$VERSIONED\""
+            </Files>
+          </IfModule>
+          EOF
+          cat htaccess
+
+      # After the APK, so the name never runs ahead of the file.
+      - name: Upload the .htaccess
+        run: |
+          rsync -az \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            htaccess \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/wp-content/uploads/app/.htaccess"
 
       - name: Fix ownership and permissions
         run: |
@@ -119,7 +161,33 @@ jobs:
                /usr/local/cpanel/scripts/ea-nginx clear_cache puracapoeirasite && /usr/local/cpanel/scripts/ea-nginx reload; \
              else echo 'ea-nginx not present; nothing to clear.'; fi"
 
-      - name: Verify over HTTP
+      # The download as a member gets it: saved under the name the site sends, then compared
+      # with the file that passed the check.
+      - name: Download it as a browser does and compare
         run: |
-          curl -fsSI https://puracapoeira.com/wp-content/uploads/app/pura-capoeira.apk \
-            | sed -n '1p;/^content-length/Ip;/^content-type/Ip'
+          mkdir downloaded
+          ( cd downloaded && curl -fsS --retry 3 -D ../headers.txt -O -J "$DOWNLOAD_URL" )
+          grep -iE '^(HTTP/|content-length:|content-type:|content-disposition:)' headers.txt || true
+          saved=$(ls downloaded)
+          echo "Saved as: $saved"
+          if ! cmp -s pura-capoeira.apk "downloaded/$saved"; then
+            echo "::error::The site does not serve the file that was uploaded."
+            exit 1
+          fi
+          if ! grep -qi '^content-type: application/vnd.android.package-archive' headers.txt; then
+            echo "::error::The site does not send the APK type with the file."
+            exit 1
+          fi
+          if [ "$saved" != "$VERSIONED" ]; then
+            echo "::error::The file is published, but browsers save it as $saved, not as $VERSIONED."
+            exit 1
+          fi
+
+      - name: Say what was published
+        run: |
+          {
+            echo "Published **version ${VERSION_NAME} (build ${VERSION_CODE})**."
+            echo
+            echo "- Download: $DOWNLOAD_URL"
+            echo "- Browsers save it as \`$VERSIONED\`"
+          } >> "$GITHUB_STEP_SUMMARY"

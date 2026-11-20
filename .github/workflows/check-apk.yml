@@ -22,6 +22,14 @@ on:
         description: URL of the .apk to check
         required: true
         type: string
+    # "Publish Android APK" names the download after these.
+    outputs:
+      version_name:
+        description: The version inside the file (for example 0.2.0)
+        value: ${{ jobs.inspect.outputs.version_name }}
+      version_code:
+        description: The build number inside the file (versionCode)
+        value: ${{ jobs.inspect.outputs.version_code }}
   # A change to the check is tried against the published APK before it reaches master.
   push:
     branches-ignore: [master]
@@ -46,6 +54,8 @@ jobs:
     timeout-minutes: 15
     outputs:
       package: ${{ steps.read.outputs.package }}
+      version_name: ${{ steps.read.outputs.version_name }}
+      version_code: ${{ steps.read.outputs.version_code }}
       update_test: ${{ steps.compare.outputs.update_test }}
     steps:
       - name: Download the APK
@@ -83,6 +93,8 @@ jobs:
           package=$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" badging.txt)
           [ -n "$package" ] || { echo "::error::No app id in the file."; exit 1; }
           echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "version_name=$(sed -n "s/^package: .* versionName='\([^']*\)'.*/\1/p" badging.txt)" >> "$GITHUB_OUTPUT"
+          echo "version_code=$(sed -n "s/^package: .* versionCode='\([^']*\)'.*/\1/p" badging.txt)" >> "$GITHUB_OUTPUT"
 
       # Phones load the libraries straight from the file. One that is compressed or out of place
       # makes the whole install fail with "package appears to be invalid".
