@@ -168,9 +168,6 @@ p.lead {
   width: 282px;
   height: 173px;
   object-fit: contain;
-  border-radius: 50%;
-  background: #ffffff;
-  padding: 2px;
 }
 .brand__text {
   white-space: nowrap;
@@ -1605,14 +1602,12 @@ p.eyebrow--muted { color: var(--muted); }
   line-height: 0;
 }
 .site-header .brand .custom-logo-link { display: inline-flex; align-items: center; width: 100%; }
+/* The logo carries its own white outline: no white field behind it, here or anywhere. */
 .site-header .brand .custom-logo {
   width: 282px;
   height: 173px;
   max-width: 100%;
   object-fit: contain;
-  border-radius: 50%;
-  background: #ffffff;
-  padding: 2px;
 }
 @media (max-width: 640px) {
   .site-header .brand .custom-logo { width: 52px; height: 52px; }
