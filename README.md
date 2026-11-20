@@ -89,6 +89,15 @@ El despliegue no ejecuta el importador. Cuando una versión añade páginas o en
 Mi cuenta), en el servidor: `wp pura-theme import pages && wp pura-theme import menu && wp pura-theme
 import settings` (como el usuario de cPanel) y después `wp pura doctor`.
 
+`.github/workflows/publish-apk.yml` (manual) publica el APK de Android de la app en
+`wp-content/uploads/app/`, que es la descarga de https://puracapoeira.com/app/. Recibe el enlace del
+artefacto de EAS y una etiqueta de versión, sustituye `pura-capoeira.apk` y guarda una copia con la
+etiqueta. Antes de subir nada llama a `.github/workflows/check-apk.yml`, que comprueba la firma y
+la alineación de las bibliotecas, instala el archivo en emuladores de Android 11, 14 y 16, abre la
+app y lee su primera pantalla, y lo instala como actualización sobre el APK publicado. Si algo
+falla, no se publica. `check-apk.yml` también se ejecuta a mano con cualquier enlace (vacío = el APK
+publicado) y guarda las capturas una semana; su script es `.github/scripts/apk-on-emulator.sh`.
+
 `.github/workflows/server-check.yml` (manual) inspecciona el servidor con esas credenciales:
 WP-CLI, sudo, PHP, ea-nginx y el contenido de `DEPLOY_PATH`.
 
