@@ -3,7 +3,8 @@
 # Used by .github/workflows/check-apk.yml; each command is one step there.
 #
 #   apk-on-emulator.sh boot                       start the emulator ($IMAGE) and wait until it is up
-#   apk-on-emulator.sh first-install <apk>        install on a phone that never had the app, then open it
+#   apk-on-emulator.sh first-install <apk>        install on a phone that never had the app, then open it,
+#                                                 then photograph its opening screen and its icon
 #   apk-on-emulator.sh update <published> <apk>   install the published app, then <apk> over it, then open it
 #
 # PKG is the app id. Screenshots, the text on the screen and the phone's log go to $OUT.
@@ -197,6 +198,27 @@ installed_version() {
 	adb shell dumpsys package "$PKG" 2> /dev/null | grep -E 'versionName=|versionCode=' | head -2 | tr -d '\r' | xargs || true
 }
 
+# Pictures of what a member sees around the app: its opening screen and its icon in the launcher.
+# They are for people to look at (opening-1.png to opening-3.png, launcher.png); nothing here
+# decides whether the check passes.
+pictures() {
+	local n size w h
+	adb shell am force-stop "$PKG" > /dev/null 2>&1 || true
+	adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || true
+	for n in 1 2 3; do
+		adb exec-out screencap -p > "$OUT/opening-$n.png" 2> /dev/null || true
+	done
+	adb shell input keyevent 3 > /dev/null 2>&1 || true
+	sleep 3
+	size=$(adb shell wm size 2> /dev/null | tr -d '\r' | sed -n 's/.*: \([0-9]*\)x\([0-9]*\).*/\1 \2/p' | tail -1 || true)
+	read -r w h <<< "${size:-1080 2400}" || true
+	# Up from the lower part of the home screen: the list of all apps.
+	adb shell input swipe "$((w / 2))" "$((h * 8 / 10))" "$((w / 2))" "$((h * 2 / 10))" 300 > /dev/null 2>&1 || true
+	sleep 3
+	adb exec-out screencap -p > "$OUT/launcher.png" 2> /dev/null || true
+	adb shell input keyevent 3 > /dev/null 2>&1 || true
+}
+
 first_install() {
 	adb uninstall "$PKG" > /dev/null 2>&1 || true
 	echo "== A phone that never had the app =="
@@ -206,6 +228,7 @@ first_install() {
 	fi
 	echo "Installed: $(installed_version)"
 	open_app first-install
+	pictures || true
 }
 
 update() {
