@@ -29,16 +29,19 @@ boot() {
 	fi
 	avdmanager="$(dirname "$sdkmanager")/avdmanager"
 
-	yes | "$sdkmanager" --licenses > /dev/null 2>&1 || true
+	yes 2> /dev/null | "$sdkmanager" --licenses > /dev/null 2>&1 || true
 	if ! "$sdkmanager" --install emulator platform-tools "$IMAGE" > "$OUT/sdkmanager.txt" 2>&1; then
 		tail -30 "$OUT/sdkmanager.txt"
 		echo "::error::Could not install the emulator or $IMAGE"
 		return 1
 	fi
 
+	# Said out loud, because avdmanager and the emulator do not agree on the default place.
+	export ANDROID_AVD_HOME="$HOME/.android/avd"
+	mkdir -p "$ANDROID_AVD_HOME"
 	echo no | "$avdmanager" create avd --force --name check --package "$IMAGE" --device pixel_6 > /dev/null
 	# Room for two installs of a 120 MB app.
-	printf 'disk.dataPartition.size=6G\nhw.ramSize=3072\n' >> "$HOME/.android/avd/check.avd/config.ini"
+	printf 'disk.dataPartition.size=6G\nhw.ramSize=3072\n' >> "$ANDROID_AVD_HOME/check.avd/config.ini"
 
 	nohup "$ANDROID_HOME/emulator/emulator" -avd check -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim \
 		> "$OUT/emulator.txt" 2>&1 &

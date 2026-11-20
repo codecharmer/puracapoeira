@@ -79,7 +79,7 @@ jobs:
         id: read
         run: |
           "$BT/aapt2" dump badging app.apk > badging.txt
-          grep -E "^(package:|sdkVersion:|targetSdkVersion:|application-label:|launchable-activity:|native-code:)" badging.txt
+          grep -E "^(package:|sdkVersion:|minSdkVersion:|targetSdkVersion:|application-label:|launchable-activity:|native-code:)" badging.txt
           package=$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" badging.txt)
           [ -n "$package" ] || { echo "::error::No app id in the file."; exit 1; }
           echo "package=$package" >> "$GITHUB_OUTPUT"
