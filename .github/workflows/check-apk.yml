@@ -1,0 +1,227 @@
+name: Check Android APK
+
+# Reads an Android APK and installs it on Android emulators, so a file that phones refuse never
+# reaches https://puracapoeira.com/app/. It checks:
+#   1. the file itself: zip, signature, versions, alignment of the native libraries;
+#   2. that an update is possible: same app id and signing key as the published file, build number not lower;
+#   3. a first install on each Android version below, and that the app opens and shows its first screen;
+#   4. the update: the file installed over the published one, the way a member updates.
+#
+# Run it from Actions → "Check Android APK" with any .apk URL (the published file when left empty).
+# "Publish Android APK" calls it and uploads only a file that passed.
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: URL of the .apk to check (empty = the file the site offers)
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      apk_url:
+        description: URL of the .apk to check
+        required: true
+        type: string
+  # A change to the check is tried against the published APK before it reaches master.
+  push:
+    branches-ignore: [master]
+    paths:
+      - .github/workflows/check-apk.yml
+      - .github/scripts/apk-on-emulator.sh
+
+env:
+  PUBLISHED_URL: https://puracapoeira.com/wp-content/uploads/app/pura-capoeira.apk
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: Read the file
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      package: ${{ steps.read.outputs.package }}
+      update_test: ${{ steps.compare.outputs.update_test }}
+    steps:
+      - name: Download the APK
+        env:
+          APK_URL: ${{ inputs.apk_url || env.PUBLISHED_URL }}
+        run: |
+          echo "Checking: $APK_URL"
+          curl -fSL --retry 3 -o app.apk "$APK_URL"
+          stat -c 'size: %s bytes' app.apk
+          sha256sum app.apk
+
+      - name: Find the Android build tools
+        run: |
+          tools=$(ls -d "${ANDROID_HOME:?no Android SDK on this runner}"/build-tools/*/ | sort -V | tail -1)
+          echo "Build tools: $tools"
+          echo "BT=${tools%/}" >> "$GITHUB_ENV"
+
+      - name: The zip is whole
+        run: unzip -tq app.apk
+
+      - name: The signature verifies
+        run: |
+          "$BT/apksigner" verify --verbose --print-certs app.apk | tee signature.txt
+          grep -q '^Verifies' signature.txt
+          if ! grep -Eq '^Verified using v(2|3|3\.1) scheme .*: true$' signature.txt; then
+            echo "::error::No v2 or v3 signature: phones with Android 11 or later refuse the file."
+            exit 1
+          fi
+
+      - name: What the file says about itself
+        id: read
+        run: |
+          "$BT/aapt2" dump badging app.apk > badging.txt
+          grep -E "^(package:|sdkVersion:|targetSdkVersion:|application-label:|launchable-activity:|native-code:)" badging.txt
+          package=$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" badging.txt)
+          [ -n "$package" ] || { echo "::error::No app id in the file."; exit 1; }
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+
+      # Phones load the libraries straight from the file. One that is compressed or out of place
+      # makes the whole install fail with "package appears to be invalid".
+      - name: Native libraries can be loaded from the file
+        run: |
+          extract=$("$BT/aapt2" dump xmltree app.apk --file AndroidManifest.xml | grep -o 'extractNativeLibs.*' | head -1 || true)
+          compressed=$(unzip -v app.apk 'lib/*.so' | awk '$2 ~ /^Defl/ { n++ } END { print n + 0 }')
+          echo "extractNativeLibs: ${extract:-not set}; compressed libraries: $compressed"
+          if grep -q '=false' <<< "$extract" && [ "$compressed" -gt 0 ]; then
+            echo "::error::The file says its libraries are loaded in place, but $compressed of them are compressed."
+            exit 1
+          fi
+          "$BT/zipalign" -c -p 4 app.apk
+          echo "Aligned for 4 KB pages."
+          if "$BT/zipalign" -c -P 16 4 app.apk > /dev/null 2>&1; then
+            echo "Aligned for 16 KB pages."
+          else
+            echo "::warning::Not aligned for 16 KB pages (some phones with Android 15 or later need it)."
+          fi
+
+      - name: An update over the published app is possible
+        id: compare
+        run: |
+          if ! curl -fsSL --retry 3 -o published.apk "$PUBLISHED_URL"; then
+            echo "::warning::Could not download the published APK; the update test is skipped."
+            echo "update_test=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if cmp -s app.apk published.apk; then
+            echo "This is the published file itself; there is no update to test."
+            echo "update_test=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sha256sum published.apk
+          if ! "$BT/apksigner" verify --print-certs published.apk > published-signature.txt 2>&1; then
+            cat published-signature.txt
+            echo "::warning::The published APK does not verify; the update test is skipped."
+            echo "update_test=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          "$BT/aapt2" dump badging published.apk > published-badging.txt
+
+          name() { sed -n "s/^package: name='\([^']*\)'.*/\1/p" "$1"; }
+          build() { sed -n "s/^package: .* versionCode='\([^']*\)'.*/\1/p" "$1"; }
+          version() { sed -n "s/^package: .* versionName='\([^']*\)'.*/\1/p" "$1"; }
+          signer() { grep -m1 'certificate SHA-256 digest' "$1" | awk '{ print $NF }'; }
+
+          echo "Published: $(version published-badging.txt) (build $(build published-badging.txt))"
+          echo "This file: $(version badging.txt) (build $(build badging.txt))"
+          failed=0
+          if [ "$(name badging.txt)" != "$(name published-badging.txt)" ]; then
+            echo "::error::The app id differs from the published app: phones would install it as a second app."
+            failed=1
+          fi
+          if [ "$(signer signature.txt)" != "$(signer published-signature.txt)" ]; then
+            echo "::error::Signed with a different key than the published app: phones that have the app refuse the update."
+            failed=1
+          fi
+          if [ "$(build badging.txt)" -lt "$(build published-badging.txt)" ]; then
+            echo "::error::The build number is lower than the published one: phones that have the app refuse it (\"package appears to be invalid\")."
+            failed=1
+          fi
+          [ "$failed" = 0 ]
+          echo "update_test=true" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the APK for the next jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: app.apk
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Keep the published APK for the update test
+        if: steps.compare.outputs.update_test == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-apk
+          path: published.apk
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+  install:
+    name: Android ${{ matrix.android }}
+    needs: inspect
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { api: 30, android: '11' }
+          - { api: 34, android: '14' }
+          - { api: 36, android: '16' }
+    env:
+      PKG: ${{ needs.inspect.outputs.package }}
+      IMAGE: system-images;android-${{ matrix.api }};google_apis;x86_64
+    steps:
+      - name: Get the helper script
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Get the APK
+        uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: apk
+
+      - name: Get the published APK
+        if: needs.inspect.outputs.update_test == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: published-apk
+          path: published
+
+      - name: Let the emulator use hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Start Android ${{ matrix.android }}
+        run: bash .github/scripts/apk-on-emulator.sh boot
+
+      - name: First install, then open the app
+        run: bash .github/scripts/apk-on-emulator.sh first-install apk/app.apk
+
+      - name: Update over the published app, then open it
+        if: needs.inspect.outputs.update_test == 'true'
+        run: bash .github/scripts/apk-on-emulator.sh update published/published.apk apk/app.apk
+
+      - name: Keep the screenshots and the phone's log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.android }}
+          path: emulator-output
+          retention-days: 7
+          if-no-files-found: ignore
