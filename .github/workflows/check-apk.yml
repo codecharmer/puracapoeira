@@ -63,7 +63,7 @@ jobs:
           APK_URL: ${{ inputs.apk_url || env.PUBLISHED_URL }}
         run: |
           echo "Checking: $APK_URL"
-          curl -fSL --retry 3 -o app.apk "$APK_URL"
+          curl -fSL --retry 3 -D headers.txt -o app.apk "$APK_URL"
           stat -c 'size: %s bytes' app.apk
           sha256sum app.apk
 
@@ -95,6 +95,32 @@ jobs:
           echo "package=$package" >> "$GITHUB_OUTPUT"
           echo "version_name=$(sed -n "s/^package: .* versionName='\([^']*\)'.*/\1/p" badging.txt)" >> "$GITHUB_OUTPUT"
           echo "version_code=$(sed -n "s/^package: .* versionCode='\([^']*\)'.*/\1/p" badging.txt)" >> "$GITHUB_OUTPUT"
+
+      # A member tells an old download from a new one by its name, so the name the site gives
+      # the file has to say the version that is inside it.
+      - name: The site names the download after this version
+        env:
+          APK_URL: ${{ inputs.apk_url || env.PUBLISHED_URL }}
+          VERSION: ${{ steps.read.outputs.version_name }}-${{ steps.read.outputs.version_code }}
+        run: |
+          if [ "$APK_URL" != "$PUBLISHED_URL" ]; then
+            echo "This is not the file the site offers; it gets its name when it is published."
+            exit 0
+          fi
+          name=$(tr -d '\r' < headers.txt | grep -i '^content-disposition:.*filename=' | tail -1 \
+            | sed -e 's/.*filename=//' -e 's/^"//' -e 's/".*//' -e 's/;.*//' || true)
+          if [ -z "$name" ]; then
+            echo "::error::The site sends no name with the download, so browsers save it as pura-capoeira.apk whatever the version."
+            exit 1
+          fi
+          echo "Browsers save it as: $name"
+          case "$name" in
+            *"-$VERSION.apk") ;;
+            *)
+              echo "::error::The file is version $VERSION, but the site names the download $name."
+              exit 1
+              ;;
+          esac
 
       # Phones load the libraries straight from the file. One that is compressed or out of place
       # makes the whole install fail with "package appears to be invalid".

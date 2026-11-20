@@ -91,12 +91,18 @@ import settings` (como el usuario de cPanel) y después `wp pura doctor`.
 
 `.github/workflows/publish-apk.yml` (manual) publica el APK de Android de la app en
 `wp-content/uploads/app/`, que es la descarga de https://puracapoeira.com/app/. Recibe el enlace del
-artefacto de EAS y una etiqueta de versión, sustituye `pura-capoeira.apk` y guarda una copia con la
-etiqueta. Antes de subir nada llama a `.github/workflows/check-apk.yml`, que comprueba la firma y
-la alineación de las bibliotecas, instala el archivo en emuladores de Android 11, 14 y 16, abre la
-app y lee su primera pantalla, y lo instala como actualización sobre el APK publicado. Si algo
-falla, no se publica. `check-apk.yml` también se ejecuta a mano con cualquier enlace (vacío = el APK
-publicado) y guarda las capturas una semana; su script es `.github/scripts/apk-on-emulator.sh`.
+artefacto de EAS, sustituye `pura-capoeira.apk` y guarda al lado una copia con la versión y el
+número de compilación en el nombre (`pura-capoeira-0.2.0-8.apk`), que lee del propio archivo. La
+dirección de la descarga no cambia, pero el navegador la guarda con ese nombre con versión, porque
+el `.htaccess` de la carpeta lo envía con el archivo (cabecera `Content-Disposition`): así, en un
+teléfono que todavía tiene una descarga antigua, se ve cuál es cuál. Antes de subir nada llama a
+`.github/workflows/check-apk.yml`, que comprueba la firma y la alineación de las bibliotecas,
+instala el archivo en emuladores de Android 11, 14 y 16, abre la app y lee su primera pantalla, y lo
+instala como actualización sobre el APK publicado. Si algo falla, no se publica. Al final descarga
+el archivo como lo hace un navegador y compara su nombre y su contenido con lo que subió.
+`check-apk.yml` también se ejecuta a mano con cualquier enlace (vacío = el APK publicado, y entonces
+comprueba además que el nombre de la descarga dice la versión del archivo) y guarda las capturas una
+semana; su script es `.github/scripts/apk-on-emulator.sh`.
 
 `.github/workflows/server-check.yml` (manual) inspecciona el servidor con esas credenciales:
 WP-CLI, sudo, PHP, ea-nginx y el contenido de `DEPLOY_PATH`.
