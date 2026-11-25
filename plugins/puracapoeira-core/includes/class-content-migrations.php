@@ -25,6 +25,7 @@ final class Content_Migrations {
 		'create_editar_page',
 		'refresh_privacy_page_member_accounts',
 		'refresh_privacy_page_attendance',
+		'refresh_app_page_notifications',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -115,6 +116,14 @@ final class Content_Migrations {
 	 */
 	public static function refresh_privacy_page_attendance(): bool {
 		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Registrar mi asistencia' );
+	}
+
+	/**
+	 * /app/ holds a copy of its pattern as well. This puts the current text there: how to turn the
+	 * app's notifications on, and what to check on the phone when they do not arrive.
+	 */
+	public static function refresh_app_page_notifications(): bool {
+		return self::refresh_page_from_pattern( self::APP_PAGE['slug'], self::APP_PAGE['pattern'], 'i18n-notify-title' );
 	}
 
 	/**
