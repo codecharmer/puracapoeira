@@ -24,6 +24,7 @@ final class Content_Migrations {
 		'add_app_nav_link',
 		'create_editar_page',
 		'refresh_privacy_page_member_accounts',
+		'refresh_privacy_page_attendance',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -106,6 +107,14 @@ final class Content_Migrations {
 	 */
 	public static function refresh_privacy_page_member_accounts(): bool {
 		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Cuenta de miembro' );
+	}
+
+	/**
+	 * The same page again, for attendance: the days a member trained, recorded in the app since
+	 * 2026-11-24.
+	 */
+	public static function refresh_privacy_page_attendance(): bool {
+		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Registrar mi asistencia' );
 	}
 
 	/**
