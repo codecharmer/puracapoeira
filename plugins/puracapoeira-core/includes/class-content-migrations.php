@@ -26,6 +26,7 @@ final class Content_Migrations {
 		'refresh_privacy_page_member_accounts',
 		'refresh_privacy_page_attendance',
 		'refresh_app_page_notifications',
+		'refresh_privacy_page_children',
 	);
 
 	/** @var array{slug:string,title:string,excerpt:string,pattern:string,option:string} */
@@ -116,6 +117,14 @@ final class Content_Migrations {
 	 */
 	public static function refresh_privacy_page_attendance(): bool {
 		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Registrar mi asistencia' );
+	}
+
+	/**
+	 * And a third time, for a parent's children: the app keeps them under the parent's account since
+	 * its migration 0017 (2026-11-25).
+	 */
+	public static function refresh_privacy_page_children(): bool {
+		return self::refresh_page_from_pattern( 'privacidad', 'puracapoeira/page-privacidad', 'Mis hijos' );
 	}
 
 	/**
