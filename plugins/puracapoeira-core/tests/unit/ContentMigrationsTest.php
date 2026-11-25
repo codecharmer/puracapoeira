@@ -21,10 +21,11 @@ final class ContentMigrationsTest extends TestCase {
 	private const EARLIER           = array( 'create_fotos_page', 'create_app_page', 'add_app_nav_link', 'create_editar_page' );
 	private const PRIVACY_REFRESHES = array( 'refresh_privacy_page_member_accounts', 'refresh_privacy_page_attendance' );
 
-	// The privacy notice as it was first, with member accounts, and with attendance.
+	// The privacy notice as it was first, with member accounts, with attendance, and with a parent's children.
 	private const FIRST_TEXT      = '<p>Avisos. No está vinculado a tu nombre.</p>';
 	private const ACCOUNTS_TEXT   = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. "Pura Capoeira" → Más</p><!-- /wp:paragraph -->';
 	private const ATTENDANCE_TEXT = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. Asistencia ("Registrar mi asistencia") → Más</p><!-- /wp:paragraph -->';
+	private const CHILDREN_TEXT   = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. Asistencia ("Registrar mi asistencia"). Tus hijos (Más → Mi cuenta → Mis hijos)</p><!-- /wp:paragraph -->';
 
 	// The app page with its install steps, and with the notifications section after them.
 	private const INSTALL_TEXT = '<!-- wp:heading {"level":3,"className":"i18n-steps-title"} --><h3 class="wp-block-heading i18n-steps-title">Cómo instalar en Android</h3><!-- /wp:heading -->';
@@ -61,6 +62,13 @@ final class ContentMigrationsTest extends TestCase {
 				array_merge( self::EARLIER, self::PRIVACY_REFRESHES ),
 				self::INSTALL_TEXT,
 				self::NOTIFY_TEXT,
+			),
+			'privacy: children'        => array(
+				'refresh_privacy_page_children',
+				self::PRIVACY,
+				array_merge( self::EARLIER, self::PRIVACY_REFRESHES, array( 'refresh_app_page_notifications' ) ),
+				self::ATTENDANCE_TEXT,
+				self::CHILDREN_TEXT,
 			),
 		);
 	}
@@ -190,14 +198,15 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertTrue( $this->done( $migration ) );
 	}
 
-	public function test_a_site_that_ran_neither_refresh_ends_with_the_current_text(): void {
-		$this->a_site( self::PRIVACY, self::EARLIER, self::FIRST_TEXT, self::ATTENDANCE_TEXT );
+	public function test_a_site_that_ran_no_refresh_ends_with_the_current_text(): void {
+		$this->a_site( self::PRIVACY, self::EARLIER, self::FIRST_TEXT, self::CHILDREN_TEXT );
 
 		Content_Migrations::run();
 
-		$this->assertSame( self::ATTENDANCE_TEXT, $this->page_text() );
+		$this->assertSame( self::CHILDREN_TEXT, $this->page_text() );
 		$this->assertTrue( $this->done( 'refresh_privacy_page_member_accounts' ) );
 		$this->assertTrue( $this->done( 'refresh_privacy_page_attendance' ) );
+		$this->assertTrue( $this->done( 'refresh_privacy_page_children' ) );
 	}
 
 	public function test_each_refresh_writes_its_own_page(): void {
