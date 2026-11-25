@@ -13,83 +13,150 @@ use Pura\Core\Content_Migrations;
 
 final class ContentMigrationsTest extends TestCase {
 
-	private const MIGRATION = 'refresh_privacy_page_member_accounts';
-	private const PATTERN   = 'puracapoeira/page-privacidad';
-	private const OLD_TEXT  = '<p>Avisos. No está vinculado a tu nombre.</p>';
-	private const NEW_TEXT  = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. "Pura Capoeira" → Más</p><!-- /wp:paragraph -->';
+	private const PATTERN = 'puracapoeira/page-privacidad';
+	private const EARLIER = array( 'create_fotos_page', 'create_app_page', 'add_app_nav_link', 'create_editar_page' );
 
-	protected function setUp(): void {
-		// Everything that ran before this change is done; only the privacy page is pending.
-		$GLOBALS['pura_test_options']      = array(
-			Content_Migrations::OPTION => array( 'create_fotos_page', 'create_app_page', 'add_app_nav_link', 'create_editar_page' ),
+	// The privacy notice as it was first, with member accounts, and with attendance.
+	private const FIRST_TEXT      = '<p>Avisos. No está vinculado a tu nombre.</p>';
+	private const ACCOUNTS_TEXT   = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. "Pura Capoeira" → Más</p><!-- /wp:paragraph -->';
+	private const ATTENDANCE_TEXT = '<!-- wp:paragraph {"className":"a--b"} --><p>Cuenta de miembro. Asistencia ("Registrar mi asistencia") → Más</p><!-- /wp:paragraph -->';
+
+	/**
+	 * Each refresh of the privacy page: its name, what the site has already run, the text on the
+	 * page and the text of the pattern.
+	 *
+	 * @return array<string, array{string, string[], string, string}>
+	 */
+	public static function refreshes(): array {
+		return array(
+			'member accounts' => array(
+				'refresh_privacy_page_member_accounts',
+				self::EARLIER,
+				self::FIRST_TEXT,
+				self::ACCOUNTS_TEXT,
+			),
+			'attendance'      => array(
+				'refresh_privacy_page_attendance',
+				array_merge( self::EARLIER, array( 'refresh_privacy_page_member_accounts' ) ),
+				self::ACCOUNTS_TEXT,
+				self::ATTENDANCE_TEXT,
+			),
 		);
+	}
+
+	/**
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	private function a_site( array $already_run, string $page_text, string $pattern_text ): void {
+		$GLOBALS['pura_test_options']      = array( Content_Migrations::OPTION => $already_run );
 		$GLOBALS['pura_test_pages']        = array(
 			'privacidad' => (object) array(
 				'ID'           => 7,
-				'post_content' => self::OLD_TEXT,
+				'post_content' => $page_text,
 			),
 		);
-		$GLOBALS['pura_test_patterns']     = array( self::PATTERN => array( 'content' => self::NEW_TEXT ) );
+		$GLOBALS['pura_test_patterns']     = array( self::PATTERN => array( 'content' => $pattern_text ) );
 		$GLOBALS['pura_test_updates']      = 0;
 		$GLOBALS['pura_test_update_fails'] = false;
 	}
 
-	private function done(): bool {
-		return in_array( self::MIGRATION, (array) get_option( Content_Migrations::OPTION, array() ), true );
+	private function done( string $migration ): bool {
+		return in_array( $migration, (array) get_option( Content_Migrations::OPTION, array() ), true );
 	}
 
-	public function test_the_page_takes_the_pattern_text_once(): void {
+	private function page_text(): string {
+		return $GLOBALS['pura_test_pages']['privacidad']->post_content;
+	}
+
+	/**
+	 * @dataProvider refreshes
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	public function test_the_page_takes_the_pattern_text_once( string $migration, array $already_run, string $old_text, string $new_text ): void {
+		$this->a_site( $already_run, $old_text, $new_text );
+
 		Content_Migrations::run();
 
 		// Backslashes and quotes of the block markup arrive as they are in the pattern.
-		$this->assertSame( self::NEW_TEXT, $GLOBALS['pura_test_pages']['privacidad']->post_content );
-		$this->assertTrue( $this->done() );
+		$this->assertSame( $new_text, $this->page_text() );
+		$this->assertTrue( $this->done( $migration ) );
 
 		Content_Migrations::run();
 		$this->assertSame( 1, $GLOBALS['pura_test_updates'] );
 	}
 
-	public function test_it_waits_while_an_earlier_copy_of_the_pattern_is_read(): void {
-		$GLOBALS['pura_test_patterns'][ self::PATTERN ]['content'] = self::OLD_TEXT;
+	/**
+	 * @dataProvider refreshes
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	public function test_it_waits_while_an_earlier_copy_of_the_pattern_is_read( string $migration, array $already_run, string $old_text, string $new_text ): void {
+		$this->a_site( $already_run, $old_text, $old_text );
 
 		Content_Migrations::run();
-		$this->assertSame( self::OLD_TEXT, $GLOBALS['pura_test_pages']['privacidad']->post_content );
-		$this->assertFalse( $this->done() );
+		$this->assertSame( $old_text, $this->page_text() );
+		$this->assertSame( 0, $GLOBALS['pura_test_updates'] );
+		$this->assertFalse( $this->done( $migration ) );
 
-		$GLOBALS['pura_test_patterns'][ self::PATTERN ]['content'] = self::NEW_TEXT;
+		$GLOBALS['pura_test_patterns'][ self::PATTERN ]['content'] = $new_text;
 		Content_Migrations::run();
-		$this->assertSame( self::NEW_TEXT, $GLOBALS['pura_test_pages']['privacidad']->post_content );
-		$this->assertTrue( $this->done() );
+		$this->assertSame( $new_text, $this->page_text() );
+		$this->assertTrue( $this->done( $migration ) );
 	}
 
-	public function test_it_waits_for_the_pattern_to_be_registered(): void {
+	/**
+	 * @dataProvider refreshes
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	public function test_it_waits_for_the_pattern_to_be_registered( string $migration, array $already_run, string $old_text, string $new_text ): void {
+		$this->a_site( $already_run, $old_text, $new_text );
 		$GLOBALS['pura_test_patterns'] = array();
 
 		Content_Migrations::run();
 
 		$this->assertSame( 0, $GLOBALS['pura_test_updates'] );
-		$this->assertFalse( $this->done() );
+		$this->assertFalse( $this->done( $migration ) );
 	}
 
-	public function test_a_site_without_the_page_has_nothing_to_refresh(): void {
+	/**
+	 * @dataProvider refreshes
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	public function test_a_site_without_the_page_has_nothing_to_refresh( string $migration, array $already_run, string $old_text, string $new_text ): void {
+		$this->a_site( $already_run, $old_text, $new_text );
 		$GLOBALS['pura_test_pages'] = array();
 
 		Content_Migrations::run();
 
 		$this->assertSame( 0, $GLOBALS['pura_test_updates'] );
-		$this->assertTrue( $this->done() );
+		$this->assertTrue( $this->done( $migration ) );
 	}
 
-	public function test_a_save_that_fails_is_tried_again(): void {
+	/**
+	 * @dataProvider refreshes
+	 * @param string[] $already_run Migrations recorded as done.
+	 */
+	public function test_a_save_that_fails_is_tried_again( string $migration, array $already_run, string $old_text, string $new_text ): void {
+		$this->a_site( $already_run, $old_text, $new_text );
+
 		$GLOBALS['pura_test_update_fails'] = true;
 		Content_Migrations::run();
-		$this->assertSame( self::OLD_TEXT, $GLOBALS['pura_test_pages']['privacidad']->post_content );
-		$this->assertFalse( $this->done() );
+		$this->assertSame( $old_text, $this->page_text() );
+		$this->assertFalse( $this->done( $migration ) );
 
 		$GLOBALS['pura_test_update_fails'] = false;
 		Content_Migrations::run();
-		$this->assertSame( self::NEW_TEXT, $GLOBALS['pura_test_pages']['privacidad']->post_content );
-		$this->assertTrue( $this->done() );
+		$this->assertSame( $new_text, $this->page_text() );
+		$this->assertTrue( $this->done( $migration ) );
+	}
+
+	public function test_a_site_that_ran_neither_refresh_ends_with_the_current_text(): void {
+		$this->a_site( self::EARLIER, self::FIRST_TEXT, self::ATTENDANCE_TEXT );
+
+		Content_Migrations::run();
+
+		$this->assertSame( self::ATTENDANCE_TEXT, $this->page_text() );
+		$this->assertTrue( $this->done( 'refresh_privacy_page_member_accounts' ) );
+		$this->assertTrue( $this->done( 'refresh_privacy_page_attendance' ) );
 	}
 }
 }
